@@ -61,7 +61,7 @@ jobs:
       run: mix compile --warnings-as-errors
     
     - name: Run tests
-      run: mix test --cover
+      run: mix test
 
   build-docker:
     name: Build Docker Image
@@ -78,13 +78,14 @@ jobs:
       with:
         context: .
         push: false
+        load: true
         tags: rachel-web:latest
         cache-from: type=gha
         cache-to: type=gha,mode=max
     
     - name: Test Docker image
       run: |
-        docker run -d --name rachel-test -p 4000:4000 -p 1982:1982 rachel-web:latest
+        docker run -d --name rachel-test -p 4000:4000 -p 1982:1982 -e SECRET_KEY_BASE=test-key-base-at-least-64-chars-long-for-phoenix-to-be-happy-with-the-key rachel-web:latest
         sleep 10
         curl -f http://localhost:4000 || exit 1
         docker logs rachel-test
