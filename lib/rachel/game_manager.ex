@@ -10,9 +10,10 @@ defmodule Rachel.GameManager do
   """
   def create_game(player_names) when is_list(player_names) and length(player_names) >= 2 do
     case GameSupervisor.start_game(player_names) do
-      {:ok, game_id} -> 
+      {:ok, game_id} ->
         {:ok, game_id}
-      error -> 
+
+      error ->
         error
     end
   end
@@ -22,9 +23,10 @@ defmodule Rachel.GameManager do
   """
   def create_lobby(host_name) do
     case GameSupervisor.start_game([host_name]) do
-      {:ok, game_id} -> 
+      {:ok, game_id} ->
         {:ok, game_id}
-      error -> 
+
+      error ->
         error
     end
   end
@@ -104,14 +106,16 @@ defmodule Rachel.GameManager do
   def get_game_info(game_id) do
     case get_game(game_id) do
       {:ok, game} ->
-        {:ok, %{
-          id: game.id,
-          status: game.status,
-          player_count: length(game.players),
-          players: Enum.map(game.players, &(&1.name)),
-          created_at: game.created_at
-        }}
-      error -> 
+        {:ok,
+         %{
+           id: game.id,
+           status: game.status,
+           player_count: length(game.players),
+           players: Enum.map(game.players, & &1.name),
+           created_at: game.created_at
+         }}
+
+      error ->
         error
     end
   end
@@ -124,6 +128,7 @@ defmodule Rachel.GameManager do
       {:ok, game} ->
         current_player = Enum.at(game.players, game.current_player_index)
         current_player && current_player.id == player_id
+
       _ ->
         false
     end

@@ -18,12 +18,13 @@ defmodule Rachel.Game.Deck do
   Returns {hands, remaining_deck}.
   """
   def deal(deck, player_count) do
-    cards_per_player = case player_count do
-      n when n in 2..5 -> 7
-      n when n in 6..7 -> 6
-      8 -> 5
-      _ -> raise "Invalid player count: #{player_count}"
-    end
+    cards_per_player =
+      case player_count do
+        n when n in 2..5 -> 7
+        n when n in 6..7 -> 6
+        8 -> 5
+        _ -> raise "Invalid player count: #{player_count}"
+      end
 
     {hands, remaining} = deal_hands(deck, player_count, cards_per_player)
     {hands, remaining}
@@ -68,17 +69,18 @@ defmodule Rachel.Game.Deck do
 
   defp deal_hands(deck, player_count, cards_per_player) do
     total_cards_needed = player_count * cards_per_player
-    
+
     if length(deck) < total_cards_needed do
       raise "Not enough cards in deck"
     end
 
     {cards_to_deal, remaining} = Enum.split(deck, total_cards_needed)
-    
-    hands = cards_to_deal
-    |> Enum.chunk_every(cards_per_player)
-    |> Enum.take(player_count)
-    
+
+    hands =
+      cards_to_deal
+      |> Enum.chunk_every(cards_per_player)
+      |> Enum.take(player_count)
+
     {hands, remaining}
   end
 end

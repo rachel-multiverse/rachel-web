@@ -17,7 +17,7 @@ defmodule Rachel.Game.GameServer do
   def start_link(opts) do
     player_names = Keyword.fetch!(opts, :players)
     game_id = Keyword.get(opts, :game_id, Ecto.UUID.generate())
-    
+
     GenServer.start_link(__MODULE__, {player_names, game_id}, name: via_tuple(game_id))
   end
 
@@ -98,7 +98,7 @@ defmodule Rachel.Game.GameServer do
         new_game = GameState.start_game(game)
         broadcast_update(new_game, :game_started)
         {:reply, {:ok, new_game}, new_game}
-      
+
       status ->
         {:reply, {:error, {:invalid_status, status}}, game}
     end
@@ -111,7 +111,7 @@ defmodule Rachel.Game.GameServer do
         broadcast_update(new_game, {:cards_played, player_id, cards})
         check_game_over(new_game)
         {:reply, {:ok, new_game}, new_game}
-      
+
       error ->
         {:reply, error, game}
     end
@@ -123,7 +123,7 @@ defmodule Rachel.Game.GameServer do
       {:ok, new_game} ->
         broadcast_update(new_game, {:cards_drawn, player_id, reason})
         {:reply, {:ok, new_game}, new_game}
-      
+
       error ->
         {:reply, error, game}
     end
@@ -139,7 +139,7 @@ defmodule Rachel.Game.GameServer do
         type: :human,
         status: :playing
       }
-      
+
       new_game = %{game | players: game.players ++ [new_player]}
       broadcast_update(new_game, {:player_joined, new_player})
       {:reply, {:ok, new_player.id}, new_game}
@@ -157,13 +157,15 @@ defmodule Rachel.Game.GameServer do
       {:reply, :ok, new_game}
     else
       # During game, mark player as disconnected instead of removing
-      new_players = Enum.map(game.players, fn p ->
-        if p.id == player_id do
-          %{p | status: :disconnected}
-        else
-          p
-        end
-      end)
+      new_players =
+        Enum.map(game.players, fn p ->
+          if p.id == player_id do
+            %{p | status: :disconnected}
+          else
+            p
+          end
+        end)
+
       new_game = %{game | players: new_players}
       broadcast_update(new_game, {:player_disconnected, player_id})
       {:reply, :ok, new_game}
@@ -186,11 +188,11 @@ defmodule Rachel.Game.GameServer do
 
   defp check_game_over(game) do
     active_players = Enum.count(game.players, &(&1.status == :playing))
-    
+
     if active_players <= 1 do
       new_game = %{game | status: :finished}
       broadcast_update(new_game, :game_over)
-      
+
       # Schedule cleanup after 5 minutes
       Process.send_after(self(), :cleanup, 5 * 60 * 1000)
     end

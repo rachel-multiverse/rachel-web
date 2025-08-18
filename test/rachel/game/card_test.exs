@@ -30,12 +30,12 @@ defmodule Rachel.Game.CardTest do
 
     test "deck contains all suits and ranks" do
       deck = Card.deck()
-      
+
       for suit <- [:hearts, :diamonds, :clubs, :spades] do
         for rank <- 2..14 do
-          assert Enum.any?(deck, fn card -> 
-            card.suit == suit && card.rank == rank 
-          end)
+          assert Enum.any?(deck, fn card ->
+                   card.suit == suit && card.rank == rank
+                 end)
         end
       end
     end
@@ -102,7 +102,7 @@ defmodule Rachel.Game.CardTest do
           card = Card.new(suit, rank)
           encoded = Card.encode(card)
           {:ok, decoded} = Card.decode(encoded)
-          
+
           assert decoded.suit == card.suit
           assert decoded.rank == card.rank
         end
@@ -112,18 +112,21 @@ defmodule Rachel.Game.CardTest do
     test "specific encoding examples" do
       # 2 of Hearts should be 0x02
       assert Card.encode(Card.new(:hearts, 2)) == 0x02
-      
+
       # Ace of Spades should be 0xCE (11001110)
       assert Card.encode(Card.new(:spades, 14)) == 0xCE
-      
+
       # Jack of Clubs should be 0x8B
       assert Card.encode(Card.new(:clubs, 11)) == 0x8B
     end
 
     test "decode handles invalid bytes" do
-      assert {:error, :invalid_rank} = Card.decode(0x00)  # Rank 0 is invalid
-      assert {:error, :invalid_rank} = Card.decode(0x01)  # Rank 1 is invalid
-      assert {:error, :invalid_rank} = Card.decode(0x0F)  # Rank 15 is invalid
+      # Rank 0 is invalid
+      assert {:error, :invalid_rank} = Card.decode(0x00)
+      # Rank 1 is invalid
+      assert {:error, :invalid_rank} = Card.decode(0x01)
+      # Rank 15 is invalid
+      assert {:error, :invalid_rank} = Card.decode(0x0F)
     end
   end
 end

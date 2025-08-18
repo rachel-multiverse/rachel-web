@@ -19,13 +19,13 @@ defmodule Rachel.Game.GameSupervisor do
   """
   def start_game(player_names, game_id \\ nil) do
     game_id = game_id || Ecto.UUID.generate()
-    
+
     child_spec = %{
       id: game_id,
       start: {Rachel.Game.GameServer, :start_link, [[players: player_names, game_id: game_id]]},
       restart: :temporary
     }
-    
+
     case DynamicSupervisor.start_child(__MODULE__, child_spec) do
       {:ok, _pid} -> {:ok, game_id}
       error -> error

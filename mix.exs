@@ -39,7 +39,7 @@ defmodule Rachel.MixProject do
       {:phoenix_live_reload, "~> 1.2", only: :dev},
       {:phoenix_live_view, "~> 1.1.0"},
       {:phoenix_live_dashboard, "~> 0.8.3"},
-      
+
       # Assets
       {:esbuild, "~> 0.10", runtime: Mix.env() == :dev},
       {:tailwind, "~> 0.3", runtime: Mix.env() == :dev},
@@ -50,7 +50,7 @@ defmodule Rachel.MixProject do
        app: false,
        compile: false,
        depth: 1},
-      
+
       # Core dependencies
       {:swoosh, "~> 1.16"},
       {:req, "~> 0.5"},
@@ -60,10 +60,10 @@ defmodule Rachel.MixProject do
       {:jason, "~> 1.2"},
       {:dns_cluster, "~> 0.2.0"},
       {:bandit, "~> 1.5"},
-      
+
       # Binary protocol support
       {:ranch, "~> 2.1"},
-      
+
       # Testing
       {:lazy_html, ">= 0.1.0", only: :test},
       {:floki, "~> 0.36", only: :test}

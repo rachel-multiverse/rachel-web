@@ -2,16 +2,17 @@ defmodule Rachel.Game.Card do
   @moduledoc """
   Represents a playing card in Rachel.
   """
-  
+
   import Bitwise
 
   @type suit :: :hearts | :diamonds | :clubs | :spades
-  @type rank :: 2..14  # 11 = Jack, 12 = Queen, 13 = King, 14 = Ace
-  
+  # 11 = Jack, 12 = Queen, 13 = King, 14 = Ace
+  @type rank :: 2..14
+
   @type t :: %__MODULE__{
-    suit: suit(),
-    rank: rank()
-  }
+          suit: suit(),
+          rank: rank()
+        }
 
   defstruct [:suit, :rank]
 
@@ -66,13 +67,14 @@ defmodule Rachel.Game.Card do
   Bits 5-0: Rank (2-14)
   """
   def encode(%__MODULE__{suit: suit, rank: rank}) do
-    suit_bits = case suit do
-      :hearts -> 0x00
-      :diamonds -> 0x40
-      :clubs -> 0x80
-      :spades -> 0xC0
-    end
-    
+    suit_bits =
+      case suit do
+        :hearts -> 0x00
+        :diamonds -> 0x40
+        :clubs -> 0x80
+        :spades -> 0xC0
+      end
+
     suit_bits + rank
   end
 
@@ -80,15 +82,16 @@ defmodule Rachel.Game.Card do
   Decodes a byte into a card.
   """
   def decode(byte) when is_integer(byte) do
-    suit = case byte &&& 0xC0 do
-      0x00 -> :hearts
-      0x40 -> :diamonds
-      0x80 -> :clubs
-      0xC0 -> :spades
-    end
-    
+    suit =
+      case byte &&& 0xC0 do
+        0x00 -> :hearts
+        0x40 -> :diamonds
+        0x80 -> :clubs
+        0xC0 -> :spades
+      end
+
     rank = byte &&& 0x3F
-    
+
     if rank in @ranks do
       {:ok, new(suit, rank)}
     else
