@@ -2,7 +2,7 @@
 FROM elixir:1.18-alpine AS build
 
 # Install build dependencies
-RUN apk add --no-cache build-base git nodejs npm python3
+RUN apk add --no-cache build-base git python3
 
 # Set build environment
 ENV MIX_ENV=prod
@@ -21,18 +21,14 @@ COPY config config
 RUN mix deps.get --only $MIX_ENV && \
     mix deps.compile
 
-# Copy assets
-COPY assets assets
-
-# Build assets  
-RUN cd assets && npm install && npm run build && cd ..
-
-# Copy source code
+# Copy source code and assets
 COPY lib lib
 COPY priv priv
+COPY assets assets
 
-# Compile and build release
+# Compile and build release with assets
 RUN mix compile && \
+    mix assets.setup && \
     mix assets.deploy && \
     mix phx.digest && \
     mix release
