@@ -18,6 +18,10 @@ defmodule RachelWeb.Router do
     pipe_through :browser
 
     get "/", PageController, :home
+    
+    # Game routes
+    live "/games/:id", GameLive
+    live "/lobby", LobbyLive
   end
 
   # Other scopes may use custom stacks.
