@@ -4,7 +4,7 @@ defmodule Rachel.Game.GameState do
   """
 
   require Logger
-  alias Rachel.Game.{Card, Deck, DeckOperations, PlayValidator, EffectProcessor, TurnManager}
+  alias Rachel.Game.{Card, Deck, DeckOperations, EffectProcessor, PlayValidator, TurnManager}
 
   @type status :: :waiting | :playing | :finished
   @type direction :: :clockwise | :counter_clockwise

@@ -14,9 +14,8 @@ defmodule Rachel.Game.PlayValidator do
          {:ok, player_idx} <- find_player(game, player_id),
          :ok <- validate_current_player(game, player_idx),
          :ok <- validate_player_active(game, player_idx),
-         :ok <- validate_cards_in_hand(game, player_idx, cards),
-         :ok <- validate_play_rules(game, cards) do
-      :ok
+         :ok <- validate_cards_in_hand(game, player_idx, cards) do
+      validate_play_rules(game, cards)
     end
   end
 
@@ -25,9 +24,8 @@ defmodule Rachel.Game.PlayValidator do
   """
   def validate_draw(game, player_id) do
     with {:ok, player_idx} <- find_player(game, player_id),
-         :ok <- validate_current_player(game, player_idx),
-         :ok <- validate_player_active(game, player_idx) do
-      :ok
+         :ok <- validate_current_player(game, player_idx) do
+      validate_player_active(game, player_idx)
     end
   end
 

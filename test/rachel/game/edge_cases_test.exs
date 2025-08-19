@@ -28,7 +28,7 @@ defmodule Rachel.Game.EdgeCasesTest do
       # Player should have drawn a card
       assert length(hd(new_game.players).hand) == 1
       # Deck is empty after drawing the last card
-      assert length(new_game.deck) == 0
+      assert Enum.empty?(new_game.deck)
     end
 
     test "handling massive attack with insufficient cards" do

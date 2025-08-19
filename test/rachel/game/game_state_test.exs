@@ -162,7 +162,7 @@ defmodule Rachel.Game.GameStateTest do
 
       new_player = Enum.find(new_game.players, &(&1.id == player.id))
       # Player should have no cards left
-      assert length(new_player.hand) == 0
+      assert Enum.empty?(new_player.hand)
       # Cards should be in discard pile
       assert Enum.take(new_game.discard_pile, 2) == stacked_cards
     end

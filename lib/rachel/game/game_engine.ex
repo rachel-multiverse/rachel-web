@@ -7,7 +7,7 @@ defmodule Rachel.Game.GameEngine do
   use GenServer
   require Logger
 
-  alias Rachel.Game.{GameState, Rules, AIPlayer}
+  alias Rachel.Game.{AIPlayer, GameState, Rules}
 
   defstruct [
     :game,

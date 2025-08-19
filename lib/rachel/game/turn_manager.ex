@@ -63,15 +63,19 @@ defmodule Rachel.Game.TurnManager do
       # Prevent infinite loops
       index
     else
-      player = Enum.at(players, index)
+      check_player_status(index, players, direction, player_count, attempts)
+    end
+  end
 
-      if player.status == :won do
-        step = if direction == :clockwise, do: 1, else: -1
-        next_index = Integer.mod(index + step, player_count)
-        find_active_player(next_index, players, direction, player_count, attempts + 1)
-      else
-        index
-      end
+  defp check_player_status(index, players, direction, player_count, attempts) do
+    player = Enum.at(players, index)
+
+    if player.status == :won do
+      step = if direction == :clockwise, do: 1, else: -1
+      next_index = Integer.mod(index + step, player_count)
+      find_active_player(next_index, players, direction, player_count, attempts + 1)
+    else
+      index
     end
   end
 end
