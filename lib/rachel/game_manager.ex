@@ -3,19 +3,34 @@ defmodule Rachel.GameManager do
   High-level API for managing Rachel games.
   """
 
-  alias Rachel.Game.{GameSupervisor, GameServer}
+  alias Rachel.Game.{GameSupervisor, GameEngine}
 
   @doc """
   Creates a new game with the given players.
+  Players can be strings (human players) or tuples {:ai, name, difficulty}.
   """
-  def create_game(player_names) when is_list(player_names) and length(player_names) >= 2 do
-    case GameSupervisor.start_game(player_names) do
+  def create_game(players) when is_list(players) and length(players) >= 2 do
+    case GameSupervisor.start_game(players) do
       {:ok, game_id} ->
         {:ok, game_id}
 
       error ->
         error
     end
+  end
+
+  @doc """
+  Creates a game with AI opponents.
+  """
+  def create_ai_game(player_name, num_ai \\ 3, difficulty \\ :medium) do
+    ai_players =
+      for i <- 1..num_ai do
+        name = Rachel.Game.AIPlayer.personality_name(difficulty, i - 1)
+        {:ai, name, difficulty}
+      end
+
+    players = [player_name | ai_players]
+    create_game(players)
   end
 
   @doc """
@@ -35,21 +50,21 @@ defmodule Rachel.GameManager do
   Joins a player to a lobby game.
   """
   def join_game(game_id, player_name) do
-    GameServer.add_player(game_id, player_name)
+    GameEngine.add_player(game_id, player_name)
   end
 
   @doc """
   Starts a game that's in the waiting state.
   """
   def start_game(game_id) do
-    GameServer.start_game(game_id)
+    GameEngine.start_game(game_id)
   end
 
   @doc """
   Gets the current state of a game.
   """
   def get_game(game_id) do
-    GameServer.get_state(game_id)
+    GameEngine.get_state(game_id)
   catch
     :exit, {:noproc, _} -> {:error, :game_not_found}
   end
@@ -58,7 +73,7 @@ defmodule Rachel.GameManager do
   Player plays cards.
   """
   def play_cards(game_id, player_id, cards, nominated_suit \\ nil) do
-    GameServer.play_cards(game_id, player_id, cards, nominated_suit)
+    GameEngine.play_cards(game_id, player_id, cards, nominated_suit)
   catch
     :exit, {:noproc, _} -> {:error, :game_not_found}
   end
@@ -67,7 +82,7 @@ defmodule Rachel.GameManager do
   Player draws cards.
   """
   def draw_cards(game_id, player_id, reason \\ :cannot_play) do
-    GameServer.draw_cards(game_id, player_id, reason)
+    GameEngine.draw_cards(game_id, player_id, reason)
   catch
     :exit, {:noproc, _} -> {:error, :game_not_found}
   end
@@ -83,14 +98,14 @@ defmodule Rachel.GameManager do
   Subscribes to game updates.
   """
   def subscribe_to_game(game_id) do
-    GameServer.subscribe(game_id)
+    GameEngine.subscribe(game_id)
   end
 
   @doc """
   Unsubscribes from game updates.
   """
   def unsubscribe_from_game(game_id) do
-    GameServer.unsubscribe(game_id)
+    GameEngine.unsubscribe(game_id)
   end
 
   @doc """

@@ -7,9 +7,11 @@ defmodule Rachel.Game.Deck do
 
   @doc """
   Creates a new shuffled deck of 52 cards.
+  With deck_count > 1, creates multiple decks shuffled together.
   """
-  def new do
-    Card.deck()
+  def new(deck_count \\ 1) do
+    1..deck_count
+    |> Enum.flat_map(fn _ -> Card.deck() end)
     |> Enum.shuffle()
   end
 

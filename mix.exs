@@ -66,7 +66,12 @@ defmodule Rachel.MixProject do
 
       # Testing
       {:lazy_html, ">= 0.1.0", only: :test},
-      {:floki, "~> 0.36", only: :test}
+      {:floki, "~> 0.36", only: :test},
+
+      # Code quality
+      {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
+      {:dialyxir, "~> 1.4", only: [:dev, :test], runtime: false},
+      {:sobelow, "~> 0.13", only: [:dev, :test], runtime: false}
     ]
   end
 

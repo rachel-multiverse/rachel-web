@@ -8,6 +8,15 @@ defmodule RachelWeb.Router do
     plug :put_root_layout, html: {RachelWeb.Layouts, :root}
     plug :protect_from_forgery
     plug :put_secure_browser_headers
+    plug :put_content_security_policy
+  end
+
+  defp put_content_security_policy(conn, _opts) do
+    Plug.Conn.put_resp_header(
+      conn,
+      "content-security-policy",
+      "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'self' ws: wss:;"
+    )
   end
 
   pipeline :api do
@@ -18,7 +27,7 @@ defmodule RachelWeb.Router do
     pipe_through :browser
 
     get "/", PageController, :home
-    
+
     # Game routes
     live "/games/:id", GameLive
     live "/lobby", LobbyLive

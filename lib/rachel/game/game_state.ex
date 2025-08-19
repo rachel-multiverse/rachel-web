@@ -3,7 +3,8 @@ defmodule Rachel.Game.GameState do
   Manages the complete state of a Rachel game.
   """
 
-  alias Rachel.Game.{Card, Deck, Rules}
+  require Logger
+  alias Rachel.Game.{Card, Deck, DeckOperations, PlayValidator, EffectProcessor, TurnManager}
 
   @type status :: :waiting | :playing | :finished
   @type direction :: :clockwise | :counter_clockwise
@@ -22,7 +23,9 @@ defmodule Rachel.Game.GameState do
           winners: list(String.t()),
           turn_count: non_neg_integer(),
           created_at: DateTime.t(),
-          last_action_at: DateTime.t()
+          last_action_at: DateTime.t(),
+          deck_count: pos_integer(),
+          expected_total_cards: pos_integer()
         }
 
   defstruct [
@@ -39,22 +42,40 @@ defmodule Rachel.Game.GameState do
     winners: [],
     turn_count: 0,
     created_at: nil,
-    last_action_at: nil
+    last_action_at: nil,
+    deck_count: 1,
+    expected_total_cards: 52
   ]
 
   @doc """
   Creates a new game state with the given players.
+  Players can be strings (human) or {:ai, name, difficulty} tuples.
+  Options:
+    - deck_count: number of decks to use (default: 1)
   """
-  def new(player_names) when is_list(player_names) do
+  def new(player_list, opts \\ []) when is_list(player_list) do
+    deck_count = Keyword.get(opts, :deck_count, 1)
+
     players =
-      Enum.map(player_names, fn name ->
-        %{
-          id: Ecto.UUID.generate(),
-          name: name,
-          hand: [],
-          type: :human,
-          status: :playing
-        }
+      Enum.map(player_list, fn
+        {:ai, name, difficulty} ->
+          %{
+            id: Ecto.UUID.generate(),
+            name: name,
+            hand: [],
+            type: :ai,
+            difficulty: difficulty,
+            status: :playing
+          }
+
+        name when is_binary(name) ->
+          %{
+            id: Ecto.UUID.generate(),
+            name: name,
+            hand: [],
+            type: :human,
+            status: :playing
+          }
       end)
 
     %__MODULE__{
@@ -62,19 +83,30 @@ defmodule Rachel.Game.GameState do
       players: players,
       status: :waiting,
       created_at: DateTime.utc_now(),
-      last_action_at: DateTime.utc_now()
+      last_action_at: DateTime.utc_now(),
+      deck_count: deck_count,
+      expected_total_cards: deck_count * 52
     }
   end
 
   @doc """
   Starts the game by dealing cards and setting initial state.
   """
-  def start_game(%__MODULE__{players: players} = game) do
+  def start_game(%__MODULE__{players: players, deck_count: deck_count} = game) do
     player_count = length(players)
-    deck = Deck.new()
+    deck = Deck.new(deck_count)
+
+    # Debug logging
+    Logger.info(
+      "Starting game with #{player_count} players, #{deck_count} deck(s), deck size: #{length(deck)}"
+    )
 
     # Deal cards to players
     {hands, remaining_deck} = Deck.deal(deck, player_count)
+
+    # Debug logging
+    total_dealt = Enum.sum(Enum.map(hands, &length/1))
+    Logger.info("Dealt #{total_dealt} cards, remaining deck: #{length(remaining_deck)}")
 
     # Give each player their hand
     players_with_hands =
@@ -86,6 +118,13 @@ defmodule Rachel.Game.GameState do
 
     # Draw first card for discard pile
     {first_card, final_deck} = Deck.draw_one(remaining_deck)
+
+    # Debug logging
+    total_in_hands = players_with_hands |> Enum.map(&length(&1.hand)) |> Enum.sum()
+
+    Logger.info(
+      "Final setup - Cards in hands: #{total_in_hands}, Deck: #{length(final_deck)}, Discard: 1, Total: #{total_in_hands + length(final_deck) + 1}"
+    )
 
     %{
       game
@@ -102,53 +141,42 @@ defmodule Rachel.Game.GameState do
   Executes a play card action for the current player.
   """
   def play_cards(%__MODULE__{} = game, player_id, cards, nominated_suit \\ nil) do
-    with {:ok, player_index} <- get_player_index(game, player_id),
-         :ok <- validate_current_player(game, player_index),
-         :ok <- validate_cards_in_hand(game, player_index, cards),
-         :ok <- validate_play(game, cards),
-         {:ok, effects} <- calculate_and_validate_effects(cards, nominated_suit) do
-      {:ok,
-       game
-       |> remove_cards_from_hand(player_index, cards)
-       |> add_cards_to_discard(cards)
-       |> apply_effects(effects)
-       |> check_for_winner(player_index)
-       |> advance_turn()
-       |> update_timestamp()
-       |> increment_turn_count()}
-    else
-      error -> error
+    with :ok <- PlayValidator.validate_play(game, player_id, cards),
+         {:ok, player_idx} <- get_player_index(game, player_id) do
+      
+      {:ok, game
+      |> remove_cards_from_player(player_idx, cards)
+      |> add_cards_to_discard(cards)
+      |> EffectProcessor.apply_effects(cards, nominated_suit)
+      |> TurnManager.check_winner(player_idx)
+      |> TurnManager.advance_turn()
+      |> update_timestamp()
+      |> increment_turn_count()}
     end
   end
 
   @doc """
   Executes a draw card action for the current player.
-  After drawing from an attack, the player still gets their turn.
   """
   def draw_cards(%__MODULE__{} = game, player_id, reason \\ :cannot_play) do
-    with {:ok, player_index} <- get_player_index(game, player_id),
-         :ok <- validate_current_player(game, player_index) do
+    with :ok <- PlayValidator.validate_draw(game, player_id),
+         {:ok, player_idx} <- get_player_index(game, player_id) do
+      
       draw_count = calculate_draw_count(game, reason)
-
-      game =
-        game
-        |> draw_cards_from_deck(player_index, draw_count)
-        |> clear_pending_attack(reason)
-        |> update_timestamp()
-
-      # If drawing due to attack, player still gets their turn
-      # If drawing because cannot play, turn advances
+      {:ok, {drawn, new_deck, new_discard}} = 
+        DeckOperations.draw_cards(game.deck, game.discard_pile, draw_count)
+      
+      players = DeckOperations.add_to_hand(game.players, player_idx, drawn)
+      
+      game = %{game | players: players, deck: new_deck, discard_pile: new_discard}
+      |> clear_pending_attack(reason)
+      |> update_timestamp()
+      
       if reason == :attack do
-        # Don't advance turn, player can still play
         {:ok, game}
       else
-        {:ok,
-         game
-         |> advance_turn()
-         |> increment_turn_count()}
+        {:ok, game |> TurnManager.advance_turn() |> increment_turn_count()}
       end
-    else
-      error -> error
     end
   end
 
@@ -174,80 +202,10 @@ defmodule Rachel.Game.GameState do
     end
   end
 
-  defp validate_current_player(game, player_index) do
-    if player_index == game.current_player_index do
-      :ok
-    else
-      {:error, :not_your_turn}
-    end
-  end
 
-  defp validate_cards_in_hand(game, player_index, cards) do
-    player = Enum.at(game.players, player_index)
 
-    if Enum.all?(cards, &(&1 in player.hand)) do
-      :ok
-    else
-      {:error, :cards_not_in_hand}
-    end
-  end
-
-  defp validate_play(game, cards) do
-    cond do
-      not Rules.valid_stack?(cards) ->
-        {:error, :invalid_stack}
-
-      game.pending_attack != nil ->
-        validate_attack_response(game, cards)
-
-      true ->
-        validate_normal_play(game, cards)
-    end
-  end
-
-  defp validate_attack_response(game, cards) do
-    {attack_type, _} = game.pending_attack
-    first_card = List.first(cards)
-
-    if Rules.can_counter_attack?(first_card, attack_type) do
-      :ok
-    else
-      {:error, :invalid_counter}
-    end
-  end
-
-  defp validate_normal_play(game, cards) do
-    first_card = List.first(cards)
-    top = top_card(game)
-
-    if Rules.can_play_card?(first_card, top, game.nominated_suit) do
-      :ok
-    else
-      {:error, :invalid_play}
-    end
-  end
-
-  defp calculate_and_validate_effects(cards, nominated_suit) do
-    effects = Rules.calculate_effects(cards)
-
-    # Add suit nomination if Aces were played
-    effects =
-      if Map.get(effects, :nominate_suit) && Rules.valid_suit?(nominated_suit) do
-        Map.put(effects, :nominated_suit, nominated_suit)
-      else
-        effects
-      end
-
-    {:ok, effects}
-  end
-
-  defp remove_cards_from_hand(game, player_index, cards) do
-    players =
-      List.update_at(game.players, player_index, fn player ->
-        new_hand = Enum.reject(player.hand, &(&1 in cards))
-        Map.put(player, :hand, new_hand)
-      end)
-
+  defp remove_cards_from_player(game, player_idx, cards) do
+    players = DeckOperations.remove_from_hand(game.players, player_idx, cards)
     %{game | players: players}
   end
 
@@ -255,76 +213,7 @@ defmodule Rachel.Game.GameState do
     %{game | discard_pile: cards ++ game.discard_pile}
   end
 
-  defp apply_effects(game, effects) do
-    game
-    |> apply_attack(Map.get(effects, :attack))
-    |> apply_skip(Map.get(effects, :skip))
-    |> apply_reverse(Map.get(effects, :reverse))
-    |> apply_suit_nomination(Map.get(effects, :nominated_suit))
-  end
 
-  defp apply_attack(game, nil), do: game
-
-  defp apply_attack(game, attack) do
-    # Stack with existing attack if same type
-    new_attack =
-      case {game.pending_attack, attack} do
-        {nil, attack} -> attack
-        {{:twos, existing}, {:twos, new}} -> {:twos, existing + new}
-        {{:black_jacks, existing}, {:black_jacks, new}} -> {:black_jacks, existing + new}
-        _ -> attack
-      end
-
-    %{game | pending_attack: new_attack}
-  end
-
-  defp apply_skip(game, nil), do: game
-
-  defp apply_skip(game, skip_count) do
-    %{game | pending_skips: game.pending_skips + skip_count}
-  end
-
-  defp apply_reverse(game, nil), do: game
-
-  defp apply_reverse(game, true) do
-    new_direction = if game.direction == :clockwise, do: :counter_clockwise, else: :clockwise
-    %{game | direction: new_direction}
-  end
-
-  defp apply_suit_nomination(game, nil), do: game
-
-  defp apply_suit_nomination(game, suit) do
-    %{game | nominated_suit: suit}
-  end
-
-  defp check_for_winner(game, player_index) do
-    player = Enum.at(game.players, player_index)
-
-    if Enum.empty?(player.hand) do
-      winners = game.winners ++ [player.id]
-      players = List.update_at(game.players, player_index, &Map.put(&1, :status, :won))
-
-      %{game | winners: winners, players: players}
-    else
-      game
-    end
-  end
-
-  defp advance_turn(game) do
-    # Clear suit nomination (only affects next player)
-    game = %{game | nominated_suit: nil}
-
-    # Calculate next player considering skips
-    next_index =
-      Rules.next_player_index(
-        game.current_player_index,
-        length(game.players),
-        game.direction,
-        game.pending_skips
-      )
-
-    %{game | current_player_index: next_index, pending_skips: 0}
-  end
 
   defp calculate_draw_count(_game, :cannot_play), do: 1
 
@@ -336,46 +225,6 @@ defmodule Rachel.Game.GameState do
     end
   end
 
-  defp draw_cards_from_deck(game, player_index, count) do
-    {drawn, new_deck} = draw_with_reshuffle(game.deck, game.discard_pile, count)
-
-    players =
-      List.update_at(game.players, player_index, fn player ->
-        Map.put(player, :hand, player.hand ++ drawn)
-      end)
-
-    %{game | players: players, deck: new_deck}
-  end
-
-  defp draw_with_reshuffle(deck, discard, count) do
-    available = length(deck)
-
-    if available >= count do
-      Deck.draw(deck, count)
-    else
-      # Draw what we can from deck
-      {first_batch, _} = if available > 0, do: Deck.draw(deck, available), else: {[], []}
-
-      # Check if we can reshuffle (need more than just top card)
-      if length(discard) > 1 do
-        needed = count - available
-        {_top_card, reshuffled} = Deck.reshuffle_discard(discard)
-
-        # Draw remaining cards if possible
-        cards_to_draw = min(needed, length(reshuffled))
-
-        if cards_to_draw > 0 do
-          {second_batch, final_deck} = Deck.draw(reshuffled, cards_to_draw)
-          {first_batch ++ second_batch, final_deck}
-        else
-          {first_batch, reshuffled}
-        end
-      else
-        # Can't reshuffle with only top card, return what we have
-        {first_batch, []}
-      end
-    end
-  end
 
   defp clear_pending_attack(game, :attack) do
     %{game | pending_attack: nil}
@@ -390,4 +239,19 @@ defmodule Rachel.Game.GameState do
   defp increment_turn_count(game) do
     %{game | turn_count: game.turn_count + 1}
   end
+
+  @doc """
+  Validates game state integrity.
+  """
+  def validate_integrity(%__MODULE__{status: :waiting}), do: :ok
+  def validate_integrity(game) do
+    DeckOperations.validate_card_count(
+      game.players, game.deck, game.discard_pile, game.expected_total_cards
+    )
+  end
+
+  @doc """
+  Checks if the game should end.
+  """
+  def should_end?(game), do: TurnManager.should_end?(game)
 end

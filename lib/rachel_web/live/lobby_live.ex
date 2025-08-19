@@ -26,17 +26,17 @@ defmodule RachelWeb.LobbyLive do
           <h1 class="text-6xl font-bold text-white mb-4">Rachel</h1>
           <p class="text-xl text-green-200">The Classic Card Game</p>
         </div>
-
-        <!-- Create Game Section -->
+        
+    <!-- Create Game Section -->
         <div class="bg-white rounded-lg shadow-xl p-8 mb-8">
           <h2 class="text-2xl font-bold mb-4">Quick Play</h2>
-          
+
           <form phx-submit="create_game" class="space-y-4">
             <div>
               <label class="block text-sm font-medium mb-2">Your Name</label>
-              <input 
-                type="text" 
-                name="player_name" 
+              <input
+                type="text"
+                name="player_name"
                 value={@player_name}
                 phx-change="update_name"
                 placeholder="Enter your name"
@@ -46,7 +46,7 @@ defmodule RachelWeb.LobbyLive do
             </div>
 
             <div class="flex gap-4">
-              <button 
+              <button
                 type="submit"
                 name="game_type"
                 value="ai"
@@ -55,8 +55,8 @@ defmodule RachelWeb.LobbyLive do
               >
                 Play vs AI
               </button>
-              
-              <button 
+
+              <button
                 type="submit"
                 name="game_type"
                 value="multiplayer"
@@ -68,11 +68,11 @@ defmodule RachelWeb.LobbyLive do
             </div>
           </form>
         </div>
-
-        <!-- Active Games -->
+        
+    <!-- Active Games -->
         <div class="bg-white rounded-lg shadow-xl p-8">
           <h2 class="text-2xl font-bold mb-4">Active Games</h2>
-          
+
           <%= if @games == [] do %>
             <p class="text-gray-500 text-center py-8">No active games. Create one to get started!</p>
           <% else %>
@@ -80,15 +80,15 @@ defmodule RachelWeb.LobbyLive do
               <%= for game <- @games do %>
                 <div class="border rounded-lg p-4 flex justify-between items-center hover:bg-gray-50">
                   <div>
-                    <div class="font-semibold">Game <%= String.slice(game.id, 0..7) %></div>
+                    <div class="font-semibold">Game {String.slice(game.id, 0..7)}</div>
                     <div class="text-sm text-gray-600">
-                      Players: <%= game.player_count %> | 
-                      Status: <%= game.status %>
+                      Players: {game.player_count} |
+                      Status: {game.status}
                     </div>
                   </div>
-                  
+
                   <%= if game.status == :waiting do %>
-                    <button 
+                    <button
                       phx-click="join_game"
                       phx-value-game-id={game.id}
                       class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded"
@@ -97,7 +97,7 @@ defmodule RachelWeb.LobbyLive do
                       Join Game
                     </button>
                   <% else %>
-                    <button 
+                    <button
                       phx-click="spectate_game"
                       phx-value-game-id={game.id}
                       class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded"
@@ -110,8 +110,8 @@ defmodule RachelWeb.LobbyLive do
             </div>
           <% end %>
         </div>
-
-        <!-- Instructions -->
+        
+    <!-- Instructions -->
         <div class="mt-8 bg-white/10 rounded-lg p-6 text-white">
           <h3 class="text-lg font-semibold mb-2">How to Play</h3>
           <ul class="text-sm space-y-1 text-green-100">
@@ -176,14 +176,7 @@ defmodule RachelWeb.LobbyLive do
 
   defp create_game_with_type(player_name, "ai") do
     # Create a game with AI players
-    players = [
-      player_name,
-      "AI Player 1",
-      "AI Player 2",
-      "AI Player 3"
-    ]
-
-    case GameManager.create_game(players) do
+    case GameManager.create_ai_game(player_name, 3, :medium) do
       {:ok, game_id} ->
         # Auto-start AI games
         GameManager.start_game(game_id)
