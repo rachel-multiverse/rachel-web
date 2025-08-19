@@ -32,18 +32,18 @@ defmodule Rachel.Game.PlayValidator do
   end
 
   # Private validation functions
-  
+
   defp validate_no_duplicates(cards) do
     frequencies = Enum.frequencies(cards)
     duplicates = Enum.filter(frequencies, fn {_card, count} -> count > 1 end)
-    
+
     if Enum.any?(duplicates) do
       {:error, :duplicate_cards_in_play}
     else
       :ok
     end
   end
-  
+
   defp find_player(game, player_id) do
     case Enum.find_index(game.players, &(&1.id == player_id)) do
       nil -> {:error, :player_not_found}
@@ -61,6 +61,7 @@ defmodule Rachel.Game.PlayValidator do
 
   defp validate_player_active(game, player_idx) do
     player = Enum.at(game.players, player_idx)
+
     if player.status == :won do
       {:error, :player_already_won}
     else
@@ -70,6 +71,7 @@ defmodule Rachel.Game.PlayValidator do
 
   defp validate_cards_in_hand(game, player_idx, cards) do
     player = Enum.at(game.players, player_idx)
+
     if Enum.all?(cards, &(&1 in player.hand)) do
       :ok
     else
@@ -87,6 +89,7 @@ defmodule Rachel.Game.PlayValidator do
 
   defp validate_counter(game, cards) do
     {attack_type, _} = game.pending_attack
+
     if Rules.can_counter_attack?(hd(cards), attack_type) do
       :ok
     else
@@ -96,6 +99,7 @@ defmodule Rachel.Game.PlayValidator do
 
   defp validate_normal_play(game, cards) do
     top = hd(game.discard_pile)
+
     if Rules.can_play_card?(hd(cards), top, game.nominated_suit) do
       :ok
     else

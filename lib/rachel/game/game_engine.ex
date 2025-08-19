@@ -138,7 +138,6 @@ defmodule Rachel.Game.GameEngine do
   # Consolidated Safety Functions
 
   defp safe_execute(game, operation) do
-
     try do
       result = operation.(game)
 

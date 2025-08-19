@@ -11,12 +11,13 @@ defmodule Rachel.Game.TurnManager do
     # Clear suit nomination (only affects next player)
     game = %{game | nominated_suit: nil}
 
-    next_index = find_next_active_player(
-      game.current_player_index,
-      game.players,
-      game.direction,
-      game.pending_skips
-    )
+    next_index =
+      find_next_active_player(
+        game.current_player_index,
+        game.players,
+        game.direction,
+        game.pending_skips
+      )
 
     %{game | current_player_index: next_index, pending_skips: 0}
   end
@@ -34,7 +35,7 @@ defmodule Rachel.Game.TurnManager do
   """
   def check_winner(game, player_index) do
     player = Enum.at(game.players, player_index)
-    
+
     if Enum.empty?(player.hand) do
       winners = game.winners ++ [player.id]
       players = List.update_at(game.players, player_index, &Map.put(&1, :status, :won))
@@ -59,10 +60,11 @@ defmodule Rachel.Game.TurnManager do
 
   defp find_active_player(index, players, direction, player_count, attempts) do
     if attempts >= player_count do
-      index  # Prevent infinite loops
+      # Prevent infinite loops
+      index
     else
       player = Enum.at(players, index)
-      
+
       if player.status == :won do
         step = if direction == :clockwise, do: 1, else: -1
         next_index = Integer.mod(index + step, player_count)

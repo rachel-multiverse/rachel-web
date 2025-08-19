@@ -127,8 +127,9 @@ defmodule Rachel.Game.GameStateTest do
 
     test "rejects cards not in hand", %{game: game, player: player} do
       # Create a card we know is NOT in the hand - use a unique combination
-      fake_card = %Card{rank: 1, suit: :test_suit}  # Invalid card that won't exist
-      
+      # Invalid card that won't exist
+      fake_card = %Card{rank: 1, suit: :test_suit}
+
       # Verify this card is not in the player's hand
       refute fake_card in player.hand
 

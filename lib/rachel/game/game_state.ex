@@ -143,15 +143,15 @@ defmodule Rachel.Game.GameState do
   def play_cards(%__MODULE__{} = game, player_id, cards, nominated_suit \\ nil) do
     with :ok <- PlayValidator.validate_play(game, player_id, cards),
          {:ok, player_idx} <- get_player_index(game, player_id) do
-      
-      {:ok, game
-      |> remove_cards_from_player(player_idx, cards)
-      |> add_cards_to_discard(cards)
-      |> EffectProcessor.apply_effects(cards, nominated_suit)
-      |> TurnManager.check_winner(player_idx)
-      |> TurnManager.advance_turn()
-      |> update_timestamp()
-      |> increment_turn_count()}
+      {:ok,
+       game
+       |> remove_cards_from_player(player_idx, cards)
+       |> add_cards_to_discard(cards)
+       |> EffectProcessor.apply_effects(cards, nominated_suit)
+       |> TurnManager.check_winner(player_idx)
+       |> TurnManager.advance_turn()
+       |> update_timestamp()
+       |> increment_turn_count()}
     end
   end
 
@@ -161,17 +161,18 @@ defmodule Rachel.Game.GameState do
   def draw_cards(%__MODULE__{} = game, player_id, reason \\ :cannot_play) do
     with :ok <- PlayValidator.validate_draw(game, player_id),
          {:ok, player_idx} <- get_player_index(game, player_id) do
-      
       draw_count = calculate_draw_count(game, reason)
-      {:ok, {drawn, new_deck, new_discard}} = 
+
+      {:ok, {drawn, new_deck, new_discard}} =
         DeckOperations.draw_cards(game.deck, game.discard_pile, draw_count)
-      
+
       players = DeckOperations.add_to_hand(game.players, player_idx, drawn)
-      
-      game = %{game | players: players, deck: new_deck, discard_pile: new_discard}
-      |> clear_pending_attack(reason)
-      |> update_timestamp()
-      
+
+      game =
+        %{game | players: players, deck: new_deck, discard_pile: new_discard}
+        |> clear_pending_attack(reason)
+        |> update_timestamp()
+
       if reason == :attack do
         {:ok, game}
       else
@@ -202,8 +203,6 @@ defmodule Rachel.Game.GameState do
     end
   end
 
-
-
   defp remove_cards_from_player(game, player_idx, cards) do
     players = DeckOperations.remove_from_hand(game.players, player_idx, cards)
     %{game | players: players}
@@ -212,8 +211,6 @@ defmodule Rachel.Game.GameState do
   defp add_cards_to_discard(game, cards) do
     %{game | discard_pile: cards ++ game.discard_pile}
   end
-
-
 
   defp calculate_draw_count(_game, :cannot_play), do: 1
 
@@ -224,7 +221,6 @@ defmodule Rachel.Game.GameState do
       _ -> 1
     end
   end
-
 
   defp clear_pending_attack(game, :attack) do
     %{game | pending_attack: nil}
@@ -244,9 +240,13 @@ defmodule Rachel.Game.GameState do
   Validates game state integrity.
   """
   def validate_integrity(%__MODULE__{status: :waiting}), do: :ok
+
   def validate_integrity(game) do
     DeckOperations.validate_card_count(
-      game.players, game.deck, game.discard_pile, game.expected_total_cards
+      game.players,
+      game.deck,
+      game.discard_pile,
+      game.expected_total_cards
     )
   end
 

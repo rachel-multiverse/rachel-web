@@ -1,8 +1,9 @@
 defmodule RachelWeb.GameLive do
   use RachelWeb, :live_view
 
-  alias Rachel.GameManager
   alias Rachel.Game.Card
+  alias Rachel.GameManager
+  alias RachelWeb.GameLive.{GameHelpers, ViewHelpers}
 
   @impl true
   def mount(%{"id" => game_id}, _session, socket) do
@@ -142,14 +143,14 @@ defmodule RachelWeb.GameLive do
                 <%= for card <- you.hand do %>
                   <% is_playable =
                     @game.current_player_index == 0 &&
-                      (card in @selected_cards || is_card_playable?(@game, card, @selected_cards)) %>
+                      (card in @selected_cards || card_playable?(@game, card, @selected_cards)) %>
                   <.card_display
                     card={card}
                     clickable={is_playable}
                     selected={card in @selected_cards}
                     playable={
                       @game.current_player_index == 0 &&
-                        is_card_playable?(@game, card, @selected_cards)
+                        card_playable?(@game, card, @selected_cards)
                     }
                     in_hand={true}
                     phx-click={if is_playable, do: "toggle_card", else: nil}
@@ -273,7 +274,7 @@ defmodule RachelWeb.GameLive do
       {:noreply, assign(socket, :selected_cards, selected_cards)}
     else
       # Only allow selecting cards that are playable
-      if is_card_playable?(socket.assigns.game, card, socket.assigns.selected_cards) do
+      if card_playable?(socket.assigns.game, card, socket.assigns.selected_cards) do
         selected_cards = socket.assigns.selected_cards ++ [card]
         {:noreply, assign(socket, :selected_cards, selected_cards)}
       else
@@ -397,107 +398,26 @@ defmodule RachelWeb.GameLive do
      |> assign(:show_suit_modal, false)}
   end
 
-  # Helper functions
+  # Helper functions - delegated to modules
 
-  defp current_player(game) do
-    Enum.at(game.players, game.current_player_index)
+  defdelegate current_player(game), to: GameHelpers
+  defdelegate current_player_name(game), to: GameHelpers
+  defdelegate card_color_class(card), to: ViewHelpers
+  defdelegate rank_display(card), to: ViewHelpers
+  defdelegate suit_symbol(card), to: ViewHelpers
+  defdelegate direction_symbol(direction), to: ViewHelpers
+  defdelegate needs_suit_nomination?(cards), to: GameHelpers
+  defdelegate attack_description(attack), to: ViewHelpers
+  defdelegate draw_button_text(game), to: ViewHelpers
+  defdelegate has_valid_plays?(game, player), to: GameHelpers
+  defdelegate smart_button_text(game, player), to: GameHelpers
+
+  # Use renamed function without 'is_' prefix
+  defp card_playable?(game, card, selected_cards) do
+    GameHelpers.card_playable?(game, card, selected_cards)
   end
 
-  defp current_player_name(game) do
-    player = current_player(game)
-    if player, do: player.name, else: "Unknown"
-  end
-
-  defp card_color_class(%Card{suit: suit}) when suit in [:hearts, :diamonds] do
-    "text-red-600"
-  end
-
-  defp card_color_class(_), do: "text-gray-900"
-
-  defp rank_display(%Card{rank: 11}), do: "J"
-  defp rank_display(%Card{rank: 12}), do: "Q"
-  defp rank_display(%Card{rank: 13}), do: "K"
-  defp rank_display(%Card{rank: 14}), do: "A"
-  defp rank_display(%Card{rank: rank}), do: to_string(rank)
-
-  defp suit_symbol(%Card{suit: :hearts}), do: "♥"
-  defp suit_symbol(%Card{suit: :diamonds}), do: "♦"
-  defp suit_symbol(%Card{suit: :clubs}), do: "♣"
-  defp suit_symbol(%Card{suit: :spades}), do: "♠"
-
-  defp direction_symbol(:clockwise), do: "↻"
-  defp direction_symbol(:counter_clockwise), do: "↺"
-
-  defp needs_suit_nomination?(cards) do
-    Enum.any?(cards, fn card -> card.rank == 14 end)
-  end
-
-  defp attack_description({:twos, count}), do: "Draw #{count}"
-  defp attack_description({:black_jacks, count}), do: "Draw #{count}"
-
-  defp draw_button_text(%{pending_attack: nil}), do: "Draw Card"
-  defp draw_button_text(%{pending_attack: {_, count}}), do: "Draw #{count} Cards"
-
-  defp smart_button_text(game, player) do
-    cond do
-      # Under attack - must draw
-      game.pending_attack != nil ->
-        draw_button_text(game)
-
-      # Check if player has valid plays
-      player && has_valid_plays?(game, player) ->
-        "Select cards to play"
-
-      # No valid plays - can draw
-      true ->
-        "Draw Card"
-    end
-  end
-
-  defp has_valid_plays?(game, player) do
-    top_card = hd(game.discard_pile)
-
-    Enum.any?(player.hand, fn card ->
-      Rachel.Game.Rules.can_play_card?(card, top_card, game.nominated_suit)
-    end)
-  end
-
-  defp is_card_playable?(game, card, selected_cards) do
-    cond do
-      # If no cards selected, check basic playability
-      Enum.empty?(selected_cards) ->
-        is_card_playable_standalone?(game, card)
-
-      # If cards already selected, check if this card can stack with them
-      true ->
-        can_stack_with_selected?(card, selected_cards)
-    end
-  end
-
-  defp is_card_playable_standalone?(game, card) do
-    cond do
-      # Under attack - can only play counter cards
-      game.pending_attack != nil ->
-        {attack_type, _} = game.pending_attack
-        Rachel.Game.Rules.can_counter_attack?(card, attack_type)
-
-      # Normal play
-      true ->
-        top_card = hd(game.discard_pile)
-        Rachel.Game.Rules.can_play_card?(card, top_card, game.nominated_suit)
-    end
-  end
-
-  defp can_stack_with_selected?(card, selected_cards) do
-    # Can only stack cards of the same rank
-    first_selected = hd(selected_cards)
-    card.rank == first_selected.rank
-  end
-
-  defp error_message(:not_your_turn), do: "It's not your turn"
-  defp error_message(:invalid_play), do: "Invalid card play"
-  defp error_message(:cards_not_in_hand), do: "Selected cards not in hand"
-  defp error_message(other), do: "Error: #{inspect(other)}"
+  defdelegate error_message(error), to: ViewHelpers
 
   defp maybe_to_atom(nil), do: nil
   defp maybe_to_atom(str) when is_binary(str), do: String.to_existing_atom(str)
