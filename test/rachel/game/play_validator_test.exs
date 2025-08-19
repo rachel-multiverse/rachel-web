@@ -119,6 +119,20 @@ defmodule Rachel.Game.PlayValidatorTest do
       cards = [Card.new(:hearts, 5)]
       assert {:error, :player_already_won} = PlayValidator.validate_play(game, "p1", cards)
     end
+
+    test "validates 7s can counter pending skips", %{game: game} do
+      game = %{game | pending_skips: 2}
+      # Player has a 7 to counter
+      cards = [Card.new(:hearts, 7)]
+      assert :ok = PlayValidator.validate_play(game, "p1", cards)
+    end
+
+    test "rejects non-7s when facing pending skips", %{game: game} do
+      game = %{game | pending_skips: 2}
+      # Hearts 5 cannot counter skips - must play 7 or be skipped
+      cards = [Card.new(:hearts, 5)]
+      assert {:error, :invalid_counter} = PlayValidator.validate_play(game, "p1", cards)
+    end
   end
 
   describe "validate_draw/2" do

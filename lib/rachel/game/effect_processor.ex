@@ -4,12 +4,30 @@ defmodule Rachel.Game.EffectProcessor do
   Extracted from GameState for better separation of concerns.
   """
 
-  alias Rachel.Game.Rules
+  alias Rachel.Game.{Card, Rules}
 
   @doc """
   Applies all effects from played cards to the game state.
   """
   def apply_effects(game, cards, nominated_suit \\ nil) do
+    # Check if we're playing Red Jacks against a Black Jack attack
+    if game.pending_attack do
+      {attack_type, _count} = game.pending_attack
+
+      if attack_type == :black_jacks && Enum.any?(cards, &Card.red_jack?/1) do
+        # Red Jacks cancel Black Jack attacks
+        apply_red_jack_cancellation(game, cards)
+      else
+        # Normal effect processing
+        apply_normal_effects(game, cards, nominated_suit)
+      end
+    else
+      # No pending attack, process normally
+      apply_normal_effects(game, cards, nominated_suit)
+    end
+  end
+
+  defp apply_normal_effects(game, cards, nominated_suit) do
     effects = Rules.calculate_effects(cards)
 
     # Add suit nomination for Aces if provided
@@ -25,6 +43,12 @@ defmodule Rachel.Game.EffectProcessor do
     |> apply_skip(effects[:skip])
     |> apply_reverse(effects[:reverse])
     |> apply_suit_nomination(effects[:nominated_suit])
+  end
+
+  defp apply_red_jack_cancellation(game, cards) do
+    red_jack_count = Enum.count(cards, &Card.red_jack?/1)
+    new_attack = Rules.reduce_attack(game.pending_attack, red_jack_count)
+    %{game | pending_attack: new_attack}
   end
 
   # Effect application functions

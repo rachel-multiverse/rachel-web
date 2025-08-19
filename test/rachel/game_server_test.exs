@@ -87,9 +87,16 @@ defmodule Rachel.GameServerTest do
         # Card should be on discard pile
         assert hd(new_game.discard_pile) == valid_card
 
-        # Turn should advance (for 2 players, will go 0->1 or 1->0)
-        expected_next = if game.current_player_index == 0, do: 1, else: 0
-        assert new_game.current_player_index == expected_next
+        # Turn should advance unless it's a special card with skip effect
+        # Queens reverse direction but still advance turn
+        # 7s skip, but that would make next player be the same in 2-player game
+        if valid_card.rank == 7 and length(game.players) == 2 do
+          # In 2-player game, skip returns to same player
+          assert new_game.current_player_index == game.current_player_index
+        else
+          expected_next = if game.current_player_index == 0, do: 1, else: 0
+          assert new_game.current_player_index == expected_next
+        end
       end
     end
 

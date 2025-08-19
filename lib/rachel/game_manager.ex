@@ -3,7 +3,7 @@ defmodule Rachel.GameManager do
   High-level API for managing Rachel games.
   """
 
-  alias Rachel.Game.{GameSupervisor, GameEngine}
+  alias Rachel.Game.{GameEngine, GameSupervisor}
 
   @doc """
   Creates a new game with the given players.

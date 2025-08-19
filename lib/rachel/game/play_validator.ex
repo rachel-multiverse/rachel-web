@@ -80,8 +80,18 @@ defmodule Rachel.Game.PlayValidator do
   defp validate_play_rules(game, cards) do
     cond do
       not Rules.valid_stack?(cards) -> {:error, :invalid_stack}
+      game.pending_skips && game.pending_skips > 0 -> validate_skip_counter(game, cards)
       game.pending_attack -> validate_counter(game, cards)
       true -> validate_normal_play(game, cards)
+    end
+  end
+
+  defp validate_skip_counter(_game, cards) do
+    # When facing skips, can only play 7s
+    if Rules.can_counter_skip?(hd(cards)) do
+      :ok
+    else
+      {:error, :invalid_counter}
     end
   end
 

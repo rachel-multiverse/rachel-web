@@ -111,6 +111,46 @@ defmodule Rachel.Game.EffectProcessorTest do
       assert result == game
     end
 
+    test "Red Jack cancels Black Jack attack", %{game: game} do
+      game = %{game | pending_attack: {:black_jacks, 5}}
+      cards = [Card.new(:hearts, 11)]  # One Red Jack
+      result = EffectProcessor.apply_effects(game, cards)
+      # One Red Jack cancels 5 cards, reducing 5 to 0
+      assert result.pending_attack == nil
+    end
+
+    test "Red Jack partially reduces Black Jack attack", %{game: game} do
+      game = %{game | pending_attack: {:black_jacks, 10}}
+      cards = [Card.new(:hearts, 11)]  # One Red Jack
+      result = EffectProcessor.apply_effects(game, cards)
+      # One Red Jack reduces by 5: 10 - 5 = 5
+      assert result.pending_attack == {:black_jacks, 5}
+    end
+
+    test "multiple Red Jacks stack their cancellation", %{game: game} do
+      game = %{game | pending_attack: {:black_jacks, 15}}
+      cards = [Card.new(:hearts, 11), Card.new(:diamonds, 11)]  # Two Red Jacks
+      result = EffectProcessor.apply_effects(game, cards)
+      # Two Red Jacks reduce by 10: 15 - 10 = 5
+      assert result.pending_attack == {:black_jacks, 5}
+    end
+
+    test "Red Jacks can over-cancel Black Jack attack", %{game: game} do
+      game = %{game | pending_attack: {:black_jacks, 5}}
+      cards = [Card.new(:hearts, 11), Card.new(:diamonds, 11)]  # Two Red Jacks
+      result = EffectProcessor.apply_effects(game, cards)
+      # Two Red Jacks reduce by 10, more than the 5 penalty
+      assert result.pending_attack == nil
+    end
+
+    test "Red Jacks don't affect 2s attacks", %{game: game} do
+      game = %{game | pending_attack: {:twos, 4}}
+      cards = [Card.new(:hearts, 11)]  # Red Jack
+      result = EffectProcessor.apply_effects(game, cards)
+      # Red Jack has no effect on 2s attack - processes normally
+      assert result.pending_attack == {:twos, 4}
+    end
+
     test "multiple stacked cards of same rank", %{game: game} do
       # Three 7s
       cards = [Card.new(:hearts, 7), Card.new(:diamonds, 7), Card.new(:clubs, 7)]
