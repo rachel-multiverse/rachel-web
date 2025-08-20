@@ -372,8 +372,10 @@ defmodule Rachel.Game.EdgeCasesTest do
 
       # P1 should win even though card has skip effect
       assert "p1" in new_game.winners
-      # Skip effect still applies even when winning
-      assert new_game.pending_skips == 1
+      # Skip effect was applied during turn advancement
+      assert new_game.pending_skips == 0
+      # In 2-player game with skip, would return to P1, but P1 won, so goes to P2
+      assert new_game.current_player_index == 1
     end
   end
 

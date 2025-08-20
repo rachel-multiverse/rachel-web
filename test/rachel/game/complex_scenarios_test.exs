@@ -109,13 +109,15 @@ defmodule Rachel.Game.ComplexScenariosTest do
       
       # Player 1 plays 7 (skip)
       {:ok, game} = GameState.play_cards(game, "p1", [Card.new(:spades, 7)])
-      assert game.pending_skips == 1
-      assert game.current_player_index == 1  # Player 2 (clockwise)
+      # Skip is applied immediately, skipping Player 2
+      assert game.pending_skips == 0
+      assert game.current_player_index == 2  # Player 3 (skipped Player 2)
       
-      # Player 2 plays 7 to counter the skip
-      {:ok, game} = GameState.play_cards(game, "p2", [Card.new(:hearts, 7)])
-      assert game.pending_skips == 2  # Stacks
-      assert game.current_player_index == 2  # Player 3
+      # Player 3 plays 7 
+      {:ok, game} = GameState.play_cards(game, "p3", [Card.new(:diamonds, 7)])
+      # Skip is applied immediately, skipping Player 4
+      assert game.pending_skips == 0
+      assert game.current_player_index == 0  # Back to Player 1
     end
 
     test "Maximum stacking scenario", %{game: game} do
@@ -139,21 +141,22 @@ defmodule Rachel.Game.ComplexScenariosTest do
       ]
       {:ok, game} = GameState.play_cards(game, "p1", all_sevens)
       
-      # Should skip 4 players - in 4-player game, that brings us back to Player 1
-      assert game.pending_skips == 4
-      assert game.current_player_index == 1  # Next player (Player 2)
+      # Skips are applied immediately - skip 4 players
+      # In 4-player game: from P1, skip P2, P3, P4, P1, land on P2
+      assert game.pending_skips == 0  # Applied immediately
+      assert game.current_player_index == 1  # Lands on Player 2
       
-      # Player 2 has no 7s, so gets skipped
+      # Player 2 can now play normally
       {:ok, game} = GameState.draw_cards(game, "p2", :cannot_play)
       assert game.current_player_index == 2  # Player 3
-      assert game.pending_skips == 3  # One skip used
+      assert game.pending_skips == 0  # All skips were already applied
       
-      # Player 3 has 7, must play it
+      # Player 3 can play a 7
       {:ok, game} = GameState.play_cards(game, "p3", [Card.new(:diamonds, 7)])
-      assert game.pending_skips == 4  # Back to 4 (3 + 1)
-      
-      # This should create a very long skip chain
-      assert game.pending_skips > 0
+      # Skip applied immediately, skipping Player 4
+      assert game.pending_skips == 0
+      # From Player 3, skip Player 4, would land on Player 1 but P1 won, so goes to Player 2
+      assert game.current_player_index == 1
     end
 
     test "Deck exhaustion during complex attack sequence", %{game: game} do
