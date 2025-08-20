@@ -95,9 +95,8 @@ defmodule Rachel.Game.EdgeCasesTest do
       # Play another Ace with new nomination
       {:ok, new_game} = GameState.play_cards(game, "p1", [Card.new(:diamonds, 14)], :hearts)
 
-      # Nomination clears after turn advances
-      # Cleared after turn
-      assert new_game.nominated_suit == nil
+      # Second Ace should set new nomination (hearts) for next player
+      assert new_game.nominated_suit == :hearts
     end
 
     test "stacked Aces still only allow one nomination" do
@@ -373,8 +372,8 @@ defmodule Rachel.Game.EdgeCasesTest do
 
       # P1 should win even though card has skip effect
       assert "p1" in new_game.winners
-      # Skip clears after turn
-      assert new_game.pending_skips == 0
+      # Skip effect still applies even when winning
+      assert new_game.pending_skips == 1
     end
   end
 

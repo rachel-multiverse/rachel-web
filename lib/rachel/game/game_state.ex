@@ -76,6 +76,10 @@ defmodule Rachel.Game.GameState do
             type: :human,
             status: :playing
           }
+          
+        player_map when is_map(player_map) ->
+          # Allow pre-formed player maps (for testing)
+          player_map
       end)
 
     %__MODULE__{
@@ -143,13 +147,16 @@ defmodule Rachel.Game.GameState do
   def play_cards(%__MODULE__{} = game, player_id, cards, nominated_suit \\ nil) do
     with :ok <- PlayValidator.validate_play(game, player_id, cards),
          {:ok, player_idx} <- get_player_index(game, player_id) do
+      # Clear any existing nomination BEFORE playing (it was for this turn)
+      game_after_clear = if game.nominated_suit, do: %{game | nominated_suit: nil}, else: game
+      
       {:ok,
-       game
+       game_after_clear
        |> remove_cards_from_player(player_idx, cards)
        |> add_cards_to_discard(cards)
-       |> EffectProcessor.apply_effects(cards, nominated_suit)
+       |> EffectProcessor.apply_effects(cards, nominated_suit)  # May set new nomination
        |> TurnManager.check_winner(player_idx)
-       |> TurnManager.advance_turn()
+       |> TurnManager.advance_turn()  # Keeps new nominations
        |> update_timestamp()
        |> increment_turn_count()}
     end

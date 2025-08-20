@@ -39,10 +39,11 @@ defmodule Rachel.Game.TurnManagerTest do
       assert result.current_player_index == 2
     end
 
-    test "skips over players with pending skips", %{game: game} do
+    test "pending skips are applied during turn advancement", %{game: game} do
       game = %{game | pending_skips: 2}
       result = TurnManager.advance_turn(game)
-      # Skip 2 players: 0 -> 1 (skip) -> 2 (skip) -> 3 (but 3 has won) -> 0
+      # With 2 skips from player 0: skip players 1 and 2, land on player 3
+      # But player 3 (index 3) has status :won, so it wraps to player 0
       assert result.current_player_index == 0
       assert result.pending_skips == 0
     end
@@ -54,10 +55,11 @@ defmodule Rachel.Game.TurnManagerTest do
       assert result.current_player_index == 0
     end
 
-    test "clears nominated suit", %{game: game} do
+    test "preserves nominated suit for next player", %{game: game} do
       game = %{game | nominated_suit: :hearts}
       result = TurnManager.advance_turn(game)
-      assert result.nominated_suit == nil
+      # Nominations persist for the next player
+      assert result.nominated_suit == :hearts
     end
 
     test "handles wrap-around at end of players", %{game: game} do

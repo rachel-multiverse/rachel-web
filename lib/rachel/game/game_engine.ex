@@ -236,12 +236,14 @@ defmodule Rachel.Game.GameEngine do
   end
 
   defp validate_normal(game, cards) do
-    top = hd(game.discard_pile)
-
-    if Rules.can_play_card?(hd(cards), top, game.nominated_suit) do
-      :ok
-    else
-      {:error, :invalid_play}
+    case game.discard_pile do
+      [] -> {:error, :no_discard_pile}
+      [top | _] ->
+        if Rules.can_play_card?(hd(cards), top, game.nominated_suit) do
+          :ok
+        else
+          {:error, :invalid_play}
+        end
     end
   end
 
