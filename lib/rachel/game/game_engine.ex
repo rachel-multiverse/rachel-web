@@ -114,11 +114,47 @@ defmodule Rachel.Game.GameEngine do
     {:reply, {:error, :cannot_join}, state}
   end
 
-  def handle_call({:leave, _player_id}, _from, state) do
-    # Implementation for player removal
-    {:reply, :ok, state}
+  def handle_call({:leave, player_id}, _from, state) do
+    # Mark player as disconnected but keep in game
+    players = 
+      Enum.map(state.game.players, fn player ->
+        if player.id == player_id do
+          Map.put(player, :connection_status, :disconnected)
+        else
+          player
+        end
+      end)
+    
+    new_game = %{state.game | players: players}
+    new_state = %{state | game: new_game}
+    broadcast(new_game, :player_left)
+    
+    {:reply, :ok, new_state}
   end
 
+  def handle_cast({:player_timeout, player_id}, state) do
+    # Convert disconnected player to AI or skip their turns
+    Logger.warning("Player #{player_id} timed out, converting to AI")
+    
+    players = 
+      Enum.map(state.game.players, fn player ->
+        if player.id == player_id do
+          player
+          |> Map.put(:type, :ai)
+          |> Map.put(:difficulty, :medium)
+          |> Map.put(:connection_status, :timeout)
+        else
+          player
+        end
+      end)
+    
+    new_game = %{state.game | players: players}
+    new_state = %{state | game: new_game} |> schedule_ai()
+    
+    broadcast(new_game, :player_timeout)
+    {:noreply, new_state}
+  end
+  
   def handle_info(:ai_turn, %{game: game} = state) do
     case process_ai_turn(game) do
       {:ok, new_game} ->

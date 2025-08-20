@@ -34,6 +34,15 @@ defmodule RachelWeb.GameLive do
   def render(assigns) do
     ~H"""
     <div class="game-container min-h-screen bg-green-900 p-4" id="game-sounds" phx-hook="GameSounds">
+      <!-- Connection Status Indicator -->
+      <div id="connection-status" phx-hook="ConnectionStatus" class="fixed top-4 right-4 z-50 bg-white rounded-lg px-3 py-2 shadow-lg">
+        <span class="status-text text-sm font-medium">🟢 Connected</span>
+      </div>
+      
+      <!-- Session Persistence -->
+      <div id="session-persistence" phx-hook="SessionPersistence" class="hidden"></div>
+      <div id="auto-reconnect" phx-hook="AutoReconnect" class="hidden"></div>
+      
       <div class="max-w-7xl mx-auto">
         
         <!-- Game Over Screen -->

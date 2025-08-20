@@ -25,12 +25,13 @@ import {LiveSocket} from "phoenix_live_view"
 import {hooks as colocatedHooks} from "phoenix-colocated/rachel"
 import topbar from "../vendor/topbar"
 import {SoundHooks} from "./sounds"
+import {ReconnectionHooks} from "./session"
 
 const csrfToken = document.querySelector("meta[name='csrf-token']").getAttribute("content")
 const liveSocket = new LiveSocket("/live", Socket, {
   longPollFallbackMs: 2500,
   params: {_csrf_token: csrfToken},
-  hooks: {...colocatedHooks, ...SoundHooks},
+  hooks: {...colocatedHooks, ...SoundHooks, ...ReconnectionHooks},
 })
 
 // Show progress bar on live navigation and form submits

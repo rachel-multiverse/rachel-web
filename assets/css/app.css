@@ -103,3 +103,30 @@
 [data-phx-session], [data-phx-teleported-src] { display: contents }
 
 /* This file is for your main application CSS */
+
+/* Connection Status Styles */
+#connection-status.connected {
+  @apply bg-green-100 border-green-300;
+}
+
+#connection-status.connected .status-text {
+  @apply text-green-800;
+}
+
+#connection-status.disconnected {
+  @apply bg-red-100 border-red-300;
+}
+
+#connection-status.disconnected .status-text {
+  @apply text-red-800;
+}
+
+#connection-status.connecting,
+#connection-status.reconnecting {
+  @apply bg-yellow-100 border-yellow-300;
+}
+
+#connection-status.connecting .status-text,
+#connection-status.reconnecting .status-text {
+  @apply text-yellow-800;
+}

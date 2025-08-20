@@ -14,6 +14,8 @@ defmodule Rachel.Application do
       {Phoenix.PubSub, name: Rachel.PubSub},
       # Game-related processes
       {Registry, keys: :unique, name: Rachel.GameRegistry},
+      Rachel.Game.SessionManager,
+      Rachel.Game.ConnectionMonitor,
       Rachel.Game.GameSupervisor,
       # Start to serve requests, typically the last entry
       RachelWeb.Endpoint
