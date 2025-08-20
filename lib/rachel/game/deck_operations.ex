@@ -91,7 +91,7 @@ defmodule Rachel.Game.DeckOperations do
     if total == expected_total do
       :ok
     else
-      Logger.error("Card count mismatch: #{total} cards (expected #{expected_total})")
+      Logger.warning("Card count mismatch: #{total} cards (expected #{expected_total})")
       {:error, {:card_count, total}}
     end
   end

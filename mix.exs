@@ -30,6 +30,7 @@ defmodule Rachel.MixProject do
   # Specifies your project dependencies.
   defp deps do
     [
+      {:bcrypt_elixir, "~> 3.0"},
       # Phoenix core
       {:phoenix, "~> 1.8.0"},
       {:phoenix_ecto, "~> 4.5"},

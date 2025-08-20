@@ -1,6 +1,8 @@
 defmodule RachelWeb.Router do
   use RachelWeb, :router
 
+  import RachelWeb.UserAuth
+
   pipeline :browser do
     plug :accepts, ["html"]
     plug :fetch_session
@@ -8,6 +10,7 @@ defmodule RachelWeb.Router do
     plug :put_root_layout, html: {RachelWeb.Layouts, :root}
     plug :protect_from_forgery
     plug :put_secure_browser_headers
+    plug :fetch_current_scope_for_user
     plug :put_content_security_policy
   end
 
@@ -21,7 +24,15 @@ defmodule RachelWeb.Router do
 
   pipeline :api do
     plug :accepts, ["json"]
+    plug :fetch_session
+    plug :fetch_current_scope_for_user
   end
+
+  pipeline :api_auth do
+    plug :ensure_api_token
+  end
+  
+  defp ensure_api_token(conn, _opts), do: RachelWeb.Plugs.ApiAuth.ensure_api_token(conn, [])
 
   scope "/", RachelWeb do
     pipe_through :browser
@@ -33,10 +44,27 @@ defmodule RachelWeb.Router do
     live "/lobby", LobbyLive
   end
 
-  # Other scopes may use custom stacks.
-  # scope "/api", RachelWeb do
-  #   pipe_through :api
-  # end
+  # API routes for mobile apps
+  scope "/api", RachelWeb.API do
+    pipe_through :api
+
+    post "/auth/login", AuthController, :login
+    post "/auth/register", AuthController, :register
+    
+    scope "/" do
+      pipe_through :api_auth
+      
+      get "/auth/me", AuthController, :me
+      post "/auth/logout", AuthController, :logout
+      
+      get "/games", GameController, :index
+      post "/games", GameController, :create
+      get "/games/:id", GameController, :show
+      post "/games/:id/join", GameController, :join
+      post "/games/:id/play", GameController, :play_cards
+      post "/games/:id/draw", GameController, :draw_cards
+    end
+  end
 
   # Enable LiveDashboard and Swoosh mailbox preview in development
   if Application.compile_env(:rachel, :dev_routes) do
@@ -53,5 +81,31 @@ defmodule RachelWeb.Router do
       live_dashboard "/dashboard", metrics: RachelWeb.Telemetry
       forward "/mailbox", Plug.Swoosh.MailboxPreview
     end
+  end
+
+  ## Authentication routes
+
+  scope "/", RachelWeb do
+    pipe_through [:browser, :redirect_if_user_is_authenticated]
+
+    get "/users/register", UserRegistrationController, :new
+    post "/users/register", UserRegistrationController, :create
+  end
+
+  scope "/", RachelWeb do
+    pipe_through [:browser, :require_authenticated_user]
+
+    get "/users/settings", UserSettingsController, :edit
+    put "/users/settings", UserSettingsController, :update
+    get "/users/settings/confirm-email/:token", UserSettingsController, :confirm_email
+  end
+
+  scope "/", RachelWeb do
+    pipe_through [:browser]
+
+    get "/users/log-in", UserSessionController, :new
+    get "/users/log-in/:token", UserSessionController, :confirm
+    post "/users/log-in", UserSessionController, :create
+    delete "/users/log-out", UserSessionController, :delete
   end
 end
