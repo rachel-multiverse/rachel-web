@@ -33,7 +33,7 @@ defmodule RachelWeb.GameLive do
   @impl true
   def render(assigns) do
     ~H"""
-    <div class="game-container min-h-screen bg-green-900 p-4">
+    <div class="game-container min-h-screen bg-green-900 p-4" id="game-sounds" phx-hook="GameSounds">
       <div class="max-w-7xl mx-auto">
         
         <!-- Game Over Screen -->
