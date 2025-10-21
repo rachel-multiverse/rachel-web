@@ -51,289 +51,41 @@ defmodule RachelWeb.GameLive do
         
     <!-- Game Over Screen -->
         <%= if @game.status == :finished do %>
-          <div class="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-50">
-            <div class="bg-gradient-to-br from-yellow-400 to-orange-500 rounded-2xl p-8 shadow-2xl text-center max-w-md mx-4 animate-pulse">
-              <div class="text-6xl mb-4">🎉</div>
-              <h1 class="text-4xl font-bold text-white mb-4">Game Over!</h1>
-
-              <%= if length(@game.winners) > 0 do %>
-                <div class="mb-6">
-                  <%= for winner_id <- @game.winners do %>
-                    <% winner = Enum.find(@game.players, &(&1.id == winner_id)) %>
-                    <div class="text-2xl font-bold text-white mb-2">
-                      🏆 {winner.name} Wins! 🏆
-                    </div>
-                  <% end %>
-                </div>
-              <% end %>
-
-              <div class="mb-6 text-white">
-                <p class="text-lg mb-4">Final Statistics:</p>
-                <div class="bg-black bg-opacity-20 rounded-lg p-4 space-y-2">
-                  <div class="flex justify-between">
-                    <span>Total Turns:</span>
-                    <span class="font-bold">{@game.turn_count}</span>
-                  </div>
-                  <div class="flex justify-between">
-                    <span>Players:</span>
-                    <span class="font-bold">{length(@game.players)}</span>
-                  </div>
-                  <%= if @game.winners && length(@game.winners) > 0 do %>
-                    <div class="border-t border-white border-opacity-20 pt-2">
-                      <div class="text-sm">Final Standings:</div>
-                      <%= for {player, index} <- Enum.with_index(@game.players) do %>
-                        <div class="flex justify-between text-sm">
-                          <span class="flex items-center gap-1">
-                            <%= if player.status == :won do %>
-                              <span class="text-yellow-300">🏆</span>
-                            <% else %>
-                              <span class="text-gray-300">{index + 1}.</span>
-                            <% end %>
-                            {player.name}
-                          </span>
-                          <span>{length(player.hand)} cards left</span>
-                        </div>
-                      <% end %>
-                    </div>
-                  <% end %>
-                </div>
-              </div>
-
-              <div class="flex gap-4 justify-center">
-                <button
-                  phx-click="new_game"
-                  class="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-bold transition-colors"
-                >
-                  Play Again
-                </button>
-                <a
-                  href="/"
-                  class="bg-gray-600 hover:bg-gray-700 text-white px-6 py-3 rounded-lg font-bold transition-colors"
-                >
-                  Back to Lobby
-                </a>
-              </div>
-            </div>
-          </div>
-          
-    <!-- Confetti Animation -->
-          <div class="fixed inset-0 pointer-events-none z-40">
-            <%= for i <- 1..30 do %>
-              <% emoji = Enum.random(["🎊", "🎉", "✨", "🏆", "🎈", "🌟"]) %>
-              <div
-                class={"absolute animate-bounce text-4xl opacity-#{80 + rem(i, 20)}" <> 
-                      " transition-all duration-#{1000 + rem(i * 100, 2000)}"}
-                style={"left: #{rem(i * 47, 100)}%; top: #{rem(i * 23, 100)}%; " <>
-                      "animation-delay: #{rem(i * 150, 2000)}ms; " <>
-                      "animation-duration: #{1 + rem(i, 3)}s;"}
-              >
-                {emoji}
-              </div>
-            <% end %>
-          </div>
-          
-    <!-- Victory Sound Effect Trigger -->
-          <div phx-hook="VictorySound" id="victory-sound" class="hidden"></div>
+          <.live_component module={RachelWeb.GameLive.GameOverModal} id="game-over-modal" game={@game} />
         <% end %>
-        <!-- Game Header -->
-        <div class="bg-white rounded-lg shadow-lg p-4 mb-4">
-          <div class="flex justify-between items-center">
-            <h1 class="text-2xl font-bold">Rachel Game</h1>
-            <div class="flex gap-4">
-              <span class="text-sm">Turn: {@game.turn_count}</span>
-              <span class={[
-                "text-sm font-semibold px-3 py-1 rounded-lg transition-all",
-                @game.current_player_index == 0 && "your-turn bg-yellow-400 text-black",
-                @game.current_player_index != 0 && "bg-gray-600 text-white"
-              ]}>
-                {if @game.current_player_index == 0,
-                  do: "🎮 Your Turn!",
-                  else: current_player_name(@game) <> "'s turn"}
-              </span>
-              <span class="text-sm flex items-center gap-1">
-                Direction: {direction_symbol(@game.direction)}
-              </span>
-            </div>
-          </div>
-        </div>
-        
+        <!-- Game Header and Play Area -->
+        <.live_component
+          module={RachelWeb.GameLive.GameBoard}
+          id="game-board"
+          game={@game}
+          is_your_turn={@game.current_player_index == 0}
+          current_player_name={current_player_name(@game)}
+          direction_symbol={direction_symbol(@game.direction)}
+          attack_description={attack_description(@game.pending_attack)}
+        />
+
     <!-- Other Players (Always show AI players 1, 2, 3) -->
-        <div class="flex justify-center gap-4 mb-8">
-          <%= for {player, index} <- Enum.with_index(@game.players) do %>
-            <%= if index > 0 do %>
-              <div class={[
-                "opponent-hand rounded-lg p-4",
-                if(player.type == :ai, do: "bg-purple-800/20", else: "bg-white/10"),
-                index == @game.current_player_index && "ring-2 ring-yellow-400"
-              ]}>
-                <div class="text-white text-center mb-2">
-                  {player.name}
-                  <%= if player.type == :ai do %>
-                    <span class="text-purple-300 text-xs">🤖</span>
-                  <% end %>
-                  <%= if index == @game.current_player_index do %>
-                    <div class="text-yellow-400 text-xs">← Current</div>
-                  <% end %>
-                  <%= if player.status == :won do %>
-                    <div class="text-green-400 text-xs">✓ Won</div>
-                  <% end %>
-                </div>
-                <div class="flex gap-1">
-                  <%= for _ <- 1..length(player.hand) do %>
-                    <div class="w-12 h-16 bg-blue-900 rounded border-2 border-white"></div>
-                  <% end %>
-                </div>
-                <div class="text-center text-sm text-white/70 mt-2">
-                  {length(player.hand)} cards
-                </div>
-              </div>
-            <% end %>
-          <% end %>
-        </div>
-        
-    <!-- Play Area -->
-        <div class="flex justify-center gap-8 mb-8">
-          <!-- Deck -->
-          <div class="deck-area">
-            <div class="text-white text-center mb-2">Deck</div>
-            <div class="w-20 h-28 bg-blue-900 rounded-lg border-4 border-white shadow-xl flex items-center justify-center">
-              <span class="text-white text-2xl font-bold">{length(@game.deck)}</span>
-            </div>
-          </div>
-          
-    <!-- Discard Pile -->
-          <div class="discard-area">
-            <div class="text-white text-center mb-2">Discard</div>
-            <%= if top_card = List.first(@game.discard_pile) do %>
-              <.card_display card={top_card} clickable={false} selected={false} playable={false} />
-            <% end %>
-            <%= if @game.nominated_suit do %>
-              <div class="mt-2 text-center">
-                <span class="bg-white px-2 py-1 rounded">
-                  Suit: {@game.nominated_suit}
-                </span>
-              </div>
-            <% end %>
-          </div>
-        </div>
-        
-    <!-- Game Status -->
-        <%= if @game.pending_attack do %>
-          <div class="text-center mb-4">
-            <span class="attack-counter bg-red-600 text-white px-4 py-2 rounded-lg inline-block font-bold">
-              ⚔️ Attack pending: {attack_description(@game.pending_attack)}
-            </span>
-          </div>
-        <% end %>
-
-        <%= if @game.pending_skips > 0 do %>
-          <div class="text-center mb-4">
-            <span class="skip-counter bg-yellow-600 text-white px-4 py-2 rounded-lg inline-block font-bold">
-              ⏭️ Skips pending: {@game.pending_skips}
-            </span>
-          </div>
-        <% end %>
+        <.live_component module={RachelWeb.GameLive.OpponentHands} id="opponent-hands" game={@game} />
         
     <!-- Your Hand (Always Show Only Yours) -->
         <%= if @game.players && length(@game.players) > 0 do %>
           <% you = Enum.at(@game.players, 0) %>
           <%= if you && you.type == :human do %>
-            <div class="player-hand bg-white/20 rounded-lg p-4">
-              <div class="text-white text-center mb-4">
-                Your Hand
-                <%= if @game.current_player_index == 0 do %>
-                  <span class="text-yellow-400 text-sm ml-2">← Your Turn</span>
-                <% end %>
-              </div>
-              <div class="flex flex-wrap justify-center gap-2">
-                <%= for card <- you.hand do %>
-                  <% is_playable =
-                    @game.current_player_index == 0 &&
-                      (card in @selected_cards || card_playable?(@game, card, @selected_cards)) %>
-                  <.card_display
-                    card={card}
-                    clickable={is_playable}
-                    selected={card in @selected_cards}
-                    playable={
-                      @game.current_player_index == 0 &&
-                        card_playable?(@game, card, @selected_cards)
-                    }
-                    in_hand={true}
-                    phx-click={if is_playable, do: "toggle_card", else: nil}
-                    phx-value-suit={card.suit}
-                    phx-value-rank={card.rank}
-                  />
-                <% end %>
-              </div>
-            </div>
-            
-    <!-- Single Action Button (Only on Your Turn) -->
-            <%= if @game.current_player_index == 0 do %>
-              <div class="flex justify-center mt-6">
-                <%= if length(@selected_cards) > 0 do %>
-                  <button
-                    phx-click="attempt_play_cards"
-                    class="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg text-lg"
-                  >
-                    Play Selected Cards
-                  </button>
-                <% else %>
-                  <button
-                    phx-click="draw_card"
-                    class="bg-yellow-600 hover:bg-yellow-700 text-white px-8 py-3 rounded-lg text-lg"
-                  >
-                    {smart_button_text(@game, you)}
-                  </button>
-                <% end %>
-              </div>
-            <% end %>
+            <.live_component
+              module={RachelWeb.GameLive.PlayerHand}
+              id="player-hand"
+              game={@game}
+              player={you}
+              selected_cards={@selected_cards}
+              is_your_turn={@game.current_player_index == 0}
+              button_text={smart_button_text(@game, you)}
+            />
           <% end %>
         <% end %>
         
     <!-- Suit Selection Modal -->
         <%= if @show_suit_modal do %>
-          <div
-            class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
-            phx-click="close_suit_modal"
-          >
-            <div class="bg-white rounded-lg p-6 shadow-xl" phx-click-away="close_suit_modal">
-              <h3 class="text-lg font-bold mb-4 text-center">Choose Suit for Ace</h3>
-              <div class="grid grid-cols-2 gap-4">
-                <button
-                  phx-click="play_cards"
-                  phx-value-suit="hearts"
-                  class="bg-red-600 hover:bg-red-700 text-white px-6 py-4 rounded-lg text-center flex flex-col items-center gap-2"
-                >
-                  <span class="text-3xl">♥</span>
-                  <span>Hearts</span>
-                </button>
-                <button
-                  phx-click="play_cards"
-                  phx-value-suit="diamonds"
-                  class="bg-red-600 hover:bg-red-700 text-white px-6 py-4 rounded-lg text-center flex flex-col items-center gap-2"
-                >
-                  <span class="text-3xl">♦</span>
-                  <span>Diamonds</span>
-                </button>
-                <button
-                  phx-click="play_cards"
-                  phx-value-suit="clubs"
-                  class="bg-gray-800 hover:bg-gray-900 text-white px-6 py-4 rounded-lg text-center flex flex-col items-center gap-2"
-                >
-                  <span class="text-3xl">♣</span>
-                  <span>Clubs</span>
-                </button>
-                <button
-                  phx-click="play_cards"
-                  phx-value-suit="spades"
-                  class="bg-gray-800 hover:bg-gray-900 text-white px-6 py-4 rounded-lg text-center flex flex-col items-center gap-2"
-                >
-                  <span class="text-3xl">♠</span>
-                  <span>Spades</span>
-                </button>
-              </div>
-            </div>
-          </div>
+          <.live_component module={RachelWeb.GameLive.SuitModal} id="suit-modal" />
         <% end %>
       </div>
     </div>

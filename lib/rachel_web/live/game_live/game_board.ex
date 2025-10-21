@@ -16,8 +16,14 @@ defmodule RachelWeb.GameLive.GameBoard do
           <h1 class="text-2xl font-bold">Rachel Game</h1>
           <div class="flex gap-4">
             <span class="text-sm">Turn: {@game.turn_count}</span>
-            <span class="text-sm">
-              Current Player: {@current_player_name}
+            <span class={[
+              "text-sm font-semibold px-3 py-1 rounded-lg transition-all",
+              @is_your_turn && "your-turn bg-yellow-400 text-black",
+              !@is_your_turn && "bg-gray-600 text-white"
+            ]}>
+              {if @is_your_turn,
+                do: "🎮 Your Turn!",
+                else: @current_player_name <> "'s turn"}
             </span>
             <span class="text-sm flex items-center gap-1">
               Direction: {@direction_symbol}
@@ -25,7 +31,7 @@ defmodule RachelWeb.GameLive.GameBoard do
           </div>
         </div>
       </div>
-      
+
     <!-- Play Area -->
       <div class="flex justify-center gap-8 mb-8">
         <!-- Deck -->
@@ -35,7 +41,7 @@ defmodule RachelWeb.GameLive.GameBoard do
             <span class="text-white text-2xl font-bold">{length(@game.deck)}</span>
           </div>
         </div>
-        
+
     <!-- Discard Pile -->
         <div class="discard-area">
           <div class="text-white text-center mb-2">Discard</div>
@@ -51,21 +57,21 @@ defmodule RachelWeb.GameLive.GameBoard do
           <% end %>
         </div>
       </div>
-      
+
     <!-- Game Status Messages -->
       <%= if @game.pending_attack do %>
         <div class="text-center mb-4">
-          <div class="inline-block bg-red-500 text-white px-4 py-2 rounded-lg shadow-lg">
-            Attack! {@attack_description}
-          </div>
+          <span class="attack-counter bg-red-600 text-white px-4 py-2 rounded-lg inline-block font-bold">
+            ⚔️ Attack pending: {@attack_description}
+          </span>
         </div>
       <% end %>
 
-      <%= if @game.pending_skips && @game.pending_skips > 0 do %>
+      <%= if @game.pending_skips > 0 do %>
         <div class="text-center mb-4">
-          <div class="inline-block bg-orange-500 text-white px-4 py-2 rounded-lg shadow-lg">
-            {@game.pending_skips} player(s) must skip their turn(s)
-          </div>
+          <span class="skip-counter bg-yellow-600 text-white px-4 py-2 rounded-lg inline-block font-bold">
+            ⏭️ Skips pending: {@game.pending_skips}
+          </span>
         </div>
       <% end %>
     </div>

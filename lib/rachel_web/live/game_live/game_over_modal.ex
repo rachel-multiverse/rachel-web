@@ -6,11 +6,12 @@ defmodule RachelWeb.GameLive.GameOverModal do
 
   def render(assigns) do
     ~H"""
-    <div class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50">
-      <div class="bg-gradient-to-br from-green-700 to-green-900 rounded-lg p-8 max-w-md w-full shadow-2xl">
-        <div class="text-center">
-          <h2 class="text-4xl font-bold text-white mb-6">Game Over!</h2>
+    <div class="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-50">
+      <div class="bg-gradient-to-br from-yellow-400 to-orange-500 rounded-2xl p-8 shadow-2xl text-center max-w-md mx-4 animate-pulse">
+        <div class="text-6xl mb-4">🎉</div>
+        <h1 class="text-4xl font-bold text-white mb-4">Game Over!</h1>
 
+        <%= if length(@game.winners) > 0 do %>
           <div class="mb-6">
             <%= for winner_id <- @game.winners do %>
               <% winner = Enum.find(@game.players, &(&1.id == winner_id)) %>
@@ -19,6 +20,7 @@ defmodule RachelWeb.GameLive.GameOverModal do
               </div>
             <% end %>
           </div>
+        <% end %>
 
           <div class="mb-6 text-white">
             <p class="text-lg mb-4">Final Statistics:</p>
@@ -52,20 +54,19 @@ defmodule RachelWeb.GameLive.GameOverModal do
             </div>
           </div>
 
-          <div class="flex gap-4 justify-center">
-            <button
-              phx-click="new_game"
-              class="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-bold transition-colors"
-            >
-              Play Again
-            </button>
-            <a
-              href="/"
-              class="bg-gray-600 hover:bg-gray-700 text-white px-6 py-3 rounded-lg font-bold transition-colors"
-            >
-              Back to Lobby
-            </a>
-          </div>
+        <div class="flex gap-4 justify-center">
+          <button
+            phx-click="new_game"
+            class="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-bold transition-colors"
+          >
+            Play Again
+          </button>
+          <a
+            href="/"
+            class="bg-gray-600 hover:bg-gray-700 text-white px-6 py-3 rounded-lg font-bold transition-colors"
+          >
+            Back to Lobby
+          </a>
         </div>
       </div>
       
