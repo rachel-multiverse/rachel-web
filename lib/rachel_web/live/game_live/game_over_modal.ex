@@ -39,7 +39,7 @@ defmodule RachelWeb.GameLive.GameOverModal do
                   <%= for {player, index} <- Enum.with_index(@game.players) do %>
                     <div class="flex justify-between text-sm">
                       <span class="flex items-center gap-1">
-                        <%= if player.status == :won do %>
+                        <%= if player.id == List.first(@game.winners) do %>
                           <span class="text-yellow-300">🏆</span>
                         <% else %>
                           <span class="text-gray-300">{index + 1}.</span>

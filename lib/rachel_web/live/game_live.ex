@@ -292,10 +292,11 @@ defmodule RachelWeb.GameLive do
     socket =
       if game_just_ended do
         human_player = Enum.at(game.players, 0)
-        is_winner = human_player.id in game.winners
+        first_winner = List.first(game.winners)
+        is_winner = human_player.id == first_winner
 
         push_event(socket, "game-over", %{
-          winner: List.first(game.winners),
+          winner: first_winner,
           isWinner: is_winner
         })
       else
