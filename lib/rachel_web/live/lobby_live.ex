@@ -9,10 +9,13 @@ defmodule RachelWeb.LobbyLive do
       :timer.send_interval(2000, :refresh_games)
     end
 
+    # Use the authenticated user's username
+    player_name = socket.assigns.current_user.username
+
     {:ok,
      socket
      |> assign(:games, list_games())
-     |> assign(:player_name, "")
+     |> assign(:player_name, player_name)
      |> assign(:creating_game, false)}
   end
 
@@ -21,47 +24,47 @@ defmodule RachelWeb.LobbyLive do
     ~H"""
     <div class="min-h-screen bg-gradient-to-br from-green-800 to-green-900 p-8">
       <div class="max-w-4xl mx-auto">
-        <!-- Header -->
-        <div class="text-center mb-12">
-          <h1 class="text-6xl font-bold text-white mb-4">Rachel</h1>
-          <p class="text-xl text-green-200">The Classic Card Game</p>
+        <!-- Header with User Info -->
+        <div class="flex justify-between items-center mb-8">
+          <div class="text-center flex-1">
+            <h1 class="text-6xl font-bold text-white mb-4">Rachel</h1>
+            <p class="text-xl text-green-200">The Classic Card Game</p>
+          </div>
+          <div class="bg-white/10 rounded-lg px-6 py-3 text-white">
+            <div class="text-sm text-green-200">Playing as</div>
+            <div class="font-semibold text-lg"><%= @player_name %></div>
+            <.link
+              href={~p"/users/log_out"}
+              method="delete"
+              class="text-sm text-green-300 hover:text-white mt-1 block"
+            >
+              Log out
+            </.link>
+          </div>
         </div>
 
         <!-- Create Game Section -->
         <div class="bg-white rounded-lg shadow-xl p-8 mb-8">
           <h2 class="text-2xl font-bold mb-4">Quick Play</h2>
-          
-          <form phx-submit="create_game" class="space-y-4">
-            <div>
-              <label class="block text-sm font-medium mb-2">Your Name</label>
-              <input 
-                type="text" 
-                name="player_name" 
-                value={@player_name}
-                phx-change="update_name"
-                placeholder="Enter your name"
-                class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500"
-                required
-              />
-            </div>
 
+          <form phx-submit="create_game" class="space-y-4">
             <div class="flex gap-4">
-              <button 
+              <button
                 type="submit"
                 name="game_type"
                 value="ai"
-                class="flex-1 bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-semibold"
-                disabled={@creating_game || @player_name == ""}
+                class="flex-1 bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-semibold disabled:opacity-50"
+                disabled={@creating_game}
               >
                 Play vs AI
               </button>
-              
-              <button 
+
+              <button
                 type="submit"
                 name="game_type"
                 value="multiplayer"
-                class="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold"
-                disabled={@creating_game || @player_name == ""}
+                class="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold disabled:opacity-50"
+                disabled={@creating_game}
               >
                 Create Multiplayer Game
               </button>
@@ -88,11 +91,10 @@ defmodule RachelWeb.LobbyLive do
                   </div>
                   
                   <%= if game.status == :waiting do %>
-                    <button 
+                    <button
                       phx-click="join_game"
                       phx-value-game-id={game.id}
                       class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded"
-                      disabled={@player_name == ""}
                     >
                       Join Game
                     </button>
@@ -131,12 +133,8 @@ defmodule RachelWeb.LobbyLive do
   end
 
   @impl true
-  def handle_event("update_name", %{"player_name" => name}, socket) do
-    {:noreply, assign(socket, :player_name, name)}
-  end
-
-  @impl true
-  def handle_event("create_game", %{"player_name" => name, "game_type" => type}, socket) do
+  def handle_event("create_game", %{"game_type" => type}, socket) do
+    name = socket.assigns.player_name
     socket = assign(socket, :creating_game, true)
 
     case create_game_with_type(name, type) do

@@ -1,6 +1,8 @@
 defmodule RachelWeb.Router do
   use RachelWeb, :router
 
+  import RachelWeb.UserAuth
+
   pipeline :browser do
     plug :accepts, ["html"]
     plug :fetch_session
@@ -8,20 +10,44 @@ defmodule RachelWeb.Router do
     plug :put_root_layout, html: {RachelWeb.Layouts, :root}
     plug :protect_from_forgery
     plug :put_secure_browser_headers
+    plug :fetch_current_user
   end
 
   pipeline :api do
     plug :accepts, ["json"]
   end
 
+  # Routes that require the user to be logged out
   scope "/", RachelWeb do
-    pipe_through :browser
+    pipe_through [:browser, :redirect_if_user_is_authenticated]
 
-    get "/", PageController, :home
-    
-    # Game routes
-    live "/games/:id", GameLive
-    live "/lobby", LobbyLive
+    live_session :redirect_if_user_is_authenticated,
+      on_mount: [{RachelWeb.UserAuth, :redirect_if_user_is_authenticated}] do
+      live "/users/register", UserRegistrationLive, :new
+      live "/users/log_in", UserLoginLive, :new
+      live "/users/reset_password", UserResetPasswordLive, :new
+    end
+
+    post "/users/log_in", UserSessionController, :create
+  end
+
+  # Routes that require the user to be authenticated
+  scope "/", RachelWeb do
+    pipe_through [:browser, :require_authenticated_user]
+
+    live_session :require_authenticated_user,
+      on_mount: [{RachelWeb.UserAuth, :ensure_authenticated}] do
+      live "/", LobbyLive
+      live "/lobby", LobbyLive
+      live "/games/:id", GameLive
+    end
+  end
+
+  # Routes available to both authenticated and unauthenticated users
+  scope "/", RachelWeb do
+    pipe_through [:browser]
+
+    delete "/users/log_out", UserSessionController, :delete
   end
 
   # Other scopes may use custom stacks.

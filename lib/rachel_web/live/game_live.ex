@@ -36,12 +36,25 @@ defmodule RachelWeb.GameLive do
         <!-- Game Header -->
         <div class="bg-white rounded-lg shadow-lg p-4 mb-4">
           <div class="flex justify-between items-center">
-            <h1 class="text-2xl font-bold">Rachel Game</h1>
-            <div class="flex gap-4">
+            <div class="flex items-center gap-4">
+              <h1 class="text-2xl font-bold">Rachel Game</h1>
+              <.link
+                navigate={~p"/lobby"}
+                class="text-sm text-blue-600 hover:text-blue-800"
+              >
+                ← Back to Lobby
+              </.link>
+            </div>
+            <div class="flex gap-6 items-center">
               <span class="text-sm">Turn: <%= @game.turn_count %></span>
               <span class="text-sm">
                 Current Player: <%= current_player_name(@game) %>
               </span>
+              <div class="border-l pl-4">
+                <span class="text-sm text-gray-600">
+                  Playing as: <span class="font-semibold"><%= @current_user.username %></span>
+                </span>
+              </div>
             </div>
           </div>
         </div>

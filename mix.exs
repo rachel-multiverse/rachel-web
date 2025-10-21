@@ -61,6 +61,9 @@ defmodule Rachel.MixProject do
       {:dns_cluster, "~> 0.2.0"},
       {:bandit, "~> 1.5"},
 
+      # Authentication
+      {:bcrypt_elixir, "~> 3.0"},
+
       # Binary protocol support
       {:ranch, "~> 2.1"},
 
