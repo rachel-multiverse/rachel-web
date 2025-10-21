@@ -13,12 +13,11 @@ defmodule RachelWeb.GameLive.GameOverModal do
 
         <%= if length(@game.winners) > 0 do %>
           <div class="mb-6">
-            <%= for winner_id <- @game.winners do %>
-              <% winner = Enum.find(@game.players, &(&1.id == winner_id)) %>
-              <div class="text-2xl font-bold text-white mb-2">
-                🏆 {winner.name} Wins! 🏆
-              </div>
-            <% end %>
+            <% winner_id = List.first(@game.winners) %>
+            <% winner = Enum.find(@game.players, &(&1.id == winner_id)) %>
+            <div class="text-2xl font-bold text-white mb-2">
+              🏆 {winner.name} Wins! 🏆
+            </div>
           </div>
         <% end %>
 
