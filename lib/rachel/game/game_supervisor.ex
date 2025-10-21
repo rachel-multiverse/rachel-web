@@ -60,4 +60,35 @@ defmodule Rachel.Game.GameSupervisor do
     end)
     |> Enum.reject(&is_nil/1)
   end
+
+  @doc """
+  Restores a game from saved state (used on application restart).
+  """
+  def restore_game(game_state) do
+    game_id = game_state.id
+
+    child_spec = %{
+      id: game_id,
+      start: {Rachel.Game.GameEngine, :start_link, [[restore: game_state, game_id: game_id]]},
+      restart: :transient,
+      max_restarts: 3
+    }
+
+    # We need special init handling in GameEngine to accept {:restore, game_state}
+    # Instead of the normal {players, game_id} tuple
+    case DynamicSupervisor.start_child(__MODULE__, %{
+           child_spec
+           | start:
+               {GenServer, :start_link,
+                [Rachel.Game.GameEngine, {:restore, game_state}, [name: via(game_id)]]}
+         }) do
+      {:ok, _pid} ->
+        {:ok, game_id}
+
+      error ->
+        error
+    end
+  end
+
+  defp via(game_id), do: {:via, Registry, {Rachel.GameRegistry, game_id}}
 end

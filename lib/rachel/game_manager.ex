@@ -3,7 +3,7 @@ defmodule Rachel.GameManager do
   High-level API for managing Rachel games.
   """
 
-  alias Rachel.Game.{GameEngine, GameSupervisor}
+  alias Rachel.Game.{GameEngine, GameSupervisor, Games}
 
   @doc """
   Creates a new game with the given players.
@@ -153,5 +153,52 @@ defmodule Rachel.GameManager do
       _ ->
         false
     end
+  end
+
+  @doc """
+  Saves a game state to the database.
+  """
+  def save_game(game_state) do
+    Games.save_game(game_state)
+  end
+
+  @doc """
+  Loads a game state from the database.
+  """
+  def load_game(game_id) do
+    Games.load_game(game_id)
+  end
+
+  @doc """
+  Deletes a game from the database.
+  """
+  def delete_game_record(game_id) do
+    Games.delete_game(game_id)
+  end
+
+  @doc """
+  Restores all active games from the database on application startup.
+  Returns a list of restored game IDs.
+  """
+  def restore_active_games do
+    # Load all non-finished games
+    playing_games = Games.list_by_status(:playing)
+    waiting_games = Games.list_by_status(:waiting)
+
+    all_games = playing_games ++ waiting_games
+
+    Enum.reduce(all_games, [], fn game_state, acc ->
+      case GameSupervisor.restore_game(game_state) do
+        {:ok, game_id} ->
+          [game_id | acc]
+
+        {:error, reason} ->
+          require Logger
+
+          Logger.warning("Failed to restore game #{game_state.id}: #{inspect(reason)}")
+
+          acc
+      end
+    end)
   end
 end

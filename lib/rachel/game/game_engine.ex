@@ -7,7 +7,7 @@ defmodule Rachel.Game.GameEngine do
   use GenServer
   require Logger
 
-  alias Rachel.Game.{AIPlayer, GameState, Rules}
+  alias Rachel.Game.{AIPlayer, GameState, Games, Rules}
 
   defstruct [
     :game,
@@ -40,9 +40,18 @@ defmodule Rachel.Game.GameEngine do
 
   # Implementation
 
+  # Special init for restoring games from database
+  def init({:restore, game_state}) do
+    state = %__MODULE__{game: game_state, ai_turn_ref: nil, error_count: 0}
+    # Schedule AI if it's AI's turn
+    state = if game_state.status == :playing, do: schedule_ai(state), else: state
+    {:ok, checkpoint(state)}
+  end
+
   def init({players, game_id}) do
     game = GameState.new(players) |> Map.put(:id, game_id)
     state = %__MODULE__{game: game, ai_turn_ref: nil, error_count: 0}
+    persist_game(game)
     {:ok, checkpoint(state)}
   end
 
@@ -53,6 +62,7 @@ defmodule Rachel.Game.GameEngine do
   def handle_call(:start_game, _from, %{game: %{status: :waiting} = game} = state) do
     case safe_execute(game, &GameState.start_game/1) do
       {:ok, new_game} ->
+        persist_game(new_game)
         new_state = %{state | game: new_game} |> schedule_ai() |> checkpoint()
         broadcast(new_game, :game_started)
         {:reply, {:ok, new_game}, new_state}
@@ -71,6 +81,7 @@ defmodule Rachel.Game.GameEngine do
 
     case safe_play(state.game, player_id, cards, suit) do
       {:ok, new_game} ->
+        persist_game(new_game)
         new_state = %{state | game: new_game, error_count: 0} |> schedule_ai() |> checkpoint()
         broadcast(new_game, {:cards_played, player_id, cards})
         check_game_end(new_state)
@@ -85,6 +96,7 @@ defmodule Rachel.Game.GameEngine do
 
     case safe_draw(state.game, player_id, reason) do
       {:ok, new_game} ->
+        persist_game(new_game)
         new_state = %{state | game: new_game, error_count: 0} |> schedule_ai() |> checkpoint()
         broadcast(new_game, {:cards_drawn, player_id, reason})
         {:reply, {:ok, new_game}, new_state}
@@ -111,6 +123,7 @@ defmodule Rachel.Game.GameEngine do
     }
 
     new_game = %{state.game | players: players ++ [player]}
+    persist_game(new_game)
     new_state = %{state | game: new_game} |> checkpoint()
     broadcast(new_game, {:player_joined, player})
     {:reply, {:ok, player.id}, new_state}
@@ -388,4 +401,20 @@ defmodule Rachel.Game.GameEngine do
 
   defp broadcast(game, event),
     do: Phoenix.PubSub.broadcast(Rachel.PubSub, "game:#{game.id}", {event, game})
+
+  defp persist_game(game_state) do
+    # Skip persistence in test environment to avoid Ecto.Sandbox issues
+    # Tests for persistence are in games_test.exs which uses DataCase
+    unless Mix.env() == :test do
+      Task.start(fn ->
+        case Games.save_game(game_state) do
+          {:ok, _} ->
+            :ok
+
+          {:error, reason} ->
+            Logger.warning("Failed to persist game #{game_state.id}: #{inspect(reason)}")
+        end
+      end)
+    end
+  end
 end

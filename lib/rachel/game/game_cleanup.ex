@@ -154,12 +154,16 @@ defmodule Rachel.Game.GameCleanup do
       "Cleaning up #{game.status} game #{game_id}: inactive for #{inactive_duration(game)} minutes"
     )
 
+    # End the GenServer process
     case GameManager.end_game(game_id) do
       :ok ->
+        # Also delete from database
+        GameManager.delete_game_record(game_id)
         :ok
 
       {:error, :not_found} ->
-        # Already cleaned up, that's fine
+        # Already cleaned up from memory, just delete DB record
+        GameManager.delete_game_record(game_id)
         :ok
 
       error ->
