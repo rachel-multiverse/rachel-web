@@ -42,6 +42,9 @@ defmodule RachelWeb.Endpoint do
   plug Plug.RequestId
   plug Plug.Telemetry, event_prefix: [:phoenix, :endpoint]
 
+  # Sentry error tracking - captures request context
+  plug Sentry.PlugContext
+
   plug Plug.Parsers,
     parsers: [:urlencoded, :multipart, :json],
     pass: ["*/*"],
@@ -50,5 +53,30 @@ defmodule RachelWeb.Endpoint do
   plug Plug.MethodOverride
   plug Plug.Head
   plug Plug.Session, @session_options
+  plug :put_security_headers
   plug RachelWeb.Router
+
+  defp put_security_headers(conn, _opts) do
+    conn
+    |> Plug.Conn.put_resp_header("x-frame-options", "DENY")
+    |> Plug.Conn.put_resp_header("x-content-type-options", "nosniff")
+    |> Plug.Conn.put_resp_header("referrer-policy", "strict-origin-when-cross-origin")
+    |> Plug.Conn.put_resp_header(
+      "permissions-policy",
+      "geolocation=(), microphone=(), camera=()"
+    )
+    |> maybe_put_hsts_header()
+  end
+
+  defp maybe_put_hsts_header(conn) do
+    if Application.get_env(:rachel, :env) == :prod do
+      Plug.Conn.put_resp_header(
+        conn,
+        "strict-transport-security",
+        "max-age=31536000; includeSubDomains; preload"
+      )
+    else
+      conn
+    end
+  end
 end

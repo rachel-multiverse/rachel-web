@@ -68,6 +68,13 @@ if config_env() == :prod do
     secret_key_base: secret_key_base,
     force_ssl: [rewrite_on: [:x_forwarded_proto], hsts: true]
 
+  # Configure Sentry DSN from environment
+  if sentry_dsn = System.get_env("SENTRY_DSN") do
+    config :sentry,
+      dsn: sentry_dsn,
+      environment_name: System.get_env("SENTRY_ENVIRONMENT") || "production"
+  end
+
   # ## SSL Support
   #
   # To get SSL working, you will need to add the `https` key

@@ -72,7 +72,14 @@ defmodule Rachel.MixProject do
       # Code quality
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
       {:dialyxir, "~> 1.4", only: [:dev, :test], runtime: false},
-      {:sobelow, "~> 0.13", only: [:dev, :test], runtime: false}
+      {:sobelow, "~> 0.13", only: [:dev, :test], runtime: false},
+
+      # Rate limiting
+      {:hammer, "~> 6.2"},
+
+      # Error tracking
+      {:sentry, "~> 10.0"},
+      {:hackney, "~> 1.19"}
     ]
   end
 

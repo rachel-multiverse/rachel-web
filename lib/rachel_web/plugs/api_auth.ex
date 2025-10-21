@@ -22,8 +22,8 @@ defmodule RachelWeb.Plugs.ApiAuth do
   
   defp verify_token(token) do
     case Accounts.get_user_by_session_token(token) do
+      {user, _inserted_at} -> {:ok, user}
       nil -> {:error, :invalid_token}
-      user -> {:ok, user}
     end
   end
 end

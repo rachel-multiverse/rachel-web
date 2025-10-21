@@ -1,0 +1,86 @@
+# fly.toml - Fly.io Configuration for Rachel Web Application
+# Generated: 2025-10-21
+# Docs: https://fly.io/docs/reference/configuration/
+
+app = "rachel-web"
+primary_region = "sjc"  # San Jose - change to your preferred region
+
+# Ensure app restarts on deploy
+kill_signal = "SIGTERM"
+kill_timeout = 5
+
+# Use the production Dockerfile
+[build]
+  dockerfile = "Dockerfile"
+
+# Environment variables (non-secret)
+[env]
+  PHX_HOST = "rachel-web.fly.dev"  # Update with your actual domain
+  PORT = "4000"
+  RUBP_PORT = "1982"
+  POOL_SIZE = "10"
+  ECTO_IPV6 = "true"  # Fly.io uses IPv6
+
+# Required for Phoenix
+[deploy]
+  release_command = "eval Rachel.Release.migrate"
+
+# HTTP service configuration
+[http_service]
+  internal_port = 4000
+  force_https = true
+  auto_stop_machines = false   # Keep running for multiplayer games
+  auto_start_machines = true
+  min_machines_running = 1
+
+  # Use our new /health endpoint
+  [http_service.checks]
+    [http_service.checks.health]
+      grace_period = "10s"
+      interval = "30s"
+      method = "GET"
+      timeout = "5s"
+      path = "/health"
+
+  # HTTP connection settings
+  [http_service.concurrency]
+    type = "connections"
+    hard_limit = 1000
+    soft_limit = 800
+
+# RUBP Protocol TCP service (for retro platforms)
+[[services]]
+  internal_port = 1982
+  protocol = "tcp"
+  auto_stop_machines = false
+  auto_start_machines = true
+  min_machines_running = 1
+
+  [[services.ports]]
+    port = 1982
+
+  # TCP health check
+  [services.tcp_checks]
+    [services.tcp_checks.rubp]
+      grace_period = "10s"
+      interval = "30s"
+      timeout = "5s"
+
+# Machine configuration
+[[vm]]
+  cpu_kind = "shared"
+  cpus = 1
+  memory_mb = 512  # Start small, can scale up
+
+# Metrics (free tier)
+[metrics]
+  port = 9091
+  path = "/metrics"
+
+# Secrets to set via flyctl:
+# flyctl secrets set SECRET_KEY_BASE=$(mix phx.gen.secret)
+# flyctl secrets set DATABASE_URL="ecto://..."
+# flyctl secrets set SENTRY_DSN="https://..."
+# flyctl secrets set SENTRY_ENVIRONMENT="production"
+# flyctl secrets set MAILGUN_API_KEY="..."
+# flyctl secrets set MAILGUN_DOMAIN="..."

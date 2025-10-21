@@ -118,12 +118,6 @@ defmodule RachelWeb.UserAuth do
     |> maybe_write_remember_me_cookie(token, params, remember_me)
   end
 
-  # Do not renew session if the user is already logged in
-  # to prevent CSRF errors or data being lost in tabs that are still open
-  defp renew_session(conn, user) when conn.assigns.current_scope.user.id == user.id do
-    conn
-  end
-
   # This function renews the session ID and erases the whole
   # session to avoid fixation attacks. If there is any data
   # in the session you may want to preserve after log in/log out,
@@ -140,12 +134,23 @@ defmodule RachelWeb.UserAuth do
   #       |> put_session(:preferred_locale, preferred_locale)
   #     end
   #
-  defp renew_session(conn, _user) do
-    delete_csrf_token()
+  defp renew_session(conn, user) do
+    # Only skip session renewal if already logged in as the same user
+    # to prevent CSRF errors or data being lost in tabs that are still open
+    current_scope = Map.get(conn.assigns, :current_scope)
+    current_user = if current_scope, do: current_scope.user, else: nil
+    current_user_id = if current_user, do: current_user.id, else: nil
+    user_id = if is_struct(user), do: user.id, else: nil
 
-    conn
-    |> configure_session(renew: true)
-    |> clear_session()
+    if current_user_id && user_id && current_user_id == user_id do
+      conn
+    else
+      delete_csrf_token()
+
+      conn
+      |> configure_session(renew: true)
+      |> clear_session()
+    end
   end
 
   defp maybe_write_remember_me_cookie(conn, token, %{"remember_me" => "true"}, _),

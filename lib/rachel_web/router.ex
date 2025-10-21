@@ -15,11 +15,34 @@ defmodule RachelWeb.Router do
   end
 
   defp put_content_security_policy(conn, _opts) do
+    # Generate nonce for LiveView inline scripts/styles
+    nonce = generate_csp_nonce()
+    conn = Plug.Conn.assign(conn, :csp_nonce, nonce)
+
+    # Get host info for WebSocket connections
+    host = conn.host
+    port = conn.port
+    ws_url = if port in [80, 443], do: "wss://#{host}", else: "wss://#{host}:#{port}"
+
     Plug.Conn.put_resp_header(
       conn,
       "content-security-policy",
-      "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'self' ws: wss:;"
+      "default-src 'self'; " <>
+        "script-src 'self' 'nonce-#{nonce}'; " <>
+        "style-src 'self' 'nonce-#{nonce}'; " <>
+        "img-src 'self' data: https:; " <>
+        "font-src 'self' data:; " <>
+        "connect-src 'self' #{ws_url} ws://#{host}:#{port}; " <>
+        "frame-ancestors 'none'; " <>
+        "base-uri 'self'; " <>
+        "form-action 'self'"
     )
+  end
+
+  defp generate_csp_nonce do
+    16
+    |> :crypto.strong_rand_bytes()
+    |> Base.encode64(padding: false)
   end
 
   pipeline :api do
@@ -28,11 +51,35 @@ defmodule RachelWeb.Router do
     plug :fetch_current_scope_for_user
   end
 
+  pipeline :health do
+    plug :accepts, ["json"]
+  end
+
   pipeline :api_auth do
     plug :ensure_api_token
   end
-  
+
+  # Rate limiting pipelines
+  pipeline :rate_limit_strict do
+    plug RachelWeb.Plugs.RateLimit, limit: 5, period_ms: 60_000, by: :ip
+  end
+
+  pipeline :rate_limit_auth do
+    plug RachelWeb.Plugs.RateLimit, limit: 10, period_ms: 60_000, by: :ip
+  end
+
+  pipeline :rate_limit_normal do
+    plug RachelWeb.Plugs.RateLimit, limit: 100, period_ms: 60_000, by: :user
+  end
+
   defp ensure_api_token(conn, _opts), do: RachelWeb.Plugs.ApiAuth.ensure_api_token(conn, [])
+
+  # Health check endpoint (no authentication required)
+  scope "/", RachelWeb do
+    pipe_through :health
+
+    get "/health", HealthController, :check
+  end
 
   scope "/", RachelWeb do
     pipe_through :browser
@@ -46,17 +93,17 @@ defmodule RachelWeb.Router do
 
   # API routes for mobile apps
   scope "/api", RachelWeb.API do
-    pipe_through :api
+    pipe_through [:api, :rate_limit_auth]
 
     post "/auth/login", AuthController, :login
     post "/auth/register", AuthController, :register
-    
+
     scope "/" do
-      pipe_through :api_auth
-      
+      pipe_through [:api_auth, :rate_limit_normal]
+
       get "/auth/me", AuthController, :me
       post "/auth/logout", AuthController, :logout
-      
+
       get "/games", GameController, :index
       post "/games", GameController, :create
       get "/games/:id", GameController, :show

@@ -1,7 +1,13 @@
 # Rachel Web - TODO List
 
+**Last Updated:** 2025-10-21
+
 ## Summary
-The Rachel card game web implementation is functionally complete with all core game mechanics working correctly. User authentication has been implemented with both web and API endpoints for future mobile app integration. All 328 tests are passing.
+The Rachel card game web implementation is functionally complete with all core game mechanics working correctly. User authentication has been implemented with both web and API endpoints for future mobile app integration.
+
+**Status:** ✅ All 332 tests passing (328 original + 4 new API tests)
+**Critical Bugs:** ✅ Fixed (see CRITICAL_FIXES_COMPLETED.md)
+**Production Ready:** 🟡 After security hardening (see ACTION_PLAN.md)
 
 ## Completed ✅
 - Core game engine with all Rachel rules implemented correctly
@@ -19,7 +25,11 @@ The Rachel card game web implementation is functionally complete with all core g
   - Game statistics tracking fields
   - API authentication with Bearer tokens
   - RESTful API endpoints for mobile apps
-- Test coverage (328 tests, all passing)
+- **CRITICAL BUG FIXES (2025-10-21):**
+  - ✅ Fixed API authentication crash (tuple pattern match)
+  - ✅ Fixed user login crash (nil safety in renew_session)
+  - ✅ Added comprehensive API auth tests (4 new tests)
+- Test coverage (332 tests, all passing)
 
 ## MUST Have (Priority 1) - Already Verified ✅
 - [x] Game rooms/lobbies - Working via GameManager.create_lobby()

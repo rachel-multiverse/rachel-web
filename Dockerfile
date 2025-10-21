@@ -37,7 +37,7 @@ RUN mix compile && \
 FROM alpine:3.19
 
 # Install runtime dependencies
-RUN apk add --no-cache libstdc++ openssl ncurses-libs
+RUN apk add --no-cache libstdc++ openssl ncurses-libs wget
 
 ENV MIX_ENV=prod
 ENV PORT=4000
@@ -51,9 +51,9 @@ COPY --from=build /app/_build/prod/rel/rachel ./
 # Expose ports
 EXPOSE 4000 1982
 
-# Health check
+# Health check - uses HTTP endpoint for comprehensive checks
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD nc -z localhost 4000 || exit 1
+  CMD wget --no-verbose --tries=1 --spider http://localhost:4000/health || exit 1
 
 # Start the application
 CMD ["bin/rachel", "start"]
