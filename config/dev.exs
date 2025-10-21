@@ -2,8 +2,8 @@ import Config
 
 # Configure your database
 config :rachel, Rachel.Repo,
-  username: "postgres",
-  password: "postgres",
+  username: "rachel",
+  password: "rachel",
   hostname: "localhost",
   database: "rachel_dev",
   stacktrace: true,
