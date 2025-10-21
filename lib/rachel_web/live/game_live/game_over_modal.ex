@@ -7,7 +7,7 @@ defmodule RachelWeb.GameLive.GameOverModal do
   def render(assigns) do
     ~H"""
     <div class="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-50">
-      <div class="bg-gradient-to-br from-yellow-400 to-orange-500 rounded-2xl p-8 shadow-2xl text-center max-w-md mx-4 animate-pulse">
+      <div class="bg-gradient-to-br from-yellow-400 to-orange-500 rounded-2xl p-8 shadow-2xl text-center max-w-md mx-4">
         <div class="text-6xl mb-4">🎉</div>
         <h1 class="text-4xl font-bold text-white mb-4">Game Over!</h1>
 
@@ -70,12 +70,12 @@ defmodule RachelWeb.GameLive.GameOverModal do
       </div>
       
     <!-- Confetti Animation -->
-      <div class="fixed inset-0 pointer-events-none z-40">
-        <%= for i <- 1..30 do %>
-          <% emoji = Enum.random(["🎊", "🎉", "✨", "🏆", "🎈", "🌟"]) %>
+      <div class="fixed inset-0 pointer-events-none z-60 overflow-hidden">
+        <%= for i <- 1..20 do %>
+          <% emoji = Enum.random(["🎊", "🎉", "✨", "🎈", "🌟"]) %>
           <div
-            class={"absolute animate-bounce text-4xl opacity-#{80 + rem(i, 20)}" <> " transition-all duration-#{1000 + rem(i * 100, 2000)}"}
-            style={"left: #{rem(i * 47, 100)}%; top: #{rem(i * 23, 100)}%; " <> "animation-delay: #{rem(i * 150, 2000)}ms; " <> "animation-duration: #{1 + rem(i, 3)}s;"}
+            class="absolute text-2xl opacity-80"
+            style={"left: #{rem(i * 47, 100)}%; top: #{rem(i * 37, 100)}%; animation: confetti-fall #{2 + rem(i, 2)}s ease-in #{rem(i * 100, 1000)}ms 1 forwards;"}
           >
             {emoji}
           </div>
