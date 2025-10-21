@@ -160,7 +160,7 @@ defmodule RachelWeb.GameLive do
           {:noreply,
            socket
            |> assign(:selected_cards, [])
-           |> push_event("card-played", %{cards: socket.assigns.selected_cards})}
+           |> push_event("card-played", %{cards: socket.assigns.selected_cards, player: human_player.id})}
 
         {:error, reason} ->
           {:noreply, put_flash(socket, :error, error_message(reason))}
@@ -186,7 +186,7 @@ defmodule RachelWeb.GameLive do
          socket
          |> assign(:selected_cards, [])
          |> assign(:show_suit_modal, false)
-         |> push_event("card-played", %{cards: socket.assigns.selected_cards})}
+         |> push_event("card-played", %{cards: socket.assigns.selected_cards, player: human_player.id})}
 
       {:error, reason} ->
         {:noreply, put_flash(socket, :error, error_message(reason))}
@@ -271,15 +271,33 @@ defmodule RachelWeb.GameLive do
     # Detect turn change
     turn_changed = is_your_turn && !was_your_turn
 
+    # Detect game over
+    game_just_ended = game.status == :finished && old_game.status != :finished
+
     socket =
       socket
       |> assign(:game, game)
       |> assign(:current_player, current_player(game))
       |> assign(:show_suit_modal, false)
 
+    # Push turn change event
     socket =
       if turn_changed do
         push_event(socket, "turn-changed", %{isYourTurn: true})
+      else
+        socket
+      end
+
+    # Push game-over event with winner info
+    socket =
+      if game_just_ended do
+        human_player = Enum.at(game.players, 0)
+        is_winner = human_player.status == :won
+
+        push_event(socket, "game-over", %{
+          winner: List.first(game.winners),
+          isWinner: is_winner
+        })
       else
         socket
       end
