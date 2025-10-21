@@ -9,10 +9,15 @@ defmodule RachelWeb.LobbyLive do
       :timer.send_interval(2000, :refresh_games)
     end
 
+    # Get current user from socket assigns (set by router)
+    current_user = get_current_user(socket)
+    default_name = if current_user, do: current_user.display_name || current_user.username, else: ""
+
     {:ok,
      socket
      |> assign(:games, list_games())
-     |> assign(:player_name, "")
+     |> assign(:player_name, default_name)
+     |> assign(:current_user, current_user)
      |> assign(:creating_game, false)}
   end
 
@@ -139,7 +144,7 @@ defmodule RachelWeb.LobbyLive do
   def handle_event("create_game", %{"player_name" => name, "game_type" => type}, socket) do
     socket = assign(socket, :creating_game, true)
 
-    case create_game_with_type(name, type) do
+    case create_game_with_type(name, type, socket.assigns.current_user) do
       {:ok, game_id} ->
         {:noreply, push_navigate(socket, to: ~p"/games/#{game_id}")}
 
@@ -153,7 +158,9 @@ defmodule RachelWeb.LobbyLive do
 
   @impl true
   def handle_event("join_game", %{"game-id" => game_id}, socket) do
-    case GameManager.join_game(game_id, socket.assigns.player_name) do
+    user_id = if socket.assigns.current_user, do: socket.assigns.current_user.id, else: nil
+
+    case GameManager.join_game(game_id, socket.assigns.player_name, user_id) do
       {:ok, _player_id} ->
         {:noreply, push_navigate(socket, to: ~p"/games/#{game_id}")}
 
@@ -174,9 +181,12 @@ defmodule RachelWeb.LobbyLive do
 
   # Private functions
 
-  defp create_game_with_type(player_name, "ai") do
+  defp create_game_with_type(player_name, "ai", user) do
+    # Build player tuple based on whether user is authenticated
+    player = build_player_tuple(player_name, user)
+
     # Create a game with AI players
-    case GameManager.create_ai_game(player_name, 3, :medium) do
+    case GameManager.create_ai_game(player, 3, :medium) do
       {:ok, game_id} ->
         # Auto-start AI games
         GameManager.start_game(game_id)
@@ -187,8 +197,20 @@ defmodule RachelWeb.LobbyLive do
     end
   end
 
-  defp create_game_with_type(player_name, "multiplayer") do
-    GameManager.create_lobby(player_name)
+  defp create_game_with_type(player_name, "multiplayer", user) do
+    # Build player tuple based on whether user is authenticated
+    player = build_player_tuple(player_name, user)
+    GameManager.create_lobby(player)
+  end
+
+  defp build_player_tuple(name, nil), do: {:anonymous, name}
+  defp build_player_tuple(name, %{id: user_id}), do: {:user, user_id, name}
+
+  defp get_current_user(socket) do
+    case socket.assigns do
+      %{current_scope: %{user: user}} -> user
+      _ -> nil
+    end
   end
 
   defp list_games do

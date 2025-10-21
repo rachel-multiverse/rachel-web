@@ -9,9 +9,19 @@ defmodule Rachel.Game.GameState do
   @type status :: :waiting | :playing | :finished
   @type direction :: :clockwise | :counter_clockwise
 
+  @type player :: %{
+          id: String.t(),
+          user_id: integer() | nil,
+          name: String.t(),
+          hand: list(Card.t()),
+          type: :human | :ai,
+          status: :playing | :won,
+          difficulty: atom() | nil
+        }
+
   @type t :: %__MODULE__{
           id: String.t(),
-          players: list(map()),
+          players: list(player()),
           deck: list(Card.t()),
           discard_pile: list(Card.t()),
           current_player_index: non_neg_integer(),
@@ -49,7 +59,12 @@ defmodule Rachel.Game.GameState do
 
   @doc """
   Creates a new game state with the given players.
-  Players can be strings (human) or {:ai, name, difficulty} tuples.
+  Players can be:
+    - Strings (anonymous human): {:anonymous, name}
+    - Authenticated user: {:user, user_id, name}
+    - AI player: {:ai, name, difficulty}
+    - Map (for testing): %{id: ..., user_id: ..., name: ..., ...}
+
   Options:
     - deck_count: number of decks to use (default: 1)
   """
@@ -61,6 +76,7 @@ defmodule Rachel.Game.GameState do
         {:ai, name, difficulty} ->
           %{
             id: Ecto.UUID.generate(),
+            user_id: nil,
             name: name,
             hand: [],
             type: :ai,
@@ -68,18 +84,44 @@ defmodule Rachel.Game.GameState do
             status: :playing
           }
 
-        name when is_binary(name) ->
+        {:user, user_id, name} when is_integer(user_id) ->
           %{
             id: Ecto.UUID.generate(),
+            user_id: user_id,
             name: name,
             hand: [],
             type: :human,
+            difficulty: nil,
             status: :playing
           }
-          
+
+        {:anonymous, name} when is_binary(name) ->
+          %{
+            id: Ecto.UUID.generate(),
+            user_id: nil,
+            name: name,
+            hand: [],
+            type: :human,
+            difficulty: nil,
+            status: :playing
+          }
+
+        # Backwards compatibility: plain string means anonymous
+        name when is_binary(name) ->
+          %{
+            id: Ecto.UUID.generate(),
+            user_id: nil,
+            name: name,
+            hand: [],
+            type: :human,
+            difficulty: nil,
+            status: :playing
+          }
+
         player_map when is_map(player_map) ->
           # Allow pre-formed player maps (for testing)
-          player_map
+          # Ensure user_id field exists
+          Map.put_new(player_map, :user_id, nil)
       end)
 
     %__MODULE__{

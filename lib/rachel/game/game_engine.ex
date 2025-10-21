@@ -33,7 +33,7 @@ defmodule Rachel.Game.GameEngine do
   def draw_cards(game_id, player_id, reason \\ :cannot_play),
     do: call(game_id, {:draw, player_id, reason})
 
-  def add_player(game_id, name), do: call(game_id, {:join, name})
+  def add_player(game_id, name, user_id \\ nil), do: call(game_id, {:join, name, user_id})
   def remove_player(game_id, player_id), do: call(game_id, {:leave, player_id})
   def subscribe(game_id), do: Phoenix.PubSub.subscribe(Rachel.PubSub, "game:#{game_id}")
   def unsubscribe(game_id), do: Phoenix.PubSub.unsubscribe(Rachel.PubSub, "game:#{game_id}")
@@ -94,13 +94,15 @@ defmodule Rachel.Game.GameEngine do
     end
   end
 
-  def handle_call({:join, name}, _from, %{game: %{status: :waiting, players: players}} = state)
+  def handle_call({:join, name, user_id}, _from, %{game: %{status: :waiting, players: players}} = state)
       when length(players) < 8 do
     player = %{
       id: Ecto.UUID.generate(),
+      user_id: user_id,
       name: name,
       hand: [],
       type: :human,
+      difficulty: nil,
       status: :playing
     }
 
@@ -110,7 +112,7 @@ defmodule Rachel.Game.GameEngine do
     {:reply, {:ok, player.id}, new_state}
   end
 
-  def handle_call({:join, _name}, _from, state) do
+  def handle_call({:join, _name, _user_id}, _from, state) do
     {:reply, {:error, :cannot_join}, state}
   end
 

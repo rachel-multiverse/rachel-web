@@ -7,7 +7,11 @@ defmodule Rachel.GameManager do
 
   @doc """
   Creates a new game with the given players.
-  Players can be strings (human players) or tuples {:ai, name, difficulty}.
+  Players can be:
+    - {:user, user_id, name} for authenticated users
+    - {:anonymous, name} for anonymous players
+    - {:ai, name, difficulty} for AI players
+    - Strings (backwards compat, treated as anonymous)
   """
   def create_game(players) when is_list(players) and length(players) >= 2 do
     case GameSupervisor.start_game(players) do
@@ -21,23 +25,25 @@ defmodule Rachel.GameManager do
 
   @doc """
   Creates a game with AI opponents.
+  Player can be {:user, user_id, name}, {:anonymous, name}, or a string.
   """
-  def create_ai_game(player_name, num_ai \\ 3, difficulty \\ :medium) do
+  def create_ai_game(player, num_ai \\ 3, difficulty \\ :medium) do
     ai_players =
       for i <- 1..num_ai do
         name = Rachel.Game.AIPlayer.personality_name(difficulty, i - 1)
         {:ai, name, difficulty}
       end
 
-    players = [player_name | ai_players]
+    players = [player | ai_players]
     create_game(players)
   end
 
   @doc """
   Creates a new lobby game that players can join.
+  Host can be {:user, user_id, name}, {:anonymous, name}, or a string.
   """
-  def create_lobby(host_name) do
-    case GameSupervisor.start_game([host_name]) do
+  def create_lobby(host) do
+    case GameSupervisor.start_game([host]) do
       {:ok, game_id} ->
         {:ok, game_id}
 
@@ -49,8 +55,8 @@ defmodule Rachel.GameManager do
   @doc """
   Joins a player to a lobby game.
   """
-  def join_game(game_id, player_name) do
-    GameEngine.add_player(game_id, player_name)
+  def join_game(game_id, player_name, user_id \\ nil) do
+    GameEngine.add_player(game_id, player_name, user_id)
   end
 
   @doc """

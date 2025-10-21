@@ -14,30 +14,32 @@ defmodule RachelWeb.API.GameController do
   
   def create(conn, %{"type" => "ai"}) do
     user = conn.assigns.current_user
-    
-    case GameManager.create_ai_game(user.username, 3, :medium) do
+    player = {:user, user.id, user.display_name || user.username}
+
+    case GameManager.create_ai_game(player, 3, :medium) do
       {:ok, game_id} ->
         GameManager.start_game(game_id)
         {:ok, game} = GameManager.get_game(game_id)
-        
+
         json(conn, %{game: game_json(game)})
-        
+
       {:error, reason} ->
         conn
-        |> put_status(:unprocessable_entity) 
+        |> put_status(:unprocessable_entity)
         |> json(%{error: to_string(reason)})
     end
   end
-  
+
   def create(conn, %{"type" => "multiplayer"}) do
     user = conn.assigns.current_user
-    
-    case GameManager.create_lobby(user.username) do
+    player = {:user, user.id, user.display_name || user.username}
+
+    case GameManager.create_lobby(player) do
       {:ok, game_id} ->
         {:ok, game} = GameManager.get_game(game_id)
-        
+
         json(conn, %{game: game_json(game)})
-        
+
       {:error, reason} ->
         conn
         |> put_status(:unprocessable_entity)
@@ -59,12 +61,13 @@ defmodule RachelWeb.API.GameController do
   
   def join(conn, %{"id" => game_id}) do
     user = conn.assigns.current_user
-    
-    case GameManager.join_game(game_id, user.username) do
+    player_name = user.display_name || user.username
+
+    case GameManager.join_game(game_id, player_name, user.id) do
       {:ok, _player_id} ->
         {:ok, game} = GameManager.get_game(game_id)
         json(conn, %{game: game_json(game)})
-        
+
       {:error, reason} ->
         conn
         |> put_status(:unprocessable_entity)
