@@ -17,6 +17,7 @@ defmodule Rachel.Application do
       Rachel.Game.SessionManager,
       Rachel.Game.ConnectionMonitor,
       Rachel.Game.GameSupervisor,
+      Rachel.Game.GameCleanup,
       # Start to serve requests, typically the last entry
       RachelWeb.Endpoint
     ]
