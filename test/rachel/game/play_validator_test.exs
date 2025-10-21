@@ -1,20 +1,30 @@
 defmodule Rachel.Game.PlayValidatorTest do
   use ExUnit.Case, async: true
-  
+
   alias Rachel.Game.{Card, GameState, PlayValidator}
 
   setup do
     players = [
-      %{id: "p1", name: "Player 1", hand: [
-        Card.new(:hearts, 5),
-        Card.new(:diamonds, 5),
-        Card.new(:hearts, 7),
-        Card.new(:spades, 2)
-      ], status: :playing},
-      %{id: "p2", name: "Player 2", hand: [
-        Card.new(:clubs, 8),
-        Card.new(:hearts, 9)
-      ], status: :playing}
+      %{
+        id: "p1",
+        name: "Player 1",
+        hand: [
+          Card.new(:hearts, 5),
+          Card.new(:diamonds, 5),
+          Card.new(:hearts, 7),
+          Card.new(:spades, 2)
+        ],
+        status: :playing
+      },
+      %{
+        id: "p2",
+        name: "Player 2",
+        hand: [
+          Card.new(:clubs, 8),
+          Card.new(:hearts, 9)
+        ],
+        status: :playing
+      }
     ]
 
     game = %GameState{
@@ -80,22 +90,26 @@ defmodule Rachel.Game.PlayValidatorTest do
 
     test "validates Black Jacks can counter Black Jack attack", %{game: game} do
       # Add Black Jack to player's hand
-      players = List.update_at(game.players, 0, fn p -> 
-        %{p | hand: p.hand ++ [Card.new(:clubs, 11)]}
-      end)
+      players =
+        List.update_at(game.players, 0, fn p ->
+          %{p | hand: p.hand ++ [Card.new(:clubs, 11)]}
+        end)
+
       game = %{game | players: players, pending_attack: {:black_jacks, 5}}
-      
+
       cards = [Card.new(:clubs, 11)]
       assert :ok = PlayValidator.validate_play(game, "p1", cards)
     end
 
     test "validates Red Jacks can counter Black Jack attack", %{game: game} do
       # Add Red Jack to player's hand
-      players = List.update_at(game.players, 0, fn p -> 
-        %{p | hand: p.hand ++ [Card.new(:hearts, 11)]}
-      end)
+      players =
+        List.update_at(game.players, 0, fn p ->
+          %{p | hand: p.hand ++ [Card.new(:hearts, 11)]}
+        end)
+
       game = %{game | players: players, pending_attack: {:black_jacks, 5}}
-      
+
       # Red Jacks CANCEL Black Jack attacks
       cards = [Card.new(:hearts, 11)]
       assert :ok = PlayValidator.validate_play(game, "p1", cards)
@@ -103,11 +117,13 @@ defmodule Rachel.Game.PlayValidatorTest do
 
     test "rejects playing Black Jack to counter 2s attack", %{game: game} do
       # Add Black Jack to player's hand
-      players = List.update_at(game.players, 0, fn p -> 
-        %{p | hand: p.hand ++ [Card.new(:clubs, 11)]}
-      end)
+      players =
+        List.update_at(game.players, 0, fn p ->
+          %{p | hand: p.hand ++ [Card.new(:clubs, 11)]}
+        end)
+
       game = %{game | players: players, pending_attack: {:twos, 2}}
-      
+
       # Cannot play Black Jack against 2s attack
       cards = [Card.new(:clubs, 11)]
       assert {:error, :invalid_counter} = PlayValidator.validate_play(game, "p1", cards)

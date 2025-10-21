@@ -43,7 +43,9 @@ defmodule RachelWeb.HealthController do
   defp check_database do
     try do
       case Ecto.Adapters.SQL.query(Rachel.Repo, "SELECT 1", []) do
-        {:ok, _} -> :ok
+        {:ok, _} ->
+          :ok
+
         {:error, error} ->
           Logger.error("Database health check failed: #{inspect(error)}")
           :error
@@ -72,9 +74,10 @@ defmodule RachelWeb.HealthController do
   defp format_checks(checks) do
     checks
     |> Enum.map(fn {name, status} ->
-      {name, %{
-        status: if(status == :ok, do: "pass", else: "fail")
-      }}
+      {name,
+       %{
+         status: if(status == :ok, do: "pass", else: "fail")
+       }}
     end)
     |> Enum.into(%{})
   end

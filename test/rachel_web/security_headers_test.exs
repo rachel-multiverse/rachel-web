@@ -19,6 +19,7 @@ defmodule RachelWeb.SecurityHeadersTest do
 
     test "endpoint sets Permissions-Policy header", %{conn: conn} do
       conn = get(conn, ~p"/")
+
       assert get_resp_header(conn, "permissions-policy") == [
                "geolocation=(), microphone=(), camera=()"
              ]
@@ -65,15 +66,17 @@ defmodule RachelWeb.SecurityHeadersTest do
     end
 
     test "security headers are present on API routes", %{conn: conn} do
-      conn = post(conn, ~p"/api/auth/login", %{
-        email: "test@example.com",
-        password: "password123"
-      })
+      conn =
+        post(conn, ~p"/api/auth/login", %{
+          email: "test@example.com",
+          password: "password123"
+        })
 
       # All security headers should be present
       assert get_resp_header(conn, "x-frame-options") == ["DENY"]
       assert get_resp_header(conn, "x-content-type-options") == ["nosniff"]
       assert get_resp_header(conn, "referrer-policy") == ["strict-origin-when-cross-origin"]
+
       assert get_resp_header(conn, "permissions-policy") == [
                "geolocation=(), microphone=(), camera=()"
              ]
@@ -86,6 +89,7 @@ defmodule RachelWeb.SecurityHeadersTest do
       assert get_resp_header(conn, "x-frame-options") == ["DENY"]
       assert get_resp_header(conn, "x-content-type-options") == ["nosniff"]
       assert get_resp_header(conn, "referrer-policy") == ["strict-origin-when-cross-origin"]
+
       assert get_resp_header(conn, "permissions-policy") == [
                "geolocation=(), microphone=(), camera=()"
              ]

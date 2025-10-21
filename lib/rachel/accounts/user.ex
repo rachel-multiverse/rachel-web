@@ -8,7 +8,7 @@ defmodule Rachel.Accounts.User do
     field :hashed_password, :string, redact: true
     field :confirmed_at, :utc_datetime
     field :authenticated_at, :utc_datetime, virtual: true
-    
+
     # Game-specific fields
     field :username, :string
     field :display_name, :string
@@ -29,12 +29,14 @@ defmodule Rachel.Accounts.User do
   def registration_changeset(user, attrs, opts \\ []) do
     # For magic link registration, we don't require password
     password_provided = Map.get(attrs, "password") || Map.get(attrs, :password)
-    password_opts = if is_binary(password_provided) and password_provided != "" do
-      opts
-    else
-      Keyword.put(opts, :require_password, false)
-    end
-    
+
+    password_opts =
+      if is_binary(password_provided) and password_provided != "" do
+        opts
+      else
+        Keyword.put(opts, :require_password, false)
+      end
+
     user
     |> cast(attrs, [:email, :password, :username, :display_name])
     |> validate_email(opts)
@@ -149,7 +151,7 @@ defmodule Rachel.Accounts.User do
 
   defp validate_password(changeset, opts) do
     require_password? = Keyword.get(opts, :require_password, true)
-    
+
     changeset
     |> then(fn changeset ->
       if require_password? do

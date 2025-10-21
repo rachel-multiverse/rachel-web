@@ -191,14 +191,16 @@ defmodule Rachel.Game.GameState do
          {:ok, player_idx} <- get_player_index(game, player_id) do
       # Clear any existing nomination BEFORE playing (it was for this turn)
       game_after_clear = if game.nominated_suit, do: %{game | nominated_suit: nil}, else: game
-      
+
       {:ok,
        game_after_clear
        |> remove_cards_from_player(player_idx, cards)
        |> add_cards_to_discard(cards)
-       |> EffectProcessor.apply_effects(cards, nominated_suit)  # May set new nomination
+       # May set new nomination
+       |> EffectProcessor.apply_effects(cards, nominated_suit)
        |> TurnManager.check_winner(player_idx)
-       |> TurnManager.advance_turn()  # Keeps new nominations
+       # Keeps new nominations
+       |> TurnManager.advance_turn()
        |> update_timestamp()
        |> increment_turn_count()}
     end

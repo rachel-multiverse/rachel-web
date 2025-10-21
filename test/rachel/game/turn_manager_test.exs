@@ -1,6 +1,6 @@
 defmodule Rachel.Game.TurnManagerTest do
   use ExUnit.Case, async: true
-  
+
   alias Rachel.Game.TurnManager
 
   setup do
@@ -73,7 +73,7 @@ defmodule Rachel.Game.TurnManagerTest do
       # Mark player 2 as also won
       players = List.update_at(game.players, 1, &Map.put(&1, :status, :won))
       game = %{game | players: players}
-      
+
       result = TurnManager.advance_turn(game)
       # From 0, skip 1 (won), go to 2
       assert result.current_player_index == 2
@@ -86,10 +86,11 @@ defmodule Rachel.Game.TurnManagerTest do
     end
 
     test "returns true when only one player still playing", %{game: game} do
-      players = game.players
-      |> List.update_at(1, &Map.put(&1, :status, :won))
-      |> List.update_at(2, &Map.put(&1, :status, :won))
-      
+      players =
+        game.players
+        |> List.update_at(1, &Map.put(&1, :status, :won))
+        |> List.update_at(2, &Map.put(&1, :status, :won))
+
       game = %{game | players: players}
       assert TurnManager.should_end?(game)
     end
@@ -105,9 +106,9 @@ defmodule Rachel.Game.TurnManagerTest do
     test "marks player as winner when hand is empty", %{game: game} do
       players = List.update_at(game.players, 2, &Map.put(&1, :hand, []))
       game = %{game | players: players}
-      
+
       result = TurnManager.check_winner(game, 2)
-      
+
       winner = Enum.at(result.players, 2)
       assert winner.status == :won
       assert "p3" in result.winners
@@ -115,7 +116,7 @@ defmodule Rachel.Game.TurnManagerTest do
 
     test "doesn't mark player as winner when hand has cards", %{game: game} do
       result = TurnManager.check_winner(game, 0)
-      
+
       player = Enum.at(result.players, 0)
       assert player.status == :playing
       assert "p1" not in result.winners
@@ -124,9 +125,9 @@ defmodule Rachel.Game.TurnManagerTest do
     test "appends to existing winners list", %{game: game} do
       players = List.update_at(game.players, 1, &Map.put(&1, :hand, []))
       game = %{game | players: players}
-      
+
       result = TurnManager.check_winner(game, 1)
-      
+
       assert result.winners == ["p4", "p2"]
     end
   end

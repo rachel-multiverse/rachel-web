@@ -11,7 +11,9 @@ defmodule RachelWeb.LobbyLive do
 
     # Get current user from socket assigns (set by router)
     current_user = get_current_user(socket)
-    default_name = if current_user, do: current_user.display_name || current_user.username, else: ""
+
+    default_name =
+      if current_user, do: current_user.display_name || current_user.username, else: ""
 
     {:ok,
      socket

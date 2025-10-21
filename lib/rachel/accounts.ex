@@ -122,7 +122,7 @@ defmodule Rachel.Accounts do
       games_won: if(won, do: user.games_won + 1, else: user.games_won),
       total_turns: user.total_turns + turns
     }
-    
+
     update_user_stats(user, new_stats)
   end
 

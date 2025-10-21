@@ -10,7 +10,7 @@ defmodule Rachel.AccountsFixtures do
   alias Rachel.Accounts.Scope
 
   def unique_user_email, do: "user#{System.unique_integer()}@example.com"
-  def unique_username, do: "user#{:rand.uniform(999999)}"
+  def unique_username, do: "user#{:rand.uniform(999_999)}"
   def valid_user_password, do: "hello world!"
 
   def valid_user_attributes(attrs \\ %{}) do

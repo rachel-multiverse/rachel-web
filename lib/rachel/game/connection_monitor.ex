@@ -6,11 +6,13 @@ defmodule Rachel.Game.ConnectionMonitor do
 
   use GenServer
   require Logger
-  
+
   alias Rachel.Game.SessionManager
 
-  @disconnect_grace_period_ms 10_000  # 10 seconds before marking as disconnected
-  @reconnect_timeout_ms 30_000        # 30 seconds to reconnect before AI takeover
+  # 10 seconds before marking as disconnected
+  @disconnect_grace_period_ms 10_000
+  # 30 seconds to reconnect before AI takeover
+  @reconnect_timeout_ms 30_000
 
   defstruct monitors: %{}, timers: %{}
 
@@ -66,7 +68,7 @@ defmodule Rachel.Game.ConnectionMonitor do
   def handle_call({:monitor, session_token, socket_pid}, _from, state) do
     # Start monitoring the socket process
     ref = Process.monitor(socket_pid)
-    
+
     monitor_info = %{
       session_token: session_token,
       socket_pid: socket_pid,
@@ -74,15 +76,17 @@ defmodule Rachel.Game.ConnectionMonitor do
       status: :connected,
       last_heartbeat: System.monotonic_time(:millisecond)
     }
-    
+
     new_monitors = Map.put(state.monitors, session_token, monitor_info)
-    
+
     # Start heartbeat timer
-    timer_ref = Process.send_after(self(), {:check_heartbeat, session_token}, @disconnect_grace_period_ms)
+    timer_ref =
+      Process.send_after(self(), {:check_heartbeat, session_token}, @disconnect_grace_period_ms)
+
     new_timers = Map.put(state.timers, session_token, timer_ref)
-    
+
     Logger.info("Started monitoring connection for session #{session_token}")
-    
+
     {:reply, :ok, %{state | monitors: new_monitors, timers: new_timers}}
   end
 
@@ -91,10 +95,10 @@ defmodule Rachel.Game.ConnectionMonitor do
       {:ok, session} ->
         # Cancel any pending disconnect/takeover timers
         state = cancel_timers(state, session_token)
-        
+
         # Update monitor info
         ref = Process.monitor(socket_pid)
-        
+
         monitor_info = %{
           session_token: session_token,
           socket_pid: socket_pid,
@@ -102,20 +106,26 @@ defmodule Rachel.Game.ConnectionMonitor do
           status: :connected,
           last_heartbeat: System.monotonic_time(:millisecond)
         }
-        
+
         new_monitors = Map.put(state.monitors, session_token, monitor_info)
-        
+
         # Restart heartbeat timer
-        timer_ref = Process.send_after(self(), {:check_heartbeat, session_token}, @disconnect_grace_period_ms)
+        timer_ref =
+          Process.send_after(
+            self(),
+            {:check_heartbeat, session_token},
+            @disconnect_grace_period_ms
+          )
+
         new_timers = Map.put(state.timers, session_token, timer_ref)
-        
+
         # Update session status
         SessionManager.update_connection_status(session_token, :connected)
-        
+
         Logger.info("Player reconnected: #{session.player_name} to game #{session.game_id}")
-        
+
         {:reply, {:ok, session}, %{state | monitors: new_monitors, timers: new_timers}}
-      
+
       error ->
         {:reply, error, state}
     end
@@ -125,17 +135,17 @@ defmodule Rachel.Game.ConnectionMonitor do
     case Map.get(state.monitors, session_token) do
       nil ->
         {:noreply, state}
-      
+
       monitor_info ->
         # Stop monitoring
         Process.demonitor(monitor_info.monitor_ref, [:flush])
-        
+
         # Cancel timers
         state = cancel_timers(state, session_token)
-        
+
         # Remove from monitors
         new_monitors = Map.delete(state.monitors, session_token)
-        
+
         {:noreply, %{state | monitors: new_monitors}}
     end
   end
@@ -144,12 +154,12 @@ defmodule Rachel.Game.ConnectionMonitor do
     case Map.get(state.monitors, session_token) do
       nil ->
         {:noreply, state}
-      
+
       monitor_info ->
         # Update last heartbeat
         updated_info = Map.put(monitor_info, :last_heartbeat, System.monotonic_time(:millisecond))
         new_monitors = Map.put(state.monitors, session_token, updated_info)
-        
+
         {:noreply, %{state | monitors: new_monitors}}
     end
   end
@@ -158,24 +168,26 @@ defmodule Rachel.Game.ConnectionMonitor do
     case Map.get(state.monitors, session_token) do
       nil ->
         {:noreply, state}
-      
+
       monitor_info ->
         # Mark as disconnected
         updated_info = Map.put(monitor_info, :status, :disconnected)
         new_monitors = Map.put(state.monitors, session_token, updated_info)
-        
+
         # Cancel existing timer
         state = cancel_timers(state, session_token)
-        
+
         # Start reconnect timeout timer
-        timer_ref = Process.send_after(self(), {:reconnect_timeout, session_token}, @reconnect_timeout_ms)
+        timer_ref =
+          Process.send_after(self(), {:reconnect_timeout, session_token}, @reconnect_timeout_ms)
+
         new_timers = Map.put(state.timers, session_token, timer_ref)
-        
+
         # Update session status
         SessionManager.update_connection_status(session_token, :disconnected)
-        
+
         Logger.info("Player disconnected, waiting for reconnect: #{session_token}")
-        
+
         {:noreply, %{state | monitors: new_monitors, timers: new_timers}}
     end
   end
@@ -184,17 +196,23 @@ defmodule Rachel.Game.ConnectionMonitor do
     case Map.get(state.monitors, session_token) do
       nil ->
         {:noreply, state}
-      
+
       monitor_info ->
         now = System.monotonic_time(:millisecond)
         time_since_heartbeat = now - monitor_info.last_heartbeat
-        
+
         if time_since_heartbeat > @disconnect_grace_period_ms do
           # No heartbeat received, mark as disconnected
           handle_cast({:disconnected, session_token}, state)
         else
           # Schedule next check
-          timer_ref = Process.send_after(self(), {:check_heartbeat, session_token}, @disconnect_grace_period_ms)
+          timer_ref =
+            Process.send_after(
+              self(),
+              {:check_heartbeat, session_token},
+              @disconnect_grace_period_ms
+            )
+
           new_timers = Map.put(state.timers, session_token, timer_ref)
           {:noreply, %{state | timers: new_timers}}
         end
@@ -205,17 +223,19 @@ defmodule Rachel.Game.ConnectionMonitor do
     case SessionManager.validate_session(session_token) do
       {:ok, session} ->
         # Player didn't reconnect in time, handle AI takeover or pause
-        Logger.warning("Reconnect timeout for player #{session.player_name} in game #{session.game_id}")
-        
+        Logger.warning(
+          "Reconnect timeout for player #{session.player_name} in game #{session.game_id}"
+        )
+
         # Notify game engine to handle player timeout
         handle_player_timeout(session)
-        
+
         # Clean up monitoring
         new_monitors = Map.delete(state.monitors, session_token)
         new_timers = Map.delete(state.timers, session_token)
-        
+
         {:noreply, %{state | monitors: new_monitors, timers: new_timers}}
-      
+
       _ ->
         {:noreply, state}
     end
@@ -226,7 +246,7 @@ defmodule Rachel.Game.ConnectionMonitor do
     case Enum.find(state.monitors, fn {_token, info} -> info.socket_pid == pid end) do
       nil ->
         {:noreply, state}
-      
+
       {session_token, _monitor_info} ->
         # Socket process died, handle as disconnection
         handle_cast({:disconnected, session_token}, state)
@@ -239,7 +259,7 @@ defmodule Rachel.Game.ConnectionMonitor do
     case Map.get(state.timers, session_token) do
       nil ->
         state
-      
+
       timer_ref ->
         Process.cancel_timer(timer_ref)
         new_timers = Map.delete(state.timers, session_token)
@@ -252,7 +272,7 @@ defmodule Rachel.Game.ConnectionMonitor do
     case Registry.lookup(Rachel.GameRegistry, session.game_id) do
       [{pid, _}] ->
         GenServer.cast(pid, {:player_timeout, session.player_id})
-      
+
       [] ->
         Logger.error("Game not found for timeout: #{session.game_id}")
     end

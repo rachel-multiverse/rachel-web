@@ -10,7 +10,7 @@ defmodule Rachel.Game.TurnManager do
   def advance_turn(game) do
     # Apply any pending skips when advancing the turn
     skip_count = game.pending_skips || 0
-    
+
     next_index =
       find_next_active_player(
         game.current_player_index,
@@ -18,13 +18,13 @@ defmodule Rachel.Game.TurnManager do
         game.direction,
         skip_count
       )
-    
+
     # IO.puts("advance_turn: from #{game.current_player_index} to #{next_index}, skips: #{skip_count}")
-    
+
     # Clear pending_skips after applying them, keep nominations for next player
     %{game | current_player_index: next_index, pending_skips: 0}
   end
-  
+
   @doc """
   Applies pending skips when a player can't counter (they get skipped).
   """
@@ -36,9 +36,10 @@ defmodule Rachel.Game.TurnManager do
           game.current_player_index,
           game.players,
           game.direction,
-          game.pending_skips  # Apply all skips
+          # Apply all skips
+          game.pending_skips
         )
-      
+
       # Clear skips after applying them
       %{game | current_player_index: next_index, nominated_suit: nil, pending_skips: 0}
     else
@@ -100,7 +101,7 @@ defmodule Rachel.Game.TurnManager do
 
     next_idx = current_index + step * steps_to_take
     next_idx = Integer.mod(next_idx, player_count)
-    
+
     # IO.puts("find_next: current=#{current_index}, step=#{step}, steps=#{steps_to_take}, next=#{next_idx}, count=#{player_count}")
 
     find_active_player(next_idx, players, direction, player_count, 0)
@@ -117,7 +118,7 @@ defmodule Rachel.Game.TurnManager do
 
   defp check_player_status(index, players, direction, player_count, attempts) do
     player = Enum.at(players, index)
-    
+
     # IO.puts("check_player: index=#{index}, status=#{inspect(player.status)}")
 
     if player.status == :won do

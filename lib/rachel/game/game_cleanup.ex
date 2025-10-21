@@ -117,7 +117,7 @@ defmodule Rachel.Game.GameCleanup do
     |> Enum.filter(fn {_game_id, info} -> info != nil end)
     |> Enum.filter(fn {_game_id, info} -> should_cleanup?(info, now) end)
     |> Enum.map(fn {game_id, info} -> cleanup_game(game_id, info) end)
-    |> Enum.count(& &1 == :ok)
+    |> Enum.count(&(&1 == :ok))
   end
 
   defp get_game_info(game_id) do

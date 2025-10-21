@@ -35,23 +35,27 @@ defmodule RachelWeb.GameLive do
     ~H"""
     <div class="game-container min-h-screen bg-green-900 p-4" id="game-sounds" phx-hook="GameSounds">
       <!-- Connection Status Indicator -->
-      <div id="connection-status" phx-hook="ConnectionStatus" class="fixed top-4 right-4 z-50 bg-white rounded-lg px-3 py-2 shadow-lg">
+      <div
+        id="connection-status"
+        phx-hook="ConnectionStatus"
+        class="fixed top-4 right-4 z-50 bg-white rounded-lg px-3 py-2 shadow-lg"
+      >
         <span class="status-text text-sm font-medium">🟢 Connected</span>
       </div>
       
-      <!-- Session Persistence -->
+    <!-- Session Persistence -->
       <div id="session-persistence" phx-hook="SessionPersistence" class="hidden"></div>
       <div id="auto-reconnect" phx-hook="AutoReconnect" class="hidden"></div>
-      
+
       <div class="max-w-7xl mx-auto">
         
-        <!-- Game Over Screen -->
+    <!-- Game Over Screen -->
         <%= if @game.status == :finished do %>
           <div class="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-50">
             <div class="bg-gradient-to-br from-yellow-400 to-orange-500 rounded-2xl p-8 shadow-2xl text-center max-w-md mx-4 animate-pulse">
               <div class="text-6xl mb-4">🎉</div>
               <h1 class="text-4xl font-bold text-white mb-4">Game Over!</h1>
-              
+
               <%= if length(@game.winners) > 0 do %>
                 <div class="mb-6">
                   <%= for winner_id <- @game.winners do %>
@@ -62,7 +66,7 @@ defmodule RachelWeb.GameLive do
                   <% end %>
                 </div>
               <% end %>
-              
+
               <div class="mb-6 text-white">
                 <p class="text-lg mb-4">Final Statistics:</p>
                 <div class="bg-black bg-opacity-20 rounded-lg p-4 space-y-2">
@@ -94,26 +98,29 @@ defmodule RachelWeb.GameLive do
                   <% end %>
                 </div>
               </div>
-              
+
               <div class="flex gap-4 justify-center">
-                <button 
-                  phx-click="new_game" 
+                <button
+                  phx-click="new_game"
                   class="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-bold transition-colors"
                 >
                   Play Again
                 </button>
-                <a href="/" class="bg-gray-600 hover:bg-gray-700 text-white px-6 py-3 rounded-lg font-bold transition-colors">
+                <a
+                  href="/"
+                  class="bg-gray-600 hover:bg-gray-700 text-white px-6 py-3 rounded-lg font-bold transition-colors"
+                >
                   Back to Lobby
                 </a>
               </div>
             </div>
           </div>
           
-          <!-- Confetti Animation -->
+    <!-- Confetti Animation -->
           <div class="fixed inset-0 pointer-events-none z-40">
             <%= for i <- 1..30 do %>
               <% emoji = Enum.random(["🎊", "🎉", "✨", "🏆", "🎈", "🌟"]) %>
-              <div 
+              <div
                 class={"absolute animate-bounce text-4xl opacity-#{80 + rem(i, 20)}" <> 
                       " transition-all duration-#{1000 + rem(i * 100, 2000)}"}
                 style={"left: #{rem(i * 47, 100)}%; top: #{rem(i * 23, 100)}%; " <>
@@ -125,7 +132,7 @@ defmodule RachelWeb.GameLive do
             <% end %>
           </div>
           
-          <!-- Victory Sound Effect Trigger -->
+    <!-- Victory Sound Effect Trigger -->
           <div phx-hook="VictorySound" id="victory-sound" class="hidden"></div>
         <% end %>
         <!-- Game Header -->

@@ -94,7 +94,11 @@ defmodule Rachel.Game.GameEngine do
     end
   end
 
-  def handle_call({:join, name, user_id}, _from, %{game: %{status: :waiting, players: players}} = state)
+  def handle_call(
+        {:join, name, user_id},
+        _from,
+        %{game: %{status: :waiting, players: players}} = state
+      )
       when length(players) < 8 do
     player = %{
       id: Ecto.UUID.generate(),
@@ -118,7 +122,7 @@ defmodule Rachel.Game.GameEngine do
 
   def handle_call({:leave, player_id}, _from, state) do
     # Mark player as disconnected but keep in game
-    players = 
+    players =
       Enum.map(state.game.players, fn player ->
         if player.id == player_id do
           Map.put(player, :connection_status, :disconnected)
@@ -126,19 +130,19 @@ defmodule Rachel.Game.GameEngine do
           player
         end
       end)
-    
+
     new_game = %{state.game | players: players}
     new_state = %{state | game: new_game}
     broadcast(new_game, :player_left)
-    
+
     {:reply, :ok, new_state}
   end
 
   def handle_cast({:player_timeout, player_id}, state) do
     # Convert disconnected player to AI or skip their turns
     Logger.warning("Player #{player_id} timed out, converting to AI")
-    
-    players = 
+
+    players =
       Enum.map(state.game.players, fn player ->
         if player.id == player_id do
           player
@@ -149,14 +153,14 @@ defmodule Rachel.Game.GameEngine do
           player
         end
       end)
-    
+
     new_game = %{state.game | players: players}
     new_state = %{state | game: new_game} |> schedule_ai()
-    
+
     broadcast(new_game, :player_timeout)
     {:noreply, new_state}
   end
-  
+
   def handle_info(:ai_turn, %{game: game} = state) do
     case process_ai_turn(game) do
       {:ok, new_game} ->
@@ -275,7 +279,9 @@ defmodule Rachel.Game.GameEngine do
 
   defp validate_normal(game, cards) do
     case game.discard_pile do
-      [] -> {:error, :no_discard_pile}
+      [] ->
+        {:error, :no_discard_pile}
+
       [top | _] ->
         if Rules.can_play_card?(hd(cards), top, game.nominated_suit) do
           :ok

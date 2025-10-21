@@ -5,10 +5,12 @@ defmodule RachelWeb.Plugs.RateLimitTest do
     @tag :capture_log
     test "rate limiter sets headers on requests" do
       conn = build_conn()
-      conn = post(conn, ~p"/api/auth/login", %{
-        email: "test@example.com",
-        password: "password123"
-      })
+
+      conn =
+        post(conn, ~p"/api/auth/login", %{
+          email: "test@example.com",
+          password: "password123"
+        })
 
       # Should have rate limit headers (even if request fails auth)
       assert get_resp_header(conn, "x-ratelimit-limit") != []
@@ -21,10 +23,12 @@ defmodule RachelWeb.Plugs.RateLimitTest do
       # We won't test exhaustion since that would interfere with other tests
 
       conn = build_conn()
-      conn = post(conn, ~p"/api/auth/login", %{
-        email: "test@example.com",
-        password: "password123"
-      })
+
+      conn =
+        post(conn, ~p"/api/auth/login", %{
+          email: "test@example.com",
+          password: "password123"
+        })
 
       # Verify rate limiting headers are present
       assert ["10"] = get_resp_header(conn, "x-ratelimit-limit")
@@ -42,10 +46,12 @@ defmodule RachelWeb.Plugs.RateLimitTest do
       results =
         Enum.map(1..3, fn i ->
           conn = build_conn()
-          conn = post(conn, ~p"/api/auth/login", %{
-            email: "test#{i}@example.com",
-            password: "password123"
-          })
+
+          conn =
+            post(conn, ~p"/api/auth/login", %{
+              email: "test#{i}@example.com",
+              password: "password123"
+            })
 
           conn.status
         end)

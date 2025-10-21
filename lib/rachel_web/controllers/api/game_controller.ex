@@ -1,17 +1,17 @@
 defmodule RachelWeb.API.GameController do
   use RachelWeb, :controller
-  
+
   alias Rachel.GameManager
-  
+
   def index(conn, _params) do
-    games = 
+    games =
       GameManager.list_games()
       |> Enum.map(&get_game_info/1)
       |> Enum.reject(&is_nil/1)
-    
+
     json(conn, %{games: games})
   end
-  
+
   def create(conn, %{"type" => "ai"}) do
     user = conn.assigns.current_user
     player = {:user, user.id, user.display_name || user.username}
@@ -46,19 +46,19 @@ defmodule RachelWeb.API.GameController do
         |> json(%{error: to_string(reason)})
     end
   end
-  
+
   def show(conn, %{"id" => game_id}) do
     case GameManager.get_game(game_id) do
       {:ok, game} ->
         json(conn, %{game: game_json(game)})
-        
+
       {:error, _} ->
         conn
         |> put_status(:not_found)
         |> json(%{error: "Game not found"})
     end
   end
-  
+
   def join(conn, %{"id" => game_id}) do
     user = conn.assigns.current_user
     player_name = user.display_name || user.username
@@ -74,44 +74,44 @@ defmodule RachelWeb.API.GameController do
         |> json(%{error: to_string(reason)})
     end
   end
-  
+
   def play_cards(conn, %{"id" => game_id, "cards" => cards, "suit" => suit}) do
     user = conn.assigns.current_user
     parsed_cards = parse_cards(cards)
     nominated_suit = if suit && suit != "", do: String.to_existing_atom(suit), else: nil
-    
+
     case GameManager.play_cards(game_id, user.id, parsed_cards, nominated_suit) do
       {:ok, game} ->
         json(conn, %{game: game_json(game)})
-        
+
       {:error, reason} ->
         conn
         |> put_status(:unprocessable_entity)
         |> json(%{error: to_string(reason)})
     end
   end
-  
+
   def draw_cards(conn, %{"id" => game_id}) do
     user = conn.assigns.current_user
-    
+
     case GameManager.draw_cards(game_id, user.id, :cannot_play) do
       {:ok, game} ->
         json(conn, %{game: game_json(game)})
-        
+
       {:error, reason} ->
         conn
         |> put_status(:unprocessable_entity)
         |> json(%{error: to_string(reason)})
     end
   end
-  
+
   defp get_game_info(game_id) do
     case GameManager.get_game_info(game_id) do
       {:ok, info} -> info
       _ -> nil
     end
   end
-  
+
   defp game_json(game) do
     %{
       id: game.id,
@@ -128,7 +128,7 @@ defmodule RachelWeb.API.GameController do
       winners: game.winners
     }
   end
-  
+
   defp player_json(player) do
     %{
       id: player.id,
@@ -140,14 +140,14 @@ defmodule RachelWeb.API.GameController do
       hand: if(player.type == :human, do: Enum.map(player.hand, &card_json/1), else: nil)
     }
   end
-  
+
   defp card_json(card) do
     %{
       suit: card.suit,
       rank: card.rank
     }
   end
-  
+
   defp parse_cards(cards) when is_list(cards) do
     Enum.map(cards, fn %{"suit" => suit, "rank" => rank} ->
       Rachel.Game.Card.new(String.to_existing_atom(suit), rank)
