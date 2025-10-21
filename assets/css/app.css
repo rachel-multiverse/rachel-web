@@ -306,3 +306,49 @@
 .toast-enter {
   animation: slide-in-top 0.3s ease-out;
 }
+
+/* Flash effects for counters */
+@keyframes flash-red {
+  0%, 100% {
+    background-color: rgb(220, 38, 38);
+  }
+  50% {
+    background-color: rgb(239, 68, 68);
+    transform: scale(1.1);
+  }
+}
+
+@keyframes flash-yellow {
+  0%, 100% {
+    background-color: rgb(202, 138, 4);
+  }
+  50% {
+    background-color: rgb(234, 179, 8);
+    transform: scale(1.1);
+  }
+}
+
+.flash-red {
+  animation: flash-red 0.3s ease-out;
+}
+
+.flash-yellow {
+  animation: flash-yellow 0.3s ease-out;
+}
+
+/* Your turn glow effect */
+@keyframes your-turn-glow {
+  0% {
+    box-shadow: 0 0 0 0 rgba(250, 204, 21, 0.7);
+  }
+  50% {
+    box-shadow: 0 0 0 20px rgba(250, 204, 21, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(250, 204, 21, 0);
+  }
+}
+
+.your-turn-glow {
+  animation: your-turn-glow 1s ease-out;
+}
