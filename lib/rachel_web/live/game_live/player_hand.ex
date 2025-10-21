@@ -12,14 +12,14 @@ defmodule RachelWeb.GameLive.PlayerHand do
     <div>
       <!-- Your Hand -->
       <%= if @player && @player.type == :human do %>
-        <div class="player-hand bg-white/20 rounded-lg p-4">
+        <div class="player-hand bg-white/20 rounded-lg p-4" id="player-hand-cards" phx-hook="CardDrawAnimation">
           <div class="text-white text-center mb-4">
             Your Hand
             <%= if @is_your_turn do %>
               <span class="text-yellow-400 text-sm ml-2">← Your Turn</span>
             <% end %>
           </div>
-          <div class="flex flex-wrap justify-center gap-2">
+          <div class="flex flex-wrap justify-center gap-2" id="card-play-area" phx-hook="CardPlayAnimation">
             <%= for card <- @player.hand do %>
               <% is_playable =
                 @is_your_turn &&

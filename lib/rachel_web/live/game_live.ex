@@ -42,10 +42,11 @@ defmodule RachelWeb.GameLive do
       >
         <span class="status-text text-sm font-medium">🟢 Connected</span>
       </div>
-      
+
     <!-- Session Persistence -->
       <div id="session-persistence" phx-hook="SessionPersistence" class="hidden"></div>
       <div id="auto-reconnect" phx-hook="AutoReconnect" class="hidden"></div>
+      <div id="turn-transition" phx-hook="TurnTransition" class="hidden"></div>
 
       <div class="max-w-7xl mx-auto">
         
@@ -156,7 +157,10 @@ defmodule RachelWeb.GameLive do
              nil
            ) do
         {:ok, _game} ->
-          {:noreply, assign(socket, :selected_cards, [])}
+          {:noreply,
+           socket
+           |> assign(:selected_cards, [])
+           |> push_event("card-played", %{cards: socket.assigns.selected_cards})}
 
         {:error, reason} ->
           {:noreply, put_flash(socket, :error, error_message(reason))}
@@ -181,7 +185,8 @@ defmodule RachelWeb.GameLive do
         {:noreply,
          socket
          |> assign(:selected_cards, [])
-         |> assign(:show_suit_modal, false)}
+         |> assign(:show_suit_modal, false)
+         |> push_event("card-played", %{cards: socket.assigns.selected_cards})}
 
       {:error, reason} ->
         {:noreply, put_flash(socket, :error, error_message(reason))}
@@ -229,8 +234,14 @@ defmodule RachelWeb.GameLive do
              human_player.id,
              reason
            ) do
-        {:ok, _game} ->
-          {:noreply, assign(socket, :selected_cards, [])}
+        {:ok, game} ->
+          # Calculate how many cards were drawn
+          cards_drawn = length(Enum.at(game.players, 0).hand) - length(human_player.hand)
+
+          {:noreply,
+           socket
+           |> assign(:selected_cards, [])
+           |> push_event("cards-drawn", %{count: cards_drawn})}
 
         {:error, reason} ->
           {:noreply, put_flash(socket, :error, error_message(reason))}
@@ -253,11 +264,27 @@ defmodule RachelWeb.GameLive do
 
   @impl true
   def handle_info({_event, game}, socket) do
-    {:noreply,
-     socket
-     |> assign(:game, game)
-     |> assign(:current_player, current_player(game))
-     |> assign(:show_suit_modal, false)}
+    old_game = socket.assigns.game
+    is_your_turn = game.current_player_index == 0
+    was_your_turn = old_game.current_player_index == 0
+
+    # Detect turn change
+    turn_changed = is_your_turn && !was_your_turn
+
+    socket =
+      socket
+      |> assign(:game, game)
+      |> assign(:current_player, current_player(game))
+      |> assign(:show_suit_modal, false)
+
+    socket =
+      if turn_changed do
+        push_event(socket, "turn-changed", %{isYourTurn: true})
+      else
+        socket
+      end
+
+    {:noreply, socket}
   end
 
   # Helper functions - delegated to modules
