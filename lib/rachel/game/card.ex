@@ -14,6 +14,7 @@ defmodule Rachel.Game.Card do
           rank: rank()
         }
 
+  @derive Jason.Encoder
   defstruct [:suit, :rank]
 
   @suits [:hearts, :diamonds, :clubs, :spades]
