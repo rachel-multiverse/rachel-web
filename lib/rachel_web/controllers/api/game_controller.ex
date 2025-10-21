@@ -63,15 +63,22 @@ defmodule RachelWeb.API.GameController do
     user = conn.assigns.current_user
     player_name = user.display_name || user.username
 
-    case GameManager.join_game(game_id, player_name, user.id) do
-      {:ok, _player_id} ->
-        {:ok, game} = GameManager.get_game(game_id)
-        json(conn, %{game: game_json(game)})
+    try do
+      case GameManager.join_game(game_id, player_name, user.id) do
+        {:ok, _player_id} ->
+          {:ok, game} = GameManager.get_game(game_id)
+          json(conn, %{game: game_json(game)})
 
-      {:error, reason} ->
+        {:error, reason} ->
+          conn
+          |> put_status(:unprocessable_entity)
+          |> json(%{error: to_string(reason)})
+      end
+    catch
+      :exit, _ ->
         conn
-        |> put_status(:unprocessable_entity)
-        |> json(%{error: to_string(reason)})
+        |> put_status(:not_found)
+        |> json(%{error: "Game not found"})
     end
   end
 

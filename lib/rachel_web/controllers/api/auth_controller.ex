@@ -12,7 +12,7 @@ defmodule RachelWeb.API.AuthController do
         |> put_status(:created)
         |> json(%{
           user: user_json(user),
-          token: token
+          token: Base.encode64(token)
         })
 
       {:error, changeset} ->
@@ -31,7 +31,7 @@ defmodule RachelWeb.API.AuthController do
 
       json(conn, %{
         user: user_json(user),
-        token: token
+        token: Base.encode64(token)
       })
     else
       conn
@@ -71,7 +71,9 @@ defmodule RachelWeb.API.AuthController do
   defp translate_errors(changeset) do
     Ecto.Changeset.traverse_errors(changeset, fn {msg, opts} ->
       Enum.reduce(opts, msg, fn {key, value}, acc ->
-        String.replace(acc, "%{#{key}}", to_string(value))
+        # Convert value to string, handling lists properly
+        value_str = if is_list(value), do: Enum.join(value, ", "), else: to_string(value)
+        String.replace(acc, "%{#{key}}", value_str)
       end)
     end)
   end

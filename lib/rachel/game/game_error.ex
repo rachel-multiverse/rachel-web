@@ -39,6 +39,22 @@ defmodule Rachel.Game.GameError do
     }
   end
 
+  def new(:player_already_won, %{player_name: name} = details) do
+    %__MODULE__{
+      type: :player_already_won,
+      message: "#{name} has already won and cannot play",
+      details: details
+    }
+  end
+
+  def new(:player_already_won, details) do
+    %__MODULE__{
+      type: :player_already_won,
+      message: "This player has already won and cannot play",
+      details: details
+    }
+  end
+
   def new(:not_your_turn, %{current_player: name} = details) do
     %__MODULE__{
       type: :not_your_turn,

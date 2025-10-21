@@ -21,7 +21,13 @@ defmodule RachelWeb.Plugs.ApiAuth do
   end
 
   defp verify_token(token) do
-    case Accounts.get_user_by_session_token(token) do
+    # Tokens from auth endpoints are base64-encoded, need to decode
+    decoded_token = case Base.decode64(token) do
+      {:ok, decoded} -> decoded
+      :error -> token  # If not base64, use as-is (backwards compatibility)
+    end
+
+    case Accounts.get_user_by_session_token(decoded_token) do
       {user, _inserted_at} -> {:ok, user}
       nil -> {:error, :invalid_token}
     end
