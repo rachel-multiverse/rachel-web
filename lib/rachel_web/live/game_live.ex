@@ -141,8 +141,14 @@ defmodule RachelWeb.GameLive do
             <h1 class="text-2xl font-bold">Rachel Game</h1>
             <div class="flex gap-4">
               <span class="text-sm">Turn: {@game.turn_count}</span>
-              <span class="text-sm">
-                Current Player: {current_player_name(@game)}
+              <span class={[
+                "text-sm font-semibold px-3 py-1 rounded-lg transition-all",
+                @game.current_player_index == 0 && "your-turn bg-yellow-400 text-black",
+                @game.current_player_index != 0 && "bg-gray-600 text-white"
+              ]}>
+                {if @game.current_player_index == 0,
+                  do: "🎮 Your Turn!",
+                  else: current_player_name(@game) <> "'s turn"}
               </span>
               <span class="text-sm flex items-center gap-1">
                 Direction: {direction_symbol(@game.direction)}
@@ -214,16 +220,16 @@ defmodule RachelWeb.GameLive do
     <!-- Game Status -->
         <%= if @game.pending_attack do %>
           <div class="text-center mb-4">
-            <span class="bg-red-600 text-white px-4 py-2 rounded-lg">
-              Attack pending: {attack_description(@game.pending_attack)}
+            <span class="attack-counter bg-red-600 text-white px-4 py-2 rounded-lg inline-block font-bold">
+              ⚔️ Attack pending: {attack_description(@game.pending_attack)}
             </span>
           </div>
         <% end %>
 
         <%= if @game.pending_skips > 0 do %>
           <div class="text-center mb-4">
-            <span class="bg-yellow-600 text-white px-4 py-2 rounded-lg">
-              Skips pending: {@game.pending_skips}
+            <span class="skip-counter bg-yellow-600 text-white px-4 py-2 rounded-lg inline-block font-bold">
+              ⏭️ Skips pending: {@game.pending_skips}
             </span>
           </div>
         <% end %>
@@ -345,12 +351,10 @@ defmodule RachelWeb.GameLive do
     ~H"""
     <div
       class={[
-        "card w-20 h-28 bg-white rounded-lg border-2 flex flex-col items-center justify-center",
+        "card w-20 h-28 bg-white rounded-lg border-2 flex flex-col items-center justify-center shadow-lg",
         @clickable && "cursor-pointer",
-        "transition-all shadow-lg",
-        @clickable && "hover:scale-105",
-        @selected && "ring-4 ring-blue-500 scale-110",
-        @playable && "ring-2 ring-green-400 shadow-green-300",
+        @selected && "ring-4 ring-blue-500",
+        @playable && "ring-2 ring-green-400",
         @in_hand && !@clickable && !@selected && "opacity-50 grayscale",
         card_color_class(@card)
       ]}
