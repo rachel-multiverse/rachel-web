@@ -7,7 +7,8 @@ defmodule Rachel.Application do
 
   @impl true
   def start(_type, _args) do
-    children = [
+    # Build children list, conditionally including GameCleanup
+    base_children = [
       RachelWeb.Telemetry,
       Rachel.Repo,
       {DNSCluster, query: Application.get_env(:rachel, :dns_cluster_query) || :ignore},
@@ -16,11 +17,16 @@ defmodule Rachel.Application do
       {Registry, keys: :unique, name: Rachel.GameRegistry},
       Rachel.Game.SessionManager,
       Rachel.Game.ConnectionMonitor,
-      Rachel.Game.GameSupervisor,
-      Rachel.Game.GameCleanup,
-      # Start to serve requests, typically the last entry
-      RachelWeb.Endpoint
+      Rachel.Game.GameSupervisor
     ]
+
+    # Add GameCleanup only if enabled (disabled in tests)
+    children =
+      if Application.get_env(:rachel, :game_cleanup_enabled, true) do
+        base_children ++ [Rachel.Game.GameCleanup, RachelWeb.Endpoint]
+      else
+        base_children ++ [RachelWeb.Endpoint]
+      end
 
     # See https://hexdocs.pm/elixir/Supervisor.html
     # for other strategies and supported options

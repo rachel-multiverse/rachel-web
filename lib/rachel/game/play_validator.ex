@@ -67,7 +67,8 @@ defmodule Rachel.Game.PlayValidator do
     player = Enum.at(game.players, player_idx)
 
     if player.status == :won do
-      {:error, GameError.new(:player_already_won, %{player_id: player.id, player_name: player.name})}
+      {:error,
+       GameError.new(:player_already_won, %{player_id: player.id, player_name: player.name})}
     else
       :ok
     end

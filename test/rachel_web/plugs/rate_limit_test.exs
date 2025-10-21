@@ -1,6 +1,16 @@
 defmodule RachelWeb.Plugs.RateLimitTest do
   use RachelWeb.ConnCase
 
+  setup do
+    # Enable rate limiting for these tests
+    Application.put_env(:rachel, :rate_limit_enabled, true)
+
+    on_exit(fn ->
+      # Reset to test default (disabled)
+      Application.put_env(:rachel, :rate_limit_enabled, false)
+    end)
+  end
+
   describe "rate limiting" do
     @tag :capture_log
     test "rate limiter sets headers on requests" do

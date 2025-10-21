@@ -87,38 +87,64 @@ defmodule RachelWeb.API.GameController do
     parsed_cards = parse_cards(cards)
     nominated_suit = if suit && suit != "", do: String.to_existing_atom(suit), else: nil
 
-    case GameManager.play_cards(game_id, user.id, parsed_cards, nominated_suit) do
-      {:ok, game} ->
-        json(conn, %{game: game_json(game)})
+    with {:ok, game} <- GameManager.get_game(game_id),
+         {:ok, player_id} <- find_player_by_user_id(game, user.id) do
+      case GameManager.play_cards(game_id, player_id, parsed_cards, nominated_suit) do
+        {:ok, game} ->
+          json(conn, %{game: game_json(game)})
 
-      {:error, %Rachel.Game.GameError{} = error} ->
+        {:error, %Rachel.Game.GameError{} = error} ->
+          conn
+          |> put_status(:unprocessable_entity)
+          |> json(Rachel.Game.GameError.to_map(error))
+
+        {:error, reason} ->
+          conn
+          |> put_status(:unprocessable_entity)
+          |> json(%{error: to_string(reason), message: "An error occurred"})
+      end
+    else
+      {:error, :player_not_found} ->
         conn
         |> put_status(:unprocessable_entity)
-        |> json(Rachel.Game.GameError.to_map(error))
+        |> json(%{error: "player_not_found", message: "You are not a player in this game"})
 
-      {:error, reason} ->
+      {:error, _} ->
         conn
-        |> put_status(:unprocessable_entity)
-        |> json(%{error: to_string(reason), message: "An error occurred"})
+        |> put_status(:not_found)
+        |> json(%{error: "Game not found"})
     end
   end
 
   def draw_cards(conn, %{"id" => game_id}) do
     user = conn.assigns.current_user
 
-    case GameManager.draw_cards(game_id, user.id, :cannot_play) do
-      {:ok, game} ->
-        json(conn, %{game: game_json(game)})
+    with {:ok, game} <- GameManager.get_game(game_id),
+         {:ok, player_id} <- find_player_by_user_id(game, user.id) do
+      case GameManager.draw_cards(game_id, player_id, :cannot_play) do
+        {:ok, game} ->
+          json(conn, %{game: game_json(game)})
 
-      {:error, %Rachel.Game.GameError{} = error} ->
+        {:error, %Rachel.Game.GameError{} = error} ->
+          conn
+          |> put_status(:unprocessable_entity)
+          |> json(Rachel.Game.GameError.to_map(error))
+
+        {:error, reason} ->
+          conn
+          |> put_status(:unprocessable_entity)
+          |> json(%{error: to_string(reason), message: "An error occurred"})
+      end
+    else
+      {:error, :player_not_found} ->
         conn
         |> put_status(:unprocessable_entity)
-        |> json(Rachel.Game.GameError.to_map(error))
+        |> json(%{error: "player_not_found", message: "You are not a player in this game"})
 
-      {:error, reason} ->
+      {:error, _} ->
         conn
-        |> put_status(:unprocessable_entity)
-        |> json(%{error: to_string(reason), message: "An error occurred"})
+        |> put_status(:not_found)
+        |> json(%{error: "Game not found"})
     end
   end
 
@@ -126,6 +152,13 @@ defmodule RachelWeb.API.GameController do
     case GameManager.get_game_info(game_id) do
       {:ok, info} -> info
       _ -> nil
+    end
+  end
+
+  defp find_player_by_user_id(game, user_id) do
+    case Enum.find(game.players, fn player -> player.user_id == user_id end) do
+      nil -> {:error, :player_not_found}
+      player -> {:ok, player.id}
     end
   end
 
@@ -140,15 +173,19 @@ defmodule RachelWeb.API.GameController do
       deck_size: length(game.deck),
       top_card: if(game.discard_pile != [], do: card_json(hd(game.discard_pile)), else: nil),
       nominated_suit: game.nominated_suit,
-      pending_attack: game.pending_attack,
+      pending_attack: format_pending_attack(game.pending_attack),
       pending_skips: game.pending_skips,
       winners: game.winners
     }
   end
 
+  defp format_pending_attack(nil), do: nil
+  defp format_pending_attack({type, count}), do: %{type: type, count: count}
+
   defp player_json(player) do
     %{
       id: player.id,
+      user_id: player.user_id,
       name: player.name,
       type: player.type,
       status: player.status,
@@ -167,7 +204,14 @@ defmodule RachelWeb.API.GameController do
 
   defp parse_cards(cards) when is_list(cards) do
     Enum.map(cards, fn %{"suit" => suit, "rank" => rank} ->
-      Rachel.Game.Card.new(String.to_existing_atom(suit), rank)
+      Rachel.Game.Card.new(String.to_existing_atom(suit), parse_rank(rank))
     end)
   end
+
+  defp parse_rank(rank) when is_integer(rank), do: rank
+  defp parse_rank("A"), do: 14
+  defp parse_rank("K"), do: 13
+  defp parse_rank("Q"), do: 12
+  defp parse_rank("J"), do: 11
+  defp parse_rank(rank) when is_binary(rank), do: String.to_integer(rank)
 end

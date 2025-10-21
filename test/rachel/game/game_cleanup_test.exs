@@ -1,11 +1,17 @@
 defmodule Rachel.Game.GameCleanupTest do
-  use ExUnit.Case, async: false
+  use Rachel.DataCase, async: false
 
   alias Rachel.{GameManager}
   alias Rachel.Game.GameCleanup
 
-  # GameCleanup is already started by the application supervisor
-  # No need to start it in setup
+  # GameCleanup is disabled in tests, so we start it manually for these tests
+  setup do
+    # Start GameCleanup for this test
+    {:ok, pid} = start_supervised(GameCleanup)
+    # Allow GameCleanup to access the database sandbox
+    Ecto.Adapters.SQL.Sandbox.allow(Rachel.Repo, self(), pid)
+    :ok
+  end
 
   describe "game cleanup" do
     test "cleans up finished games older than 1 hour" do

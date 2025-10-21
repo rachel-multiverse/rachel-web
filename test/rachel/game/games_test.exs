@@ -226,10 +226,10 @@ defmodule Rachel.Game.GamesTest do
   describe "card serialization" do
     test "preserves all card properties" do
       cards = [
-        Card.new(:hearts, "A"),
-        Card.new(:spades, "K"),
-        Card.new(:diamonds, "2"),
-        Card.new(:clubs, "J")
+        Card.new(:hearts, 14),
+        Card.new(:spades, 13),
+        Card.new(:diamonds, 2),
+        Card.new(:clubs, 11)
       ]
 
       game =

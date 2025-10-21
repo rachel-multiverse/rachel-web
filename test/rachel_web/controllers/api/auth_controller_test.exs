@@ -133,14 +133,27 @@ defmodule RachelWeb.API.AuthControllerTest do
 
   describe "POST /api/auth/login" do
     setup do
-      user = user_fixture()
-      {:ok, user: user}
+      # Create user with password (not via magic link)
+      password = valid_user_password()
+
+      {:ok, user} =
+        Accounts.register_user(%{
+          email: unique_user_email(),
+          password: password,
+          username: unique_username()
+        })
+
+      {:ok, user: user, password: password}
     end
 
-    test "returns user and token with valid credentials", %{conn: conn, user: user} do
+    test "returns user and token with valid credentials", %{
+      conn: conn,
+      user: user,
+      password: password
+    } do
       login_params = %{
         "email" => user.email,
-        "password" => valid_user_password()
+        "password" => password
       }
 
       conn = post(conn, ~p"/api/auth/login", login_params)
@@ -156,10 +169,10 @@ defmodule RachelWeb.API.AuthControllerTest do
       assert String.length(token) > 0
     end
 
-    test "marks user as online after login", %{conn: conn, user: user} do
+    test "marks user as online after login", %{conn: conn, user: user, password: password} do
       login_params = %{
         "email" => user.email,
-        "password" => valid_user_password()
+        "password" => password
       }
 
       conn = post(conn, ~p"/api/auth/login", login_params)
@@ -210,11 +223,15 @@ defmodule RachelWeb.API.AuthControllerTest do
       end
     end
 
-    test "returned token can be used for authentication", %{conn: conn, user: user} do
+    test "returned token can be used for authentication", %{
+      conn: conn,
+      user: user,
+      password: password
+    } do
       # First login
       login_params = %{
         "email" => user.email,
-        "password" => valid_user_password()
+        "password" => password
       }
 
       conn = post(conn, ~p"/api/auth/login", login_params)

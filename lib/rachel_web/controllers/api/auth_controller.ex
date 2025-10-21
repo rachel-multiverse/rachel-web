@@ -27,10 +27,10 @@ defmodule RachelWeb.API.AuthController do
       token = Accounts.generate_user_session_token(user)
 
       # Update user online status
-      Accounts.user_online(user)
+      {:ok, updated_user} = Accounts.user_online(user)
 
       json(conn, %{
-        user: user_json(user),
+        user: user_json(updated_user),
         token: Base.encode64(token)
       })
     else

@@ -29,28 +29,34 @@ defmodule RachelWeb.Plugs.RateLimit do
   def init(opts), do: opts
 
   def call(conn, opts) do
-    identifier = get_identifier(conn, opts)
-    limit = Keyword.get(opts, :limit, 100)
-    period_ms = Keyword.get(opts, :period_ms, 60_000)
-    bucket = "rate_limit:#{conn.request_path}:#{identifier}"
+    # Skip rate limiting if disabled in config (e.g., in tests)
+    if Application.get_env(:rachel, :rate_limit_enabled, true) do
+      identifier = get_identifier(conn, opts)
+      limit = Keyword.get(opts, :limit, 100)
+      period_ms = Keyword.get(opts, :period_ms, 60_000)
+      bucket = "rate_limit:#{conn.request_path}:#{identifier}"
 
-    case Hammer.check_rate(bucket, period_ms, limit) do
-      {:allow, count} ->
-        conn
-        |> put_resp_header("x-ratelimit-limit", to_string(limit))
-        |> put_resp_header("x-ratelimit-remaining", to_string(limit - count))
-        |> put_resp_header("x-ratelimit-reset", to_string(period_ms))
+      case Hammer.check_rate(bucket, period_ms, limit) do
+        {:allow, count} ->
+          conn
+          |> put_resp_header("x-ratelimit-limit", to_string(limit))
+          |> put_resp_header("x-ratelimit-remaining", to_string(limit - count))
+          |> put_resp_header("x-ratelimit-reset", to_string(period_ms))
 
-      {:deny, _limit} ->
-        Logger.warning("Rate limit exceeded for #{identifier} on #{conn.request_path}")
+        {:deny, _limit} ->
+          Logger.warning("Rate limit exceeded for #{identifier} on #{conn.request_path}")
 
-        conn
-        |> put_status(:too_many_requests)
-        |> put_resp_header("retry-after", to_string(div(period_ms, 1000)))
-        |> put_resp_header("x-ratelimit-limit", to_string(limit))
-        |> put_resp_header("x-ratelimit-remaining", "0")
-        |> json(%{error: "Rate limit exceeded. Please try again later."})
-        |> halt()
+          conn
+          |> put_status(:too_many_requests)
+          |> put_resp_header("retry-after", to_string(div(period_ms, 1000)))
+          |> put_resp_header("x-ratelimit-limit", to_string(limit))
+          |> put_resp_header("x-ratelimit-remaining", "0")
+          |> json(%{error: "Rate limit exceeded. Please try again later."})
+          |> halt()
+      end
+    else
+      # Rate limiting disabled, just pass through
+      conn
     end
   end
 

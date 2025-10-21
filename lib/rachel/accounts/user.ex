@@ -27,14 +27,15 @@ defmodule Rachel.Accounts.User do
   A user changeset for registration.
   """
   def registration_changeset(user, attrs, opts \\ []) do
-    # For magic link registration, we don't require password
-    password_provided = Map.get(attrs, "password") || Map.get(attrs, :password)
-
     password_opts =
-      if is_binary(password_provided) and password_provided != "" do
-        opts
-      else
-        Keyword.put(opts, :require_password, false)
+      cond do
+        # If password is explicitly provided (even as empty string), validate it
+        Map.has_key?(attrs, "password") or Map.has_key?(attrs, :password) ->
+          opts
+
+        # If no password key at all, don't require it (for magic link auth)
+        true ->
+          Keyword.put(opts, :require_password, false)
       end
 
     user

@@ -38,3 +38,9 @@ config :phoenix, :plug_init_mode, :runtime
 # Enable helpful, but potentially expensive runtime checks
 config :phoenix_live_view,
   enable_expensive_runtime_checks: true
+
+# Disable GameCleanup in tests to avoid database ownership issues
+config :rachel, :game_cleanup_enabled, false
+
+# Disable rate limiting in tests
+config :rachel, :rate_limit_enabled, false
