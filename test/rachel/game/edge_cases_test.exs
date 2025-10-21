@@ -1,6 +1,6 @@
 defmodule Rachel.Game.EdgeCasesTest do
   use ExUnit.Case, async: true
-  alias Rachel.Game.{Card, Rules, Deck, GameState}
+  alias Rachel.Game.{Card, Deck, GameError, GameState, Rules}
 
   describe "deck exhaustion scenarios" do
     test "reshuffling when deck runs out during normal draw" do
@@ -394,7 +394,7 @@ defmodule Rachel.Game.EdgeCasesTest do
       # P2 tries to play out of turn
       result = GameState.play_cards(game, "p2", [Card.new(:hearts, 7)])
 
-      assert {:error, :not_your_turn} = result
+      assert {:error, %GameError{type: :not_your_turn}} = result
     end
 
     test "cannot play cards not in hand" do
@@ -410,7 +410,7 @@ defmodule Rachel.Game.EdgeCasesTest do
       # Try to play card not in hand
       result = GameState.play_cards(game, "p1", [Card.new(:hearts, 7)])
 
-      assert {:error, :cards_not_in_hand} = result
+      assert {:error, %GameError{type: :cards_not_in_hand}} = result
     end
   end
 end

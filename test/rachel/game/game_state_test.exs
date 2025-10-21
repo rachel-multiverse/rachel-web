@@ -1,6 +1,6 @@
 defmodule Rachel.Game.GameStateTest do
   use ExUnit.Case, async: true
-  alias Rachel.Game.{GameState, Card}
+  alias Rachel.Game.{Card, GameError, GameState}
 
   describe "new/2" do
     test "creates game with human players" do
@@ -122,7 +122,7 @@ defmodule Rachel.Game.GameStateTest do
 
       card = hd(other_player.hand)
       result = GameState.play_cards(game, other_player.id, [card])
-      assert {:error, :not_your_turn} = result
+      assert {:error, %GameError{type: :not_your_turn}} = result
     end
 
     test "rejects cards not in hand", %{game: game, player: player} do
@@ -134,7 +134,7 @@ defmodule Rachel.Game.GameStateTest do
       refute fake_card in player.hand
 
       result = GameState.play_cards(game, player.id, [fake_card])
-      assert {:error, :cards_not_in_hand} = result
+      assert {:error, %GameError{type: :cards_not_in_hand}} = result
     end
 
     test "stacking same rank cards", %{game: game, player: player} do

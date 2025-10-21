@@ -73,7 +73,7 @@ defmodule Rachel.Game.GameError do
     }
   end
 
-  def new(:invalid_stack, %{cards: cards} = details) do
+  def new(:invalid_stack, %{cards: _cards} = details) do
     %__MODULE__{
       type: :invalid_stack,
       message: "You can only play multiple cards of the same rank",

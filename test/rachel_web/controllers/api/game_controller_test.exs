@@ -149,7 +149,7 @@ defmodule RachelWeb.API.GameControllerTest do
   end
 
   describe "POST /api/games/:id/join" do
-    setup %{user: user} do
+    setup %{user: _user} do
       # Create a lobby by another user
       other_user = user_fixture()
       player = {:user, other_user.id, other_user.display_name || other_user.username}

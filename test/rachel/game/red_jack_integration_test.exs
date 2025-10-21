@@ -1,7 +1,7 @@
 defmodule Rachel.Game.RedJackIntegrationTest do
   use ExUnit.Case, async: true
 
-  alias Rachel.Game.{Card, GameState}
+  alias Rachel.Game.{Card, GameError, GameState}
 
   describe "Red Jack cancellation in full game flow" do
     setup do
@@ -87,14 +87,14 @@ defmodule Rachel.Game.RedJackIntegrationTest do
 
       # Try to play Red Jack - should fail validation
       result = GameState.play_cards(game, "p1", [Card.new(:hearts, 11)])
-      assert {:error, :invalid_counter} = result
+      assert {:error, %GameError{type: :invalid_counter}} = result
     end
 
     test "mixed cards with Red Jack don't work", %{game: game} do
       # Try to play Red Jack with another card (invalid stack)
       cards = [Card.new(:hearts, 11), Card.new(:hearts, 5)]
       result = GameState.play_cards(game, "p1", cards)
-      assert {:error, :invalid_stack} = result
+      assert {:error, %GameError{type: :invalid_stack}} = result
     end
 
     test "Red Jack played normally (no Black Jack attack)", %{game: game} do

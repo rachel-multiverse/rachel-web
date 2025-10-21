@@ -1,7 +1,7 @@
 defmodule Rachel.Game.IntegrationBugHuntTest do
   use ExUnit.Case, async: true
 
-  alias Rachel.Game.{Card, GameState}
+  alias Rachel.Game.{Card, GameError, GameState}
 
   describe "Bug hunting - specific scenarios" do
     test "Ace nomination should work" do
@@ -64,7 +64,7 @@ defmodule Rachel.Game.IntegrationBugHuntTest do
 
       # Spades 7 should fail
       result = GameState.play_cards(game, "p1", [Card.new(:spades, 7)])
-      assert {:error, :invalid_play} = result
+      assert {:error, %GameError{type: :invalid_play}} = result
     end
 
     test "Turn advancement with direction" do
