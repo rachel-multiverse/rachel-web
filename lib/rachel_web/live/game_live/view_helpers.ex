@@ -39,6 +39,10 @@ defmodule RachelWeb.GameLive.ViewHelpers do
 
   # Error messages
 
+  # Handle new GameError structs with detailed user-friendly messages
+  def error_message(%Rachel.Game.GameError{message: message}), do: message
+
+  # Fallback for old atom-based errors (backwards compatibility)
   def error_message(:not_your_turn), do: "It's not your turn"
   def error_message(:invalid_play), do: "Invalid card play"
   def error_message(:cards_not_in_hand), do: "Selected cards not in hand"

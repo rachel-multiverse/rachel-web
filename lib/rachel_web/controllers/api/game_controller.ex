@@ -84,10 +84,15 @@ defmodule RachelWeb.API.GameController do
       {:ok, game} ->
         json(conn, %{game: game_json(game)})
 
+      {:error, %Rachel.Game.GameError{} = error} ->
+        conn
+        |> put_status(:unprocessable_entity)
+        |> json(Rachel.Game.GameError.to_map(error))
+
       {:error, reason} ->
         conn
         |> put_status(:unprocessable_entity)
-        |> json(%{error: to_string(reason)})
+        |> json(%{error: to_string(reason), message: "An error occurred"})
     end
   end
 
@@ -98,10 +103,15 @@ defmodule RachelWeb.API.GameController do
       {:ok, game} ->
         json(conn, %{game: game_json(game)})
 
+      {:error, %Rachel.Game.GameError{} = error} ->
+        conn
+        |> put_status(:unprocessable_entity)
+        |> json(Rachel.Game.GameError.to_map(error))
+
       {:error, reason} ->
         conn
         |> put_status(:unprocessable_entity)
-        |> json(%{error: to_string(reason)})
+        |> json(%{error: to_string(reason), message: "An error occurred"})
     end
   end
 

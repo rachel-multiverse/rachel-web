@@ -4,7 +4,7 @@ defmodule Rachel.Game.PlayValidator do
   Clean, focused validation functions.
   """
 
-  alias Rachel.Game.Rules
+  alias Rachel.Game.{GameError, Rules}
 
   @doc """
   Validates if a player can make a play.
@@ -44,7 +44,7 @@ defmodule Rachel.Game.PlayValidator do
 
   defp find_player(game, player_id) do
     case Enum.find_index(game.players, &(&1.id == player_id)) do
-      nil -> {:error, :player_not_found}
+      nil -> {:error, GameError.new(:player_not_found, %{player_id: player_id})}
       idx -> {:ok, idx}
     end
   end
@@ -53,7 +53,13 @@ defmodule Rachel.Game.PlayValidator do
     if player_idx == game.current_player_index do
       :ok
     else
-      {:error, :not_your_turn}
+      current_player = Enum.at(game.players, game.current_player_index)
+
+      {:error,
+       GameError.new(:not_your_turn, %{
+         current_player: current_player.name,
+         current_player_id: current_player.id
+       })}
     end
   end
 
@@ -73,13 +79,13 @@ defmodule Rachel.Game.PlayValidator do
     if Enum.all?(cards, &(&1 in player.hand)) do
       :ok
     else
-      {:error, :cards_not_in_hand}
+      {:error, GameError.new(:cards_not_in_hand, %{cards: cards})}
     end
   end
 
   defp validate_play_rules(game, cards) do
     cond do
-      not Rules.valid_stack?(cards) -> {:error, :invalid_stack}
+      not Rules.valid_stack?(cards) -> {:error, GameError.new(:invalid_stack, %{cards: cards})}
       game.pending_skips && game.pending_skips > 0 -> validate_skip_counter(game, cards)
       game.pending_attack -> validate_counter(game, cards)
       true -> validate_normal_play(game, cards)
@@ -91,27 +97,33 @@ defmodule Rachel.Game.PlayValidator do
     if Rules.can_counter_skip?(hd(cards)) do
       :ok
     else
-      {:error, :invalid_counter}
+      {:error, GameError.new(:invalid_counter, %{attack_type: :skips, cards: cards})}
     end
   end
 
   defp validate_counter(game, cards) do
-    {attack_type, _} = game.pending_attack
+    {attack_type, _count} = game.pending_attack
 
     if Rules.can_counter_attack?(hd(cards), attack_type) do
       :ok
     else
-      {:error, :invalid_counter}
+      {:error, GameError.new(:invalid_counter, %{attack_type: attack_type, cards: cards})}
     end
   end
 
   defp validate_normal_play(game, cards) do
     top = hd(game.discard_pile)
+    card = hd(cards)
 
-    if Rules.can_play_card?(hd(cards), top, game.nominated_suit) do
+    if Rules.can_play_card?(card, top, game.nominated_suit) do
       :ok
     else
-      {:error, :invalid_play}
+      {:error,
+       GameError.new(:invalid_play, %{
+         card: card,
+         top_card: top,
+         nominated_suit: game.nominated_suit
+       })}
     end
   end
 end
