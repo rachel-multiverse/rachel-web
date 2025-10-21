@@ -4,6 +4,9 @@ defmodule RachelWeb.GameLive.PlayerHand do
   """
   use Phoenix.LiveComponent
 
+  # Import card_display component from parent GameLive
+  import RachelWeb.GameLive, only: [card_display: 1]
+
   def render(assigns) do
     ~H"""
     <div>

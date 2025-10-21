@@ -6,13 +6,13 @@ defmodule RachelWeb.API.AuthController do
   def register(conn, %{"user" => user_params}) do
     case Accounts.register_user(user_params) do
       {:ok, user} ->
-        {:ok, token} = Accounts.generate_user_session_token(user)
+        token = Accounts.generate_user_session_token(user)
 
         conn
         |> put_status(:created)
         |> json(%{
           user: user_json(user),
-          token: Base.encode64(token.token)
+          token: token
         })
 
       {:error, changeset} ->
@@ -24,14 +24,14 @@ defmodule RachelWeb.API.AuthController do
 
   def login(conn, %{"email" => email, "password" => password}) do
     if user = Accounts.get_user_by_email_and_password(email, password) do
-      {:ok, token} = Accounts.generate_user_session_token(user)
+      token = Accounts.generate_user_session_token(user)
 
       # Update user online status
       Accounts.user_online(user)
 
       json(conn, %{
         user: user_json(user),
-        token: Base.encode64(token.token)
+        token: token
       })
     else
       conn
