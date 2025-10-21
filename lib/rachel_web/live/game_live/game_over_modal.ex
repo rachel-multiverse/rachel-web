@@ -73,9 +73,12 @@ defmodule RachelWeb.GameLive.GameOverModal do
       <div class="fixed inset-0 pointer-events-none z-60 overflow-hidden">
         <%= for i <- 1..20 do %>
           <% emoji = Enum.random(["🎊", "🎉", "✨", "🎈", "🌟"]) %>
+          <% left_pos = rem(i * 17 + 13, 100) %>
+          <% delay = rem(i * 137, 1500) %>
+          <% duration = 2000 + rem(i * 211, 1500) %>
           <div
-            class="absolute text-2xl opacity-80"
-            style={"left: #{rem(i * 47, 100)}%; top: #{rem(i * 37, 100)}%; animation: confetti-fall #{2 + rem(i, 2)}s ease-in #{rem(i * 100, 1000)}ms 1 forwards;"}
+            class="absolute text-3xl"
+            style={"left: #{left_pos}%; top: -50px; animation: confetti-fall #{duration}ms ease-in #{delay}ms 1 forwards;"}
           >
             {emoji}
           </div>
