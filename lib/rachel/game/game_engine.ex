@@ -366,6 +366,10 @@ defmodule Rachel.Game.GameEngine do
     if GameState.should_end?(game) do
       final_game = %{game | status: :finished}
       broadcast(final_game, :game_over)
+
+      # Record user participation for history
+      Task.start(fn -> Rachel.Game.Games.record_user_participation(final_game) end)
+
       Process.send_after(self(), :cleanup, 5 * 60 * 1000)
       {:reply, {:ok, final_game}, %{state | game: final_game}}
     else
@@ -377,6 +381,10 @@ defmodule Rachel.Game.GameEngine do
     if GameState.should_end?(game) do
       final_game = %{game | status: :finished}
       broadcast(final_game, :game_over)
+
+      # Record user participation for history
+      Task.start(fn -> Rachel.Game.Games.record_user_participation(final_game) end)
+
       Process.send_after(self(), :cleanup, 5 * 60 * 1000)
       %{state | game: final_game}
     else

@@ -135,6 +135,111 @@ defmodule Rachel.Game.Games do
     |> Enum.map(& &1.id)
   end
 
+  @doc """
+  Lists finished games for a specific user, ordered by most recent first.
+  """
+  def list_user_games(user_id, opts \\ []) do
+    limit = Keyword.get(opts, :limit, 50)
+
+    __MODULE__
+    |> join(:inner, [g], ug in "user_games", on: g.id == ug.game_id)
+    |> where([g, ug], ug.user_id == ^user_id and g.status == "finished")
+    |> order_by([g, ug], desc: g.last_action_at)
+    |> limit(^limit)
+    |> select([g, ug], %{
+      game: g,
+      position: ug.position,
+      final_rank: ug.final_rank,
+      turns_taken: ug.turns_taken
+    })
+    |> Repo.all()
+    |> Enum.map(fn %{game: game, position: position, final_rank: final_rank, turns_taken: turns} ->
+      %{
+        id: game.id,
+        status: game.status,
+        turn_count: game.turn_count,
+        player_count: length(game.players),
+        winners: game.winners,
+        players: game.players,
+        finished_at: game.last_action_at,
+        user_position: position,
+        user_rank: final_rank,
+        user_turns: turns
+      }
+    end)
+  end
+
+  @doc """
+  Records user participation in a finished game.
+  Creates user_games records for all human players in the game.
+  """
+  def record_user_participation(%GameState{} = game_state) do
+    # Only record for finished games
+    if game_state.status == :finished do
+      # Calculate final rankings based on who finished first (winners array order)
+      # and who's still playing (hand size)
+      players_with_stats =
+        game_state.players
+        |> Enum.with_index()
+        |> Enum.map(fn {player, position} ->
+          rank =
+            cond do
+              player.name in game_state.winners ->
+                # Winner rank is their position in winners array + 1
+                Enum.find_index(game_state.winners, &(&1 == player.name)) + 1
+
+              true ->
+                # Non-winners ranked by hand size (fewer cards = better rank)
+                # Will be calculated after we know all hand sizes
+                nil
+            end
+
+          %{
+            user_id: player.user_id,
+            position: position,
+            rank: rank,
+            hand_size: length(player.hand),
+            name: player.name
+          }
+        end)
+
+      # Calculate ranks for non-winners based on hand size
+      non_winners = Enum.filter(players_with_stats, &is_nil(&1.rank))
+      winner_count = length(game_state.winners)
+
+      non_winners_ranked =
+        non_winners
+        |> Enum.sort_by(& &1.hand_size)
+        |> Enum.with_index(winner_count + 1)
+        |> Enum.map(fn {player, rank} -> %{player | rank: rank} end)
+
+      all_players =
+        (Enum.reject(players_with_stats, &is_nil(&1.rank)) ++ non_winners_ranked)
+        |> Enum.sort_by(& &1.position)
+
+      # Insert user_games records for human players only
+      all_players
+      |> Enum.filter(&(&1.user_id != nil))
+      |> Enum.each(fn player ->
+        attrs = %{
+          user_id: player.user_id,
+          game_id: game_state.id,
+          position: player.position,
+          final_rank: player.rank,
+          turns_taken: 0
+        }
+
+        %Rachel.Game.UserGame{}
+        |> Rachel.Game.UserGame.changeset(attrs)
+        |> Repo.insert(on_conflict: :nothing)
+      end)
+
+      :ok
+    else
+      {:error, :game_not_finished}
+    end
+  end
+
   # Private functions
 
   defp changeset(game, attrs) do

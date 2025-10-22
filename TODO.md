@@ -93,7 +93,7 @@ See **UI_UX_IMPROVEMENTS.md** for detailed implementation plan.
 ### User Features
 - [ ] Tutorial system for new players
 - [x] User statistics dashboard (data tracked, UI complete) ✅
-- [ ] Game history viewer
+- [x] Game history viewer (with user_games join table, automatic tracking) ✅
 - [ ] Profile customization
 
 ### Gameplay Features

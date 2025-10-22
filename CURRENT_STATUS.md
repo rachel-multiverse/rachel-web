@@ -52,6 +52,10 @@ The Rachel card game is **fully functional and deployed to production** at Fly.i
 - 🏆 Dynamic rankings: Newbie → Expert based on games played
 - 🎖️ Win ranks: Rookie → Master based on win rate
 - 🎮 Call to action for new players
+- ✅ **Game History Viewer** (shows past games with results and rankings)
+- 📜 Automatic tracking via user_games join table
+- 🥇 Displays win/loss, player positions, and turn counts
+- 🕒 Shows relative timestamps and game details
 
 ### Testing & Quality
 - ✅ **424 tests passing (100%)**

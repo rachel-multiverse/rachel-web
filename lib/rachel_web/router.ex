@@ -96,6 +96,7 @@ defmodule RachelWeb.Router do
     live "/lobby", LobbyLive
     live "/games/:id", GameLive
     live "/stats", StatsLive
+    live "/history", HistoryLive
   end
 
   # API routes for mobile apps
