@@ -27,6 +27,12 @@ The Rachel card game web implementation is **production-ready and deployed** to 
   - Game statistics tracking fields
   - API authentication with Bearer tokens
   - RESTful API endpoints for mobile apps
+- **📜 Minimum viable compliance (2025-10-22):**
+  - ✅ Privacy Policy (GDPR/CCPA compliant)
+  - ✅ Terms of Service (with abuse prevention clauses)
+  - ✅ Account deletion feature (right to be forgotten)
+  - ✅ Age verification (13+ COPPA compliance)
+  - ✅ Footer with legal links in root layout
 - **CRITICAL BUG FIXES (2025-10-21):**
   - ✅ Fixed API authentication crash (tuple pattern match)
   - ✅ Fixed user login crash (nil safety in renew_session)
@@ -86,7 +92,7 @@ See **UI_UX_IMPROVEMENTS.md** for detailed implementation plan.
 
 ### User Features
 - [ ] Tutorial system for new players
-- [ ] User statistics dashboard (data tracked, UI needed)
+- [x] User statistics dashboard (data tracked, UI complete) ✅
 - [ ] Game history viewer
 - [ ] Profile customization
 

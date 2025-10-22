@@ -39,6 +39,20 @@ The Rachel card game is **fully functional and deployed to production** at Fly.i
 - ✅ Docker containerization
 - ✅ Deployed to Fly.io with managed Postgres
 
+### Compliance & Legal
+- ✅ **Privacy Policy** (GDPR/CCPA compliant)
+- ✅ **Terms of Service** (with abuse prevention clauses)
+- ✅ **Account deletion** feature (right to be forgotten)
+- ✅ **Age verification** checkbox (13+ COPPA compliance)
+- ✅ Footer with legal links in all pages
+
+### User Features
+- ✅ **Statistics Dashboard** (games played, win rate, experience levels)
+- 📊 Tracks: wins, losses, win rate, total turns, avg turns/game
+- 🏆 Dynamic rankings: Newbie → Expert based on games played
+- 🎖️ Win ranks: Rookie → Master based on win rate
+- 🎮 Call to action for new players
+
 ### Testing & Quality
 - ✅ **424 tests passing (100%)**
 - ✅ Comprehensive game engine tests
