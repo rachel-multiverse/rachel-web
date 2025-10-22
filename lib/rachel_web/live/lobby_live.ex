@@ -10,15 +10,14 @@ defmodule RachelWeb.LobbyLive do
     end
 
     # Get current user from socket assigns (set by router)
+    # Authentication is now required, so current_user will always exist
     current_user = get_current_user(socket)
-
-    default_name =
-      if current_user, do: current_user.display_name || current_user.username, else: ""
+    player_name = current_user.display_name || current_user.username
 
     {:ok,
      socket
      |> assign(:games, list_games())
-     |> assign(:player_name, default_name)
+     |> assign(:player_name, player_name)
      |> assign(:current_user, current_user)
      |> assign(:creating_game, false)}
   end
@@ -38,27 +37,18 @@ defmodule RachelWeb.LobbyLive do
         <div class="bg-white rounded-lg shadow-xl p-8 mb-8">
           <h2 class="text-2xl font-bold mb-4">Quick Play</h2>
 
-          <form phx-submit="create_game" class="space-y-4">
-            <div>
-              <label class="block text-sm font-medium mb-2">Your Name</label>
-              <input
-                type="text"
-                name="player_name"
-                value={@player_name}
-                phx-change="update_name"
-                placeholder="Enter your name"
-                class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500"
-                required
-              />
-            </div>
+          <div class="mb-4 text-gray-600">
+            Playing as: <span class="font-semibold text-gray-900"><%= @player_name %></span>
+          </div>
 
+          <form phx-submit="create_game" class="space-y-4">
             <div class="flex gap-4">
               <button
                 type="submit"
                 name="game_type"
                 value="ai"
-                class="flex-1 bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-semibold"
-                disabled={@creating_game || @player_name == ""}
+                class="flex-1 bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={@creating_game}
               >
                 Play vs AI
               </button>
@@ -67,8 +57,8 @@ defmodule RachelWeb.LobbyLive do
                 type="submit"
                 name="game_type"
                 value="multiplayer"
-                class="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold"
-                disabled={@creating_game || @player_name == ""}
+                class="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={@creating_game}
               >
                 Create Multiplayer Game
               </button>
@@ -99,7 +89,6 @@ defmodule RachelWeb.LobbyLive do
                       phx-click="join_game"
                       phx-value-game-id={game.id}
                       class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded"
-                      disabled={@player_name == ""}
                     >
                       Join Game
                     </button>
@@ -138,15 +127,10 @@ defmodule RachelWeb.LobbyLive do
   end
 
   @impl true
-  def handle_event("update_name", %{"player_name" => name}, socket) do
-    {:noreply, assign(socket, :player_name, name)}
-  end
-
-  @impl true
-  def handle_event("create_game", %{"player_name" => name, "game_type" => type}, socket) do
+  def handle_event("create_game", %{"game_type" => type}, socket) do
     socket = assign(socket, :creating_game, true)
 
-    case create_game_with_type(name, type, socket.assigns.current_user) do
+    case create_game_with_type(socket.assigns.player_name, type, socket.assigns.current_user) do
       {:ok, game_id} ->
         {:noreply, push_navigate(socket, to: ~p"/games/#{game_id}")}
 
@@ -160,7 +144,8 @@ defmodule RachelWeb.LobbyLive do
 
   @impl true
   def handle_event("join_game", %{"game-id" => game_id}, socket) do
-    user_id = if socket.assigns.current_user, do: socket.assigns.current_user.id, else: nil
+    # Authentication is required, so current_user will always exist
+    user_id = socket.assigns.current_user.id
 
     case GameManager.join_game(game_id, socket.assigns.player_name, user_id) do
       {:ok, _player_id} ->
@@ -205,7 +190,7 @@ defmodule RachelWeb.LobbyLive do
     GameManager.create_lobby(player)
   end
 
-  defp build_player_tuple(name, nil), do: {:anonymous, name}
+  # Authentication is now required, so we always have a user
   defp build_player_tuple(name, %{id: user_id}), do: {:user, user_id, name}
 
   defp get_current_user(socket) do

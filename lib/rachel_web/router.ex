@@ -85,10 +85,14 @@ defmodule RachelWeb.Router do
     pipe_through :browser
 
     get "/", PageController, :home
+  end
 
-    # Game routes
-    live "/games/:id", GameLive
+  # Game routes - require authentication to prevent abuse
+  scope "/", RachelWeb do
+    pipe_through [:browser, :require_authenticated_user]
+
     live "/lobby", LobbyLive
+    live "/games/:id", GameLive
   end
 
   # API routes for mobile apps

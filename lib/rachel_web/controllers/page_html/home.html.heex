@@ -1,13 +1,50 @@
-<div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-800 to-green-900">
-  <div class="text-center">
+<div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-800 to-green-900 p-4">
+  <div class="text-center max-w-2xl">
     <h1 class="text-8xl font-bold text-white mb-8">Rachel</h1>
     <p class="text-2xl text-green-200 mb-12">The Classic Card Game</p>
 
-    <.link
-      href={~p"/lobby"}
-      class="inline-block bg-white text-green-800 px-8 py-4 rounded-lg text-xl font-semibold hover:bg-green-50 transition-colors"
-    >
-      Play Now →
-    </.link>
+    <%= if Map.get(@current_scope || %{}, :user) do %>
+      <!-- User is logged in - show play button -->
+      <.link
+        href={~p"/lobby"}
+        class="inline-block bg-white text-green-800 px-8 py-4 rounded-lg text-xl font-semibold hover:bg-green-50 transition-colors shadow-lg"
+      >
+        Play Now →
+      </.link>
+
+      <% user = Map.get(@current_scope || %{}, :user) %>
+      <p class="text-green-100 mt-4">
+        Welcome back, <%= user.display_name || user.username %>!
+      </p>
+    <% else %>
+      <!-- User not logged in - show login/register options -->
+      <div class="space-y-4">
+        <p class="text-lg text-green-100 mb-6">
+          Sign in to play and track your stats
+        </p>
+
+        <div class="flex flex-col sm:flex-row gap-4 justify-center">
+          <.link
+            href={~p"/users/log-in"}
+            class="inline-block bg-white text-green-800 px-8 py-4 rounded-lg text-xl font-semibold hover:bg-green-50 transition-colors shadow-lg"
+          >
+            Log In
+          </.link>
+
+          <.link
+            href={~p"/users/register"}
+            class="inline-block bg-green-700 text-white px-8 py-4 rounded-lg text-xl font-semibold hover:bg-green-600 transition-colors border-2 border-white shadow-lg"
+          >
+            Create Account
+          </.link>
+        </div>
+
+        <div class="mt-8 text-green-100 text-sm">
+          <p class="mb-2">✨ Track your wins and stats</p>
+          <p class="mb-2">🎮 Play against AI or friends</p>
+          <p>🏆 Join the leaderboard</p>
+        </div>
+      </div>
+    <% end %>
   </div>
 </div>
