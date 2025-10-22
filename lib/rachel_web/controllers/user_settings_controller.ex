@@ -53,6 +53,30 @@ defmodule RachelWeb.UserSettingsController do
     end
   end
 
+  def update(conn, %{"action" => "delete_account"} = params) do
+    %{"user" => user_params} = params
+    user = conn.assigns.current_scope.user
+
+    # Verify password before deletion (security check)
+    if Accounts.get_user_by_email_and_password(user.email, user_params["password"]) do
+      case Accounts.delete_user(user) do
+        {:ok, _user} ->
+          conn
+          |> put_flash(:info, "Your account has been deleted successfully.")
+          |> UserAuth.log_out_user()
+
+        {:error, _changeset} ->
+          conn
+          |> put_flash(:error, "Failed to delete account. Please try again.")
+          |> redirect(to: ~p"/users/settings")
+      end
+    else
+      conn
+      |> put_flash(:error, "Invalid password. Account deletion cancelled.")
+      |> redirect(to: ~p"/users/settings")
+    end
+  end
+
   def confirm_email(conn, %{"token" => token}) do
     case Accounts.update_user_email(conn.assigns.current_scope.user, token) do
       {:ok, _user} ->

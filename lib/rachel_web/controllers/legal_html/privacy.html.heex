@@ -1,0 +1,185 @@
+<div class="min-h-screen bg-gray-50 py-12 px-4">
+  <div class="max-w-4xl mx-auto bg-white rounded-lg shadow-lg p-8">
+    <h1 class="text-4xl font-bold mb-8">Privacy Policy</h1>
+
+    <p class="text-sm text-gray-600 mb-8">
+      <strong>Last Updated:</strong> <%= Date.utc_today() |> Date.to_string() %>
+    </p>
+
+    <div class="prose prose-lg max-w-none space-y-6">
+      <section>
+        <h2 class="text-2xl font-bold mb-4">1. Introduction</h2>
+        <p>
+          Welcome to Rachel ("we," "our," or "us"). We respect your privacy and are committed to protecting your personal data.
+          This privacy policy explains how we collect, use, and safeguard your information when you use our card game service.
+        </p>
+      </section>
+
+      <section>
+        <h2 class="text-2xl font-bold mb-4">2. Information We Collect</h2>
+
+        <h3 class="text-xl font-semibold mb-2">2.1 Information You Provide</h3>
+        <ul class="list-disc pl-6 space-y-2">
+          <li><strong>Account Information:</strong> Email address, username, display name, and password (hashed)</li>
+          <li><strong>Profile Information:</strong> Optional display name for in-game identification</li>
+        </ul>
+
+        <h3 class="text-xl font-semibold mb-2 mt-4">2.2 Information We Automatically Collect</h3>
+        <ul class="list-disc pl-6 space-y-2">
+          <li><strong>Game Statistics:</strong> Games played, games won, total turns</li>
+          <li><strong>Session Data:</strong> Login timestamps, session tokens</li>
+          <li><strong>Technical Data:</strong> IP address (for rate limiting and abuse prevention)</li>
+          <li><strong>Usage Data:</strong> Game actions, moves, and gameplay patterns</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2 class="text-2xl font-bold mb-4">3. How We Use Your Information</h2>
+        <p>We use your personal data for the following purposes:</p>
+        <ul class="list-disc pl-6 space-y-2">
+          <li><strong>Provide the Service:</strong> Enable you to create an account, play games, and track your statistics</li>
+          <li><strong>Authentication:</strong> Verify your identity and manage your sessions</li>
+          <li><strong>Game Functionality:</strong> Match you with other players, track game state, display leaderboards</li>
+          <li><strong>Security & Abuse Prevention:</strong> Prevent bot attacks, resource abuse, and cheating</li>
+          <li><strong>Service Improvement:</strong> Analyze usage patterns to improve game balance and features</li>
+          <li><strong>Communication:</strong> Send transactional emails (login links, account notifications)</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2 class="text-2xl font-bold mb-4">4. Legal Basis for Processing (GDPR)</h2>
+        <p>If you are in the European Union, our legal basis for processing your data is:</p>
+        <ul class="list-disc pl-6 space-y-2">
+          <li><strong>Contract Performance:</strong> Processing necessary to provide the game service you requested</li>
+          <li><strong>Legitimate Interest:</strong> Fraud prevention, security, and service improvement</li>
+          <li><strong>Consent:</strong> For any optional communications (if we add marketing in the future)</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2 class="text-2xl font-bold mb-4">5. Data Sharing and Disclosure</h2>
+        <p>We do <strong>NOT</strong> sell your personal data. We may share your data only in these limited circumstances:</p>
+        <ul class="list-disc pl-6 space-y-2">
+          <li><strong>Service Providers:</strong> Hosting (Fly.io), email delivery (if configured), error tracking (Sentry)</li>
+          <li><strong>Legal Requirements:</strong> If required by law or to protect our rights</li>
+          <li><strong>Business Transfer:</strong> In the event of a merger, acquisition, or sale of assets</li>
+          <li><strong>Other Players:</strong> Your display name and game statistics are visible to other players</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2 class="text-2xl font-bold mb-4">6. Data Retention</h2>
+        <p>We retain your data for the following periods:</p>
+        <ul class="list-disc pl-6 space-y-2">
+          <li><strong>Account Data:</strong> Until you delete your account</li>
+          <li><strong>Game Records:</strong> Finished games deleted after 1 hour, abandoned games after 2 hours</li>
+          <li><strong>Session Tokens:</strong> Expire based on your login preferences</li>
+          <li><strong>Backups:</strong> May persist in backups for up to 90 days after deletion</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2 class="text-2xl font-bold mb-4">7. Your Rights</h2>
+        <p>Depending on your location, you may have the following rights:</p>
+        <ul class="list-disc pl-6 space-y-2">
+          <li><strong>Access:</strong> Request a copy of your personal data</li>
+          <li><strong>Rectification:</strong> Correct inaccurate data (via account settings)</li>
+          <li><strong>Deletion:</strong> Delete your account and associated data (via account settings)</li>
+          <li><strong>Data Portability:</strong> Request your data in a machine-readable format</li>
+          <li><strong>Object:</strong> Object to processing based on legitimate interests</li>
+          <li><strong>Restrict:</strong> Request restriction of processing in certain circumstances</li>
+        </ul>
+        <p class="mt-4">
+          To exercise these rights, please use the account settings page or contact us at <strong>rachel@stevehill.xyz</strong>
+        </p>
+      </section>
+
+      <section>
+        <h2 class="text-2xl font-bold mb-4">8. Data Security</h2>
+        <p>We implement appropriate security measures to protect your data:</p>
+        <ul class="list-disc pl-6 space-y-2">
+          <li>Passwords are hashed using bcrypt</li>
+          <li>HTTPS encryption for all data in transit</li>
+          <li>Secure session management with CSRF protection</li>
+          <li>Rate limiting to prevent abuse</li>
+          <li>Regular security updates and monitoring</li>
+        </ul>
+        <p class="mt-4">
+          However, no method of transmission over the Internet is 100% secure. We cannot guarantee absolute security.
+        </p>
+      </section>
+
+      <section>
+        <h2 class="text-2xl font-bold mb-4">9. Children's Privacy</h2>
+        <p>
+          Our service is not intended for children under 13 years of age. We do not knowingly collect personal information from children under 13.
+          If you are under 13, please do not use this service. If we learn we have collected information from a child under 13, we will delete it promptly.
+        </p>
+      </section>
+
+      <section>
+        <h2 class="text-2xl font-bold mb-4">10. Cookies and Tracking</h2>
+        <p>We use essential cookies for:</p>
+        <ul class="list-disc pl-6 space-y-2">
+          <li><strong>Session Management:</strong> Keep you logged in</li>
+          <li><strong>CSRF Protection:</strong> Prevent cross-site request forgery</li>
+          <li><strong>Flash Messages:</strong> Display notifications</li>
+        </ul>
+        <p class="mt-4">
+          We do NOT use third-party tracking cookies or advertising cookies.
+        </p>
+      </section>
+
+      <section>
+        <h2 class="text-2xl font-bold mb-4">11. International Data Transfers</h2>
+        <p>
+          Your data may be transferred to and processed in countries other than your country of residence.
+          We ensure appropriate safeguards are in place for such transfers.
+        </p>
+      </section>
+
+      <section>
+        <h2 class="text-2xl font-bold mb-4">12. Changes to This Policy</h2>
+        <p>
+          We may update this privacy policy from time to time. We will notify you of any changes by updating the "Last Updated" date.
+          Continued use of the service after changes constitutes acceptance of the updated policy.
+        </p>
+      </section>
+
+      <section>
+        <h2 class="text-2xl font-bold mb-4">13. Contact Us</h2>
+        <p>
+          If you have questions about this privacy policy or want to exercise your rights, please contact us at:
+        </p>
+        <p class="mt-2">
+          <strong>Email:</strong> rachel@stevehill.xyz<br>
+          <strong>Response Time:</strong> We aim to respond within 30 days
+        </p>
+      </section>
+
+      <section class="bg-blue-50 p-6 rounded-lg mt-8">
+        <h2 class="text-2xl font-bold mb-4">Your Rights Summary</h2>
+        <p class="mb-4">Quick links to exercise your rights:</p>
+        <ul class="space-y-2">
+          <li>
+            <.link href={~p"/users/settings"} class="text-blue-600 hover:text-blue-800 underline">
+              → Account Settings (update or delete your account)
+            </.link>
+          </li>
+          <li>
+            <strong>→ Data Export:</strong> Email rachel@stevehill.xyz to request your data
+          </li>
+          <li>
+            <strong>→ Questions:</strong> Email rachel@stevehill.xyz
+          </li>
+        </ul>
+      </section>
+    </div>
+
+    <div class="mt-8 pt-8 border-t text-center">
+      <.link href={~p"/"} class="text-blue-600 hover:text-blue-800">
+        ← Back to Home
+      </.link>
+    </div>
+  </div>
+</div>

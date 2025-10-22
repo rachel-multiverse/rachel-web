@@ -242,6 +242,25 @@ defmodule Rachel.Accounts do
     |> update_user_and_delete_all_tokens()
   end
 
+  @doc """
+  Deletes a user and all associated data.
+
+  This function performs a hard delete of the user account and all related records
+  including sessions, tokens, and game participation records.
+
+  ## Examples
+
+      iex> delete_user(user)
+      {:ok, %User{}}
+
+      iex> delete_user(user)
+      {:error, %Ecto.Changeset{}}
+
+  """
+  def delete_user(%User{} = user) do
+    Repo.delete(user)
+  end
+
   ## Session
 
   @doc """

@@ -46,6 +46,28 @@
         required
       />
 
+      <div class="mt-4">
+        <label class="flex items-start gap-3 cursor-pointer">
+          <input
+            type="checkbox"
+            name="age_verification"
+            required
+            class="mt-1 h-4 w-4 rounded border-gray-300 text-brand focus:ring-brand"
+          />
+          <span class="text-sm text-gray-700">
+            I confirm that I am 13 years of age or older. By creating an account, I agree to the
+            <.link href={~p"/terms"} class="font-semibold text-brand hover:underline" target="_blank">
+              Terms of Service
+            </.link>
+            and
+            <.link href={~p"/privacy"} class="font-semibold text-brand hover:underline" target="_blank">
+              Privacy Policy
+            </.link>
+            .
+          </span>
+        </label>
+      </div>
+
       <.button phx-disable-with="Creating account..." class="btn btn-primary w-full">
         Create an account
       </.button>
