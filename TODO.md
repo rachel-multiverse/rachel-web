@@ -20,6 +20,7 @@ The Rachel card game web implementation is **production-ready and deployed** to 
 - WebSocket real-time updates via Phoenix LiveView
 - Game over detection and winner celebrations
 - Sound effects for all game actions
+- **🔒 Authentication required for all game routes** (prevents bot attacks/resource abuse)
 - User authentication system with:
   - Magic link (passwordless) login
   - Username and display name support

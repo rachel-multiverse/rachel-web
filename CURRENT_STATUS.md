@@ -22,12 +22,15 @@ The Rachel card game is **fully functional and deployed to production** at Fly.i
 - ✅ AI opponents with multiple personalities
 - ✅ Real-time updates via Phoenix LiveView
 - ✅ Sound effects for all game actions
+- ✅ **Authentication required** (prevents bot attacks and resource abuse)
 - ✅ User authentication (magic link + username/password)
-- ✅ Game statistics tracking
+- ✅ Game statistics tracking (all games linked to user accounts)
 - ✅ REST API for mobile apps
 
 ### Security & Infrastructure
-- ✅ Rate limiting on all endpoints
+- ✅ **Authentication required for game routes** (prevents resource abuse)
+- ✅ Rate limiting on all endpoints (per-user for auth'd, per-IP for anonymous)
+- ✅ Automatic game cleanup (30min lobbies, 2hr abandoned games)
 - ✅ Content Security Policy (CSP) headers
 - ✅ Security headers (HSTS, X-Frame-Options, etc.)
 - ✅ CI/CD pipeline (GitHub Actions)
