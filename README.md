@@ -2,6 +2,10 @@
 
 Phoenix/Elixir implementation of Rachel card game with LiveView for real-time gameplay and RUBP protocol server.
 
+**Status:** ✅ Production-ready and deployed to Fly.io | 🎨 Currently polishing UI/UX
+
+**Quick links:** [`CURRENT_STATUS.md`](CURRENT_STATUS.md) | [`TODO.md`](TODO.md) | [`UI_UX_IMPROVEMENTS.md`](UI_UX_IMPROVEMENTS.md)
+
 ## Features
 
 - ✅ Full game rules implementation
