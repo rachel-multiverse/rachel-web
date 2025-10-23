@@ -79,6 +79,9 @@ jobs:
     - name: Run Dialyzer
       run: mix dialyzer --format github
 
+    - name: Check for security vulnerabilities
+      run: mix deps.audit
+
     - name: Run tests
       run: mix test
 
