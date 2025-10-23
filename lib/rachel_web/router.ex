@@ -87,6 +87,7 @@ defmodule RachelWeb.Router do
     get "/", PageController, :home
     get "/privacy", LegalController, :privacy
     get "/terms", LegalController, :terms
+    live "/tutorial", TutorialLive
   end
 
   # Game routes - require authentication to prevent abuse
