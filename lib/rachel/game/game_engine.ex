@@ -418,7 +418,7 @@ defmodule Rachel.Game.GameEngine do
           players: length(final_game.players),
           game_id: final_game.id,
           winner: winner,
-          total_turns: final_game.turn_number
+          total_turns: final_game.turn_count
         }
       )
 
@@ -446,7 +446,7 @@ defmodule Rachel.Game.GameEngine do
           players: length(final_game.players),
           game_id: final_game.id,
           winner: winner,
-          total_turns: final_game.turn_number
+          total_turns: final_game.turn_count
         }
       )
 
@@ -525,7 +525,7 @@ defmodule Rachel.Game.GameEngine do
       %{
         game_id: game.id,
         player: player,
-        turn_number: game.turn_number,
+        turn_number: game.turn_count,
         cards_drawn: cards_drawn,
         reason: reason,
         attack_type: attack_type

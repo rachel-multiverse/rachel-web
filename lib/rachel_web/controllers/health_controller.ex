@@ -23,10 +23,18 @@ defmodule RachelWeb.HealthController do
   Returns 200 OK with minimal response.
   """
   def index(conn, _params) do
+    checks = %{
+      database: check_database(),
+      application: check_application()
+    }
+
+    all_healthy = Enum.all?(checks, fn {_name, status} -> status == :ok end)
+
     json(conn, %{
-      status: "healthy",
+      status: if(all_healthy, do: "healthy", else: "unhealthy"),
       timestamp: DateTime.utc_now() |> DateTime.to_iso8601(),
-      version: Application.spec(:rachel, :vsn) |> to_string()
+      version: Application.spec(:rachel, :vsn) |> to_string(),
+      checks: format_checks(checks)
     })
   end
 
