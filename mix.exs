@@ -11,7 +11,20 @@ defmodule Rachel.MixProject do
       start_permanent: Mix.env() == :prod,
       aliases: aliases(),
       deps: deps(),
-      listeners: [Phoenix.CodeReloader]
+      listeners: [Phoenix.CodeReloader],
+      test_coverage: [tool: ExCoveralls]
+    ]
+  end
+
+  def cli do
+    [
+      preferred_envs: [
+        coveralls: :test,
+        "coveralls.detail": :test,
+        "coveralls.post": :test,
+        "coveralls.html": :test,
+        "coveralls.github": :test
+      ]
     ]
   end
 
@@ -68,6 +81,7 @@ defmodule Rachel.MixProject do
       # Testing
       {:lazy_html, ">= 0.1.0", only: :test},
       {:floki, "~> 0.36", only: :test},
+      {:excoveralls, "~> 0.18", only: :test},
 
       # Code quality
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
