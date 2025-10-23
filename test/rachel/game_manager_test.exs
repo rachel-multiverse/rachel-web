@@ -1,8 +1,8 @@
 defmodule Rachel.GameManagerTest do
   use Rachel.DataCase, async: false
 
-  alias Rachel.GameManager
   alias Rachel.Game.Games
+  alias Rachel.GameManager
 
   describe "create_game/1" do
     test "creates a game with valid players" do

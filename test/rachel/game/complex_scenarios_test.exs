@@ -165,7 +165,7 @@ defmodule Rachel.Game.ComplexScenariosTest do
       # Player 3 (skipped Player 2)
       assert game.current_player_index == 2
 
-      # Player 3 plays 7 
+      # Player 3 plays 7
       {:ok, game} = GameState.play_cards(game, "p3", [Card.new(:diamonds, 7)])
       # Skip is applied immediately, skipping Player 4
       assert game.pending_skips == 0
@@ -301,7 +301,7 @@ defmodule Rachel.Game.ComplexScenariosTest do
       # Player 4 (counter-clockwise)
       assert game.current_player_index == 3
 
-      # Winner should be skipped in future turns  
+      # Winner should be skipped in future turns
       {:ok, game} = GameState.play_cards(game, "p4", [Card.new(:spades, 12)])
       # Player 2 (clockwise from 3, skipping won Player 1)
       assert game.current_player_index == 1

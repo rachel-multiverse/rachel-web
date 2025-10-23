@@ -1,8 +1,8 @@
 defmodule Rachel.Game.DeckTest do
   use ExUnit.Case, async: true
 
-  alias Rachel.Game.Deck
   alias Rachel.Game.Card
+  alias Rachel.Game.Deck
 
   describe "new/1" do
     test "creates a standard 52-card deck" do

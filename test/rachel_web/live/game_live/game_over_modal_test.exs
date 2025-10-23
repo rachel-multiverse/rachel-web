@@ -3,8 +3,8 @@ defmodule RachelWeb.GameLive.GameOverModalTest do
 
   import Phoenix.LiveViewTest
 
-  alias RachelWeb.GameLive.GameOverModal
   alias Rachel.Game.Card
+  alias RachelWeb.GameLive.GameOverModal
 
   describe "render/1" do
     test "displays game over message" do

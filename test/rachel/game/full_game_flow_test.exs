@@ -1,7 +1,7 @@
 defmodule Rachel.Game.FullGameFlowTest do
   use ExUnit.Case, async: false
 
-  alias Rachel.Game.{Card, GameState, GameEngine, GameSupervisor}
+  alias Rachel.Game.{Card, GameEngine, GameState, GameSupervisor}
 
   setup_all do
     # Ensure the GameRegistry is started
@@ -203,7 +203,7 @@ defmodule Rachel.Game.FullGameFlowTest do
       # Game should continue until someone wins
       assert length(current_game.players) == 2
 
-      # Note: This tests the game engine API works properly rather than 
+      # Note: This tests the game engine API works properly rather than
       # artificially creating specific win conditions
 
       GameSupervisor.stop_game(game_id)
@@ -313,7 +313,7 @@ defmodule Rachel.Game.FullGameFlowTest do
       # Black Jacks
       Card.new(:spades, 11),
       Card.new(:clubs, 11),
-      # 2s  
+      # 2s
       Card.new(:hearts, 2),
       Card.new(:spades, 2),
       # 7s
@@ -333,7 +333,7 @@ defmodule Rachel.Game.FullGameFlowTest do
       # 2s
       Card.new(:diamonds, 2),
       Card.new(:clubs, 2),
-      # 7s  
+      # 7s
       Card.new(:spades, 7),
       Card.new(:clubs, 7),
       # Queens

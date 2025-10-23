@@ -36,7 +36,7 @@ defmodule Rachel.Game.IntegrationBugHuntTest do
           hand: [
             # Matches suit
             Card.new(:hearts, 12),
-            # Matches rank  
+            # Matches rank
             Card.new(:clubs, 10),
             # Matches neither
             Card.new(:spades, 7)

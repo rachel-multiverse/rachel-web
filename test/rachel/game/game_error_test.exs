@@ -1,8 +1,8 @@
 defmodule Rachel.Game.GameErrorTest do
   use ExUnit.Case, async: true
 
-  alias Rachel.Game.GameError
   alias Rachel.Game.Card
+  alias Rachel.Game.GameError
 
   describe "new/2 - player_not_found" do
     test "creates player not found error without details" do

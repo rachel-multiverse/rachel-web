@@ -6,7 +6,7 @@ defmodule RachelWeb.ReconnectableLive do
 
   defmacro __using__(_opts) do
     quote do
-      alias Rachel.Game.{SessionManager, ConnectionMonitor}
+      alias Rachel.Game.{ConnectionMonitor, SessionManager}
 
       # Send heartbeat every 5 seconds
       @heartbeat_interval_ms 5_000

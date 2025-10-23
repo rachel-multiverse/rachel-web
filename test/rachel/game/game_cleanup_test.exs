@@ -1,8 +1,8 @@
 defmodule Rachel.Game.GameCleanupTest do
   use Rachel.DataCase, async: false
 
-  alias Rachel.{GameManager}
   alias Rachel.Game.GameCleanup
+  alias Rachel.GameManager
 
   # GameCleanup is disabled in tests, so we start it manually for these tests
   setup do

@@ -1,8 +1,8 @@
 defmodule Rachel.Game.UserGameTest do
   use Rachel.DataCase, async: true
 
-  alias Rachel.Game.UserGame
   alias Rachel.Accounts
+  alias Rachel.Game.UserGame
 
   describe "changeset/2" do
     setup do
