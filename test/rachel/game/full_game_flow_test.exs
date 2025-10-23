@@ -293,29 +293,40 @@ defmodule Rachel.Game.FullGameFlowTest do
 
   defp play_turns_with_verification(game_id, num_turns) do
     Enum.reduce(1..num_turns, nil, fn _turn, _acc ->
-      {:ok, game} = GameEngine.get_state(game_id)
-
-      # Verify game state is valid
-      assert game.current_player_index >= 0
-      assert game.current_player_index < length(game.players)
-
-      current_player = Enum.at(game.players, game.current_player_index)
-
-      # Skip if player has won
-      if current_player.status == :won do
-        game
-      else
-        # Try to play or draw
-        case attempt_play_or_draw(game_id, current_player, game) do
-          :ok ->
-            {:ok, updated_game} = GameEngine.get_state(game_id)
-            updated_game
-
-          :error ->
-            game
-        end
-      end
+      play_single_turn(game_id)
     end)
+  end
+
+  defp play_single_turn(game_id) do
+    {:ok, game} = GameEngine.get_state(game_id)
+
+    # Verify game state is valid
+    assert game.current_player_index >= 0
+    assert game.current_player_index < length(game.players)
+
+    current_player = Enum.at(game.players, game.current_player_index)
+
+    execute_turn_for_player(game_id, current_player, game)
+  end
+
+  defp execute_turn_for_player(game_id, player, game) do
+    # Skip if player has won
+    if player.status == :won do
+      game
+    else
+      execute_play_or_draw(game_id, player, game)
+    end
+  end
+
+  defp execute_play_or_draw(game_id, player, game) do
+    case attempt_play_or_draw(game_id, player, game) do
+      :ok ->
+        {:ok, updated_game} = GameEngine.get_state(game_id)
+        updated_game
+
+      :error ->
+        game
+    end
   end
 
   defp create_special_hand do

@@ -131,20 +131,27 @@ defmodule Rachel.Benchmarks.LoadTest do
   defp simulate_turns(game_id, turns_remaining) do
     case Rachel.GameManager.get_game(game_id) do
       {:ok, game} ->
-        if game.status == :playing do
-          current_player = Enum.at(game.players, game.current_player_index)
-
-          # Try to play a card or draw
-          case try_play_or_draw(game, current_player) do
-            :ok -> simulate_turns(game_id, turns_remaining - 1)
-            :error -> :ok
-          end
-        else
-          :ok
-        end
+        execute_turn_if_playing(game_id, game, turns_remaining)
 
       {:error, _} ->
         :ok
+    end
+  end
+
+  defp execute_turn_if_playing(game_id, game, turns_remaining) do
+    if game.status == :playing do
+      execute_single_turn(game_id, game, turns_remaining)
+    else
+      :ok
+    end
+  end
+
+  defp execute_single_turn(game_id, game, turns_remaining) do
+    current_player = Enum.at(game.players, game.current_player_index)
+
+    case try_play_or_draw(game, current_player) do
+      :ok -> simulate_turns(game_id, turns_remaining - 1)
+      :error -> :ok
     end
   end
 

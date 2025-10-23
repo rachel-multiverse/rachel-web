@@ -541,15 +541,23 @@ defmodule Rachel.Game.GameEngine do
     # Skip persistence in test environment to avoid Ecto.Sandbox issues
     # Tests for persistence are in games_test.exs which uses DataCase
     unless Application.get_env(:rachel, :env) == :test do
-      Task.start(fn ->
-        case Games.save_game(game_state) do
-          {:ok, _} ->
-            :ok
+      start_game_persistence_task(game_state)
+    end
+  end
 
-          {:error, reason} ->
-            Logger.warning("Failed to persist game #{game_state.id}: #{inspect(reason)}")
-        end
-      end)
+  defp start_game_persistence_task(game_state) do
+    Task.start(fn ->
+      save_game_with_logging(game_state)
+    end)
+  end
+
+  defp save_game_with_logging(game_state) do
+    case Games.save_game(game_state) do
+      {:ok, _} ->
+        :ok
+
+      {:error, reason} ->
+        Logger.warning("Failed to persist game #{game_state.id}: #{inspect(reason)}")
     end
   end
 end

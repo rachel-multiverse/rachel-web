@@ -282,29 +282,41 @@ defmodule Rachel.Monitoring.Alerts do
     webhook_url = Application.get_env(:rachel, :alert_webhook_url)
 
     if webhook_url do
-      payload = %{
-        severity: alert.severity,
-        message: alert.message,
-        metric: alert.metric,
-        value: alert.value,
-        threshold: alert.threshold,
-        metadata: metadata,
-        timestamp: DateTime.utc_now()
-      }
-
-      # Use Task.Supervisor for non-blocking webhook calls
-      Task.start(fn ->
-        case Req.post(webhook_url, json: payload) do
-          {:ok, _response} ->
-            :ok
-
-          {:error, reason} ->
-            Logger.warning("Failed to send alert webhook: #{inspect(reason)}")
-        end
-      end)
+      send_webhook_alert(webhook_url, alert, metadata)
     end
 
     :ok
+  end
+
+  defp send_webhook_alert(webhook_url, alert, metadata) do
+    payload = build_webhook_payload(alert, metadata)
+
+    # Use Task.Supervisor for non-blocking webhook calls
+    Task.start(fn ->
+      post_webhook(webhook_url, payload)
+    end)
+  end
+
+  defp build_webhook_payload(alert, metadata) do
+    %{
+      severity: alert.severity,
+      message: alert.message,
+      metric: alert.metric,
+      value: alert.value,
+      threshold: alert.threshold,
+      metadata: metadata,
+      timestamp: DateTime.utc_now()
+    }
+  end
+
+  defp post_webhook(webhook_url, payload) do
+    case Req.post(webhook_url, json: payload) do
+      {:ok, _response} ->
+        :ok
+
+      {:error, reason} ->
+        Logger.warning("Failed to send alert webhook: #{inspect(reason)}")
+    end
   end
 
   defp notify_channel(_unknown, _alert, _metadata), do: :ok

@@ -163,22 +163,7 @@ defmodule Rachel.Game.SessionManager do
 
       session ->
         new_sessions = Map.delete(state.sessions, session_token)
-
-        # Clean up game_players tracking
-        game_players =
-          case Map.get(state.game_players, session.game_id) do
-            nil ->
-              state.game_players
-
-            players ->
-              updated = MapSet.delete(players, session.player_id)
-
-              if MapSet.size(updated) == 0 do
-                Map.delete(state.game_players, session.game_id)
-              else
-                Map.put(state.game_players, session.game_id, updated)
-              end
-          end
+        game_players = remove_player_from_game(state.game_players, session)
 
         new_state = %{state | sessions: new_sessions, game_players: game_players}
         {:noreply, new_state}
@@ -202,19 +187,7 @@ defmodule Rachel.Game.SessionManager do
     # Clean up game_players for expired sessions
     game_players =
       Enum.reduce(expired_sessions, state.game_players, fn {_token, session}, acc ->
-        case Map.get(acc, session.game_id) do
-          nil ->
-            acc
-
-          players ->
-            updated = MapSet.delete(players, session.player_id)
-
-            if MapSet.size(updated) == 0 do
-              Map.delete(acc, session.game_id)
-            else
-              Map.put(acc, session.game_id, updated)
-            end
-        end
+        remove_player_from_game(acc, session)
       end)
 
     # Schedule next cleanup
@@ -236,5 +209,24 @@ defmodule Rachel.Game.SessionManager do
       "game:#{session.game_id}",
       {:player_status, session.player_id, session.status}
     )
+  end
+
+  defp remove_player_from_game(game_players, session) do
+    case Map.get(game_players, session.game_id) do
+      nil ->
+        game_players
+
+      players ->
+        updated = MapSet.delete(players, session.player_id)
+        update_game_players_map(game_players, session.game_id, updated)
+    end
+  end
+
+  defp update_game_players_map(game_players, game_id, updated_players) do
+    if MapSet.size(updated_players) == 0 do
+      Map.delete(game_players, game_id)
+    else
+      Map.put(game_players, game_id, updated_players)
+    end
   end
 end

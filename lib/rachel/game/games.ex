@@ -218,19 +218,7 @@ defmodule Rachel.Game.Games do
       # Insert user_games records for human players only
       all_players
       |> Enum.filter(&(&1.user_id != nil))
-      |> Enum.each(fn player ->
-        attrs = %{
-          user_id: player.user_id,
-          game_id: game_state.id,
-          position: player.position,
-          final_rank: player.rank,
-          turns_taken: 0
-        }
-
-        %Rachel.Game.UserGame{}
-        |> Rachel.Game.UserGame.changeset(attrs)
-        |> Repo.insert(on_conflict: :nothing)
-      end)
+      |> Enum.each(&insert_user_game(&1, game_state.id))
 
       :ok
     else
@@ -239,6 +227,20 @@ defmodule Rachel.Game.Games do
   end
 
   # Private functions
+
+  defp insert_user_game(player, game_id) do
+    attrs = %{
+      user_id: player.user_id,
+      game_id: game_id,
+      position: player.position,
+      final_rank: player.rank,
+      turns_taken: 0
+    }
+
+    %Rachel.Game.UserGame{}
+    |> Rachel.Game.UserGame.changeset(attrs)
+    |> Repo.insert(on_conflict: :nothing)
+  end
 
   defp changeset(game, attrs) do
     game

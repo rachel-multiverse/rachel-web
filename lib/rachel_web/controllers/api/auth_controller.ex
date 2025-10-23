@@ -70,11 +70,17 @@ defmodule RachelWeb.API.AuthController do
 
   defp translate_errors(changeset) do
     Ecto.Changeset.traverse_errors(changeset, fn {msg, opts} ->
-      Enum.reduce(opts, msg, fn {key, value}, acc ->
-        # Convert value to string, handling lists properly
-        value_str = if is_list(value), do: Enum.join(value, ", "), else: to_string(value)
-        String.replace(acc, "%{#{key}}", value_str)
-      end)
+      translate_error_message(msg, opts)
     end)
   end
+
+  defp translate_error_message(msg, opts) do
+    Enum.reduce(opts, msg, fn {key, value}, acc ->
+      value_str = format_error_value(value)
+      String.replace(acc, "%{#{key}}", value_str)
+    end)
+  end
+
+  defp format_error_value(value) when is_list(value), do: Enum.join(value, ", ")
+  defp format_error_value(value), do: to_string(value)
 end
