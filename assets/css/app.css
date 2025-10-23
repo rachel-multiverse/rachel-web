@@ -1037,3 +1037,30 @@ button,
     justify-content: center;
   }
 }
+
+/* ========================================
+   Spectator Mode Styles
+   ======================================== */
+
+.spectator-banner {
+  animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    transform: translate(-50%, -100%);
+    opacity: 0;
+  }
+  to {
+    transform: translate(-50%, 0);
+    opacity: 1;
+  }
+}
+
+.spectator-mode .card {
+  cursor: default;
+}
+
+.spectator-mode .card:hover {
+  transform: none;
+}

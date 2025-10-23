@@ -55,7 +55,7 @@ defmodule RachelWeb.GameLive do
   @impl true
   def render(assigns) do
     ~H"""
-    <div class="game-container min-h-screen bg-green-900 p-4" id="game-sounds" phx-hook="GameSounds">
+    <div class={"game-container min-h-screen bg-green-900 p-4 #{if @mode == :spectator, do: "spectator-mode", else: ""}"} id="game-sounds" phx-hook="GameSounds">
       <!-- Connection Status Indicator -->
       <div
         id="connection-status"
