@@ -2,6 +2,7 @@ defmodule RachelWeb.GameLiveTest do
   use RachelWeb.ConnCase, async: false
 
   import Phoenix.LiveViewTest
+  import Rachel.AccountsFixtures
 
   alias Rachel.GameManager
 
@@ -492,6 +493,18 @@ defmodule RachelWeb.GameLiveTest do
 
       refute has_element?(view, "[data-role='spectator-banner']")
       # May or may not have play button depending on turn
+    end
+
+    test "spectator cannot see action buttons", %{conn: conn} do
+      # Create a different user to be the player
+      other_user = user_fixture(%{username: "other_player", email: "other@example.com"})
+      game_id = create_test_game_with_user(other_user)
+
+      # Current user (from conn) is NOT in the game, so they become spectator
+      {:ok, view, _html} = live(conn, ~p"/games/#{game_id}?spectate=true")
+
+      refute has_element?(view, "[data-role='play-button']")
+      refute has_element?(view, "[data-role='draw-button']")
     end
   end
 

@@ -123,6 +123,7 @@ defmodule RachelWeb.GameLive do
               selected_cards={@selected_cards}
               is_your_turn={@game.current_player_index == 0}
               button_text={smart_button_text(@game, you)}
+              mode={@mode}
             />
           <% end %>
         <% end %>
