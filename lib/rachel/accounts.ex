@@ -388,4 +388,60 @@ defmodule Rachel.Accounts do
       end
     end)
   end
+
+  ## Admin functions
+
+  @doc """
+  Counts total number of users.
+  """
+  def count_users do
+    Repo.aggregate(User, :count, :id)
+  end
+
+  @doc """
+  Counts users active in the last N hours.
+  """
+  def count_active_users(opts \\ []) do
+    hours = Keyword.get(opts, :hours, 24)
+    cutoff = DateTime.utc_now() |> DateTime.add(-hours * 60 * 60, :second)
+
+    User
+    |> where([u], u.last_seen_at >= ^cutoff)
+    |> Repo.aggregate(:count, :id)
+  end
+
+  @doc """
+  Counts new users created in the last N days.
+  """
+  def count_new_users(opts \\ []) do
+    days = Keyword.get(opts, :days, 7)
+    cutoff = DateTime.utc_now() |> DateTime.add(-days * 24 * 60 * 60, :second)
+
+    User
+    |> where([u], u.inserted_at >= ^cutoff)
+    |> Repo.aggregate(:count, :id)
+  end
+
+  @doc """
+  Lists recent users with limit.
+  """
+  def list_recent_users(opts \\ []) do
+    limit = Keyword.get(opts, :limit, 50)
+
+    User
+    |> order_by([u], desc: u.inserted_at)
+    |> limit(^limit)
+    |> Repo.all()
+  end
+
+  @doc """
+  Toggles admin status for a user.
+  """
+  def toggle_admin_status(user_id) do
+    user = get_user!(user_id)
+
+    user
+    |> Ecto.Changeset.change(is_admin: !user.is_admin)
+    |> Repo.update()
+  end
 end

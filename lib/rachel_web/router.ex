@@ -109,6 +109,7 @@ defmodule RachelWeb.Router do
   scope "/", RachelWeb do
     pipe_through [:browser, :require_authenticated_user, :require_admin_user]
 
+    live "/admin", AdminLive
     live "/analytics", AnalyticsLive
   end
 

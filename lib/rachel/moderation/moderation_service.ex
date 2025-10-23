@@ -65,6 +65,59 @@ defmodule Rachel.Moderation.ModerationService do
     |> Repo.insert()
   end
 
+  @doc """
+  Lists all pending moderation flags with user information.
+  """
+  def list_pending_flags do
+    import Ecto.Query
+
+    ModerationFlag
+    |> where([f], f.status == "pending")
+    |> order_by([f], desc: f.inserted_at)
+    |> preload(:user)
+    |> Repo.all()
+  end
+
+  @doc """
+  Counts pending moderation flags.
+  """
+  def count_pending_flags do
+    import Ecto.Query
+
+    ModerationFlag
+    |> where([f], f.status == "pending")
+    |> Repo.aggregate(:count, :id)
+  end
+
+  @doc """
+  Counts moderation flags created in the last N days.
+  """
+  def count_flags(opts \\ []) do
+    days = Keyword.get(opts, :days, 7)
+    import Ecto.Query
+
+    cutoff = DateTime.utc_now() |> DateTime.add(-days * 24 * 60 * 60, :second)
+
+    ModerationFlag
+    |> where([f], f.inserted_at >= ^cutoff)
+    |> Repo.aggregate(:count, :id)
+  end
+
+  @doc """
+  Reviews a moderation flag (approve or reject).
+  """
+  def review_flag(flag_id, reviewer_id, action) when action in [:approved, :rejected] do
+    flag = Repo.get!(ModerationFlag, flag_id)
+
+    flag
+    |> ModerationFlag.changeset(%{
+      status: Atom.to_string(action),
+      reviewed_by: reviewer_id,
+      reviewed_at: DateTime.utc_now()
+    })
+    |> Repo.update()
+  end
+
   # Private helpers
 
   defp contains_profanity?(text) do
