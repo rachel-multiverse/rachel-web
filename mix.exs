@@ -89,6 +89,10 @@ defmodule Rachel.MixProject do
       {:sobelow, "~> 0.13", only: [:dev, :test], runtime: false},
       {:mix_audit, "~> 2.1", only: [:dev, :test], runtime: false},
 
+      # Performance benchmarking
+      {:benchee, "~> 1.3", only: :dev, runtime: false},
+      {:benchee_html, "~> 1.0", only: :dev, runtime: false},
+
       # Rate limiting
       {:hammer, "~> 6.2"},
 
