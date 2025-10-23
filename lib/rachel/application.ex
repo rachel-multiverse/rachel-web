@@ -36,7 +36,7 @@ defmodule Rachel.Application do
       {:ok, pid} ->
         # Restore active games from database after supervisor starts
         # Skip in test environment to avoid Ecto.Sandbox issues
-        unless Mix.env() == :test do
+        unless Application.get_env(:rachel, :env) == :test do
           Task.start(fn -> restore_games() end)
         end
 
@@ -50,14 +50,10 @@ defmodule Rachel.Application do
   defp restore_games do
     require Logger
 
-    case Rachel.GameManager.restore_active_games() do
-      game_ids when is_list(game_ids) ->
-        if length(game_ids) > 0 do
-          Logger.info("Restored #{length(game_ids)} games from database")
-        end
+    game_ids = Rachel.GameManager.restore_active_games()
 
-      error ->
-        Logger.warning("Failed to restore games: #{inspect(error)}")
+    if length(game_ids) > 0 do
+      Logger.info("Restored #{length(game_ids)} games from database")
     end
   end
 

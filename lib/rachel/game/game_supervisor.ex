@@ -14,21 +14,25 @@ defmodule Rachel.Game.GameSupervisor do
     DynamicSupervisor.init(strategy: :one_for_one)
   end
 
+  @type player_spec ::
+          String.t()
+          | {:user, integer(), String.t()}
+          | {:anonymous, String.t()}
+          | {:ai, String.t(), atom()}
+
   @doc """
   Starts a new game server with safety features.
   """
+  @spec start_game([player_spec()], String.t() | nil) ::
+          {:ok, String.t()} | {:error, term()}
   def start_game(player_names, game_id \\ nil) do
     game_id = game_id || Ecto.UUID.generate()
 
-    child_spec = %{
-      id: game_id,
-      start: {Rachel.Game.GameEngine, :start_link, [[players: player_names, game_id: game_id]]},
-      # Restart if it crashes abnormally
-      restart: :transient,
-      max_restarts: 3
-    }
-
-    case DynamicSupervisor.start_child(__MODULE__, child_spec) do
+    # Use simple {module, args} format that DynamicSupervisor expects
+    case DynamicSupervisor.start_child(
+           __MODULE__,
+           {Rachel.Game.GameEngine, [players: player_names, game_id: game_id]}
+         ) do
       {:ok, _pid} ->
         {:ok, game_id}
 
@@ -40,6 +44,7 @@ defmodule Rachel.Game.GameSupervisor do
   @doc """
   Stops a game server.
   """
+  @spec stop_game(String.t()) :: :ok | {:error, :not_found}
   def stop_game(game_id) do
     case Registry.lookup(Rachel.GameRegistry, game_id) do
       [{pid, _}] -> DynamicSupervisor.terminate_child(__MODULE__, pid)
@@ -50,6 +55,7 @@ defmodule Rachel.Game.GameSupervisor do
   @doc """
   Lists all active game IDs.
   """
+  @spec list_games() :: [String.t()]
   def list_games do
     DynamicSupervisor.which_children(__MODULE__)
     |> Enum.map(fn {_, pid, _, _} ->
@@ -64,24 +70,16 @@ defmodule Rachel.Game.GameSupervisor do
   @doc """
   Restores a game from saved state (used on application restart).
   """
+  @spec restore_game(Rachel.Game.GameState.t()) ::
+          {:ok, String.t()} | {:error, term()}
   def restore_game(game_state) do
     game_id = game_state.id
 
-    child_spec = %{
-      id: game_id,
-      start: {Rachel.Game.GameEngine, :start_link, [[restore: game_state, game_id: game_id]]},
-      restart: :transient,
-      max_restarts: 3
-    }
-
-    # We need special init handling in GameEngine to accept {:restore, game_state}
-    # Instead of the normal {players, game_id} tuple
-    case DynamicSupervisor.start_child(__MODULE__, %{
-           child_spec
-           | start:
-               {GenServer, :start_link,
-                [Rachel.Game.GameEngine, {:restore, game_state}, [name: via(game_id)]]}
-         }) do
+    # Use simple {module, args} format with restore option
+    case DynamicSupervisor.start_child(
+           __MODULE__,
+           {Rachel.Game.GameEngine, [restore: game_state, game_id: game_id]}
+         ) do
       {:ok, _pid} ->
         {:ok, game_id}
 

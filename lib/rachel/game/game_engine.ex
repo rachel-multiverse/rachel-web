@@ -19,9 +19,16 @@ defmodule Rachel.Game.GameEngine do
   # Client API - Simple, clean interface
 
   def start_link(opts) do
-    player_names = Keyword.fetch!(opts, :players)
-    game_id = Keyword.get(opts, :game_id, Ecto.UUID.generate())
-    GenServer.start_link(__MODULE__, {player_names, game_id}, name: via(game_id))
+    case Keyword.fetch(opts, :restore) do
+      {:ok, game_state} ->
+        game_id = Keyword.fetch!(opts, :game_id)
+        GenServer.start_link(__MODULE__, {:restore, game_state}, name: via(game_id))
+
+      :error ->
+        player_names = Keyword.fetch!(opts, :players)
+        game_id = Keyword.get(opts, :game_id, Ecto.UUID.generate())
+        GenServer.start_link(__MODULE__, {player_names, game_id}, name: via(game_id))
+    end
   end
 
   def get_state(game_id), do: call(game_id, :get_state)
@@ -413,7 +420,7 @@ defmodule Rachel.Game.GameEngine do
   defp persist_game(game_state) do
     # Skip persistence in test environment to avoid Ecto.Sandbox issues
     # Tests for persistence are in games_test.exs which uses DataCase
-    unless Mix.env() == :test do
+    unless Application.get_env(:rachel, :env) == :test do
       Task.start(fn ->
         case Games.save_game(game_state) do
           {:ok, _} ->

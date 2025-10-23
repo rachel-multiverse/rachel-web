@@ -164,10 +164,6 @@ defmodule Rachel.Game.GameCleanup do
         # Already cleaned up from memory, just delete DB record
         GameManager.delete_game_record(game_id)
         :ok
-
-      error ->
-        Logger.warning("Failed to cleanup game #{game_id}: #{inspect(error)}")
-        :error
     end
   end
 

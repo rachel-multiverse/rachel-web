@@ -21,6 +21,9 @@ if System.get_env("PHX_SERVER") do
 end
 
 if config_env() == :prod do
+  # Set environment identifier for runtime checks
+  config :rachel, :env, :prod
+
   database_url =
     System.get_env("DATABASE_URL") ||
       raise """

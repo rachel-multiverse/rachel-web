@@ -5,6 +5,12 @@ defmodule Rachel.GameManager do
 
   alias Rachel.Game.{GameEngine, Games, GameSupervisor}
 
+  @type player_spec ::
+          String.t()
+          | {:user, integer(), String.t()}
+          | {:anonymous, String.t()}
+          | {:ai, String.t(), atom()}
+
   @doc """
   Creates a new game with the given players.
   Players can be:
@@ -13,6 +19,7 @@ defmodule Rachel.GameManager do
     - {:ai, name, difficulty} for AI players
     - Strings (backwards compat, treated as anonymous)
   """
+  @spec create_game([player_spec()]) :: {:ok, String.t()} | {:error, term()}
   def create_game(players) when is_list(players) and length(players) >= 2 do
     case GameSupervisor.start_game(players) do
       {:ok, game_id} ->
@@ -27,6 +34,8 @@ defmodule Rachel.GameManager do
   Creates a game with AI opponents.
   Player can be {:user, user_id, name}, {:anonymous, name}, or a string.
   """
+  @spec create_ai_game(player_spec(), non_neg_integer(), atom()) ::
+          {:ok, String.t()} | {:error, term()}
   def create_ai_game(player, num_ai \\ 3, difficulty \\ :medium) do
     ai_players =
       for i <- 1..num_ai do
@@ -42,6 +51,7 @@ defmodule Rachel.GameManager do
   Creates a new lobby game that players can join.
   Host can be {:user, user_id, name}, {:anonymous, name}, or a string.
   """
+  @spec create_lobby(player_spec()) :: {:ok, String.t()} | {:error, term()}
   def create_lobby(host) do
     case GameSupervisor.start_game([host]) do
       {:ok, game_id} ->
@@ -69,6 +79,8 @@ defmodule Rachel.GameManager do
   @doc """
   Gets the current state of a game.
   """
+  @spec get_game(String.t()) ::
+          {:ok, Rachel.Game.GameState.t()} | {:error, :game_not_found}
   def get_game(game_id) do
     GameEngine.get_state(game_id)
   catch
@@ -78,6 +90,8 @@ defmodule Rachel.GameManager do
   @doc """
   Player plays cards.
   """
+  @spec play_cards(String.t(), String.t(), [Rachel.Game.Card.t()], atom() | nil) ::
+          {:ok, Rachel.Game.GameState.t()} | {:error, term()}
   def play_cards(game_id, player_id, cards, nominated_suit \\ nil) do
     GameEngine.play_cards(game_id, player_id, cards, nominated_suit)
   catch
@@ -87,6 +101,8 @@ defmodule Rachel.GameManager do
   @doc """
   Player draws cards.
   """
+  @spec draw_cards(String.t(), String.t(), atom()) ::
+          {:ok, Rachel.Game.GameState.t()} | {:error, term()}
   def draw_cards(game_id, player_id, reason \\ :cannot_play) do
     GameEngine.draw_cards(game_id, player_id, reason)
   catch
@@ -180,6 +196,7 @@ defmodule Rachel.GameManager do
   Restores all active games from the database on application startup.
   Returns a list of restored game IDs.
   """
+  @spec restore_active_games() :: [String.t()]
   def restore_active_games do
     # Load all non-finished games
     playing_games = Games.list_by_status(:playing)

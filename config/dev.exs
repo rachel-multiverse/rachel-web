@@ -1,5 +1,8 @@
 import Config
 
+# Set environment identifier for runtime checks
+config :rachel, :env, :dev
+
 # Configure your database
 config :rachel, Rachel.Repo,
   username: "postgres",
