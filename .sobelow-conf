@@ -1,0 +1,14 @@
+[
+  verbose: false,
+  private: false,
+  skip_files: [],
+  ignore: [
+    # API pipeline intentionally doesn't use CSRF tokens (uses API token auth instead)
+    "Config.CSRF",
+    # HTTPS is configured in production runtime config (see config/runtime.exs line 72)
+    "Config.HTTPS",
+    # CSP is implemented via custom plug :put_content_security_policy (see router.ex line 14-40)
+    "Config.CSP"
+  ],
+  ignore_files: []
+]

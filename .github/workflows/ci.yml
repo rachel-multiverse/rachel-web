@@ -79,6 +79,9 @@ jobs:
     - name: Run Dialyzer
       run: mix dialyzer --format github
 
+    - name: Run Sobelow security scan
+      run: mix sobelow --config
+
     - name: Check for security vulnerabilities
       run: mix deps.audit
 
