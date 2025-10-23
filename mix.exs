@@ -12,7 +12,71 @@ defmodule Rachel.MixProject do
       aliases: aliases(),
       deps: deps(),
       listeners: [Phoenix.CodeReloader],
-      test_coverage: [tool: ExCoveralls]
+      test_coverage: [tool: ExCoveralls],
+
+      # Docs
+      name: "Rachel",
+      source_url: "https://github.com/yourusername/rachel-web",
+      homepage_url: "https://github.com/yourusername/rachel-web",
+      docs: [
+        main: "readme",
+        extras: [
+          "README.md",
+          {"../GAME_RULES.md", [title: "Game Rules"]},
+          {"../PROTOCOL.md", [title: "Binary Protocol"]},
+          "API.md",
+          "CONTRIBUTING.md",
+          {"DEPLOYMENT.md", [title: "Deployment Guide"]},
+          {"docs/DEPENDENCY_UPDATES.md", [title: "Dependency Updates"]},
+          {"docs/GENERATING_DOCS.md", [title: "Generating Documentation"]},
+          {"benchmarks/README.md", [title: "Performance Benchmarking"]},
+          {"config/uptime-monitoring.md", [title: "Uptime Monitoring"]}
+        ],
+        groups_for_extras: [
+          "Game Documentation": [
+            "../GAME_RULES.md",
+            "../PROTOCOL.md"
+          ],
+          "Development": [
+            "API.md",
+            "CONTRIBUTING.md",
+            "docs/GENERATING_DOCS.md",
+            "docs/DEPENDENCY_UPDATES.md"
+          ],
+          "Operations": [
+            "DEPLOYMENT.md",
+            "benchmarks/README.md",
+            "config/uptime-monitoring.md"
+          ]
+        ],
+        groups_for_modules: [
+          "Game Engine": [
+            Rachel.Game.GameState,
+            Rachel.Game.GameEngine,
+            Rachel.Game.GameSupervisor,
+            Rachel.Game.Rules,
+            Rachel.Game.Card,
+            Rachel.Game.Deck,
+            Rachel.Game.Player
+          ],
+          "Game Management": [
+            Rachel.GameManager,
+            Rachel.Game.SessionManager,
+            Rachel.Game.ConnectionMonitor,
+            Rachel.Game.AIPlayer
+          ],
+          "Web Interface": [
+            RachelWeb.GameLive,
+            RachelWeb.LobbyLive,
+            RachelWeb.ReconnectableLive
+          ],
+          "Binary Protocol": [
+            Rachel.Protocol.Server,
+            Rachel.Protocol.Handler,
+            Rachel.Protocol.Message
+          ]
+        ]
+      ]
     ]
   end
 
@@ -92,6 +156,9 @@ defmodule Rachel.MixProject do
       # Performance benchmarking
       {:benchee, "~> 1.3", only: :dev, runtime: false},
       {:benchee_html, "~> 1.0", only: :dev, runtime: false},
+
+      # Documentation
+      {:ex_doc, "~> 0.34", only: :dev, runtime: false},
 
       # Rate limiting
       {:hammer, "~> 6.2"},
