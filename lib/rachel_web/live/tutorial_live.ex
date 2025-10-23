@@ -51,19 +51,19 @@ defmodule RachelWeb.TutorialLive do
                       )
                     ]}
                   >
-                    <span class="chapter-number"><%= chapter.order %>.</span>
-                    <%= chapter.title %>
+                    <span class="chapter-number">{chapter.order}.</span>
+                    {chapter.title}
                   </button>
                 </li>
               <% end %>
             </ul>
           </nav>
-
-          <!-- Chapter Content Area -->
+          
+    <!-- Chapter Content Area -->
           <main class="tutorial-content">
-            <%= render_chapter(@selected_chapter, assigns) %>
-
-            <!-- Navigation Buttons -->
+            {render_chapter(@selected_chapter, assigns)}
+            
+    <!-- Navigation Buttons -->
             <div class="chapter-navigation flex justify-between mt-8 pt-6 border-t-2 border-green-700">
               <%= if previous_chapter = get_previous_chapter(@selected_chapter) do %>
                 <button
@@ -71,7 +71,7 @@ defmodule RachelWeb.TutorialLive do
                   phx-value-chapter={previous_chapter.id}
                   class="nav-button bg-green-700 hover:bg-green-600 text-white px-6 py-3 rounded-lg transition-all"
                 >
-                  ← Previous: <%= previous_chapter.title %>
+                  ← Previous: {previous_chapter.title}
                 </button>
               <% else %>
                 <div></div>
@@ -83,7 +83,7 @@ defmodule RachelWeb.TutorialLive do
                   phx-value-chapter={next_chapter.id}
                   class="nav-button bg-green-700 hover:bg-green-600 text-white px-6 py-3 rounded-lg transition-all"
                 >
-                  Next: <%= next_chapter.title %> →
+                  Next: {next_chapter.title} →
                 </button>
               <% else %>
                 <.link
@@ -115,7 +115,8 @@ defmodule RachelWeb.TutorialLive do
 
       <p class="chapter-text">
         Rachel is a strategic card game where your goal is to be the first player to get rid of all your cards.
-        On your turn, you must play a card that matches either the <strong>suit</strong> or <strong>rank</strong>
+        On your turn, you must play a card that matches either the <strong>suit</strong>
+        or <strong>rank</strong>
         of the top card on the discard pile.
       </p>
 
@@ -171,7 +172,8 @@ defmodule RachelWeb.TutorialLive do
       <h2 class="chapter-title">Special Cards: 2s</h2>
 
       <p class="chapter-text">
-        Playing a <strong>2</strong> is an attack! The next player must draw 2 cards and lose their turn,
+        Playing a <strong>2</strong>
+        is an attack! The next player must draw 2 cards and lose their turn,
         unless they also have a 2 to play. Multiple 2s can be stacked to increase the penalty.
       </p>
 
@@ -369,7 +371,8 @@ defmodule RachelWeb.TutorialLive do
       <h2 class="chapter-title">Special Cards: Queens</h2>
 
       <p class="chapter-text">
-        Playing a <strong>Queen</strong> reverses the direction of play! If turns were going clockwise,
+        Playing a <strong>Queen</strong>
+        reverses the direction of play! If turns were going clockwise,
         they now go counter-clockwise, and vice versa.
       </p>
 
@@ -524,7 +527,9 @@ defmodule RachelWeb.TutorialLive do
         <li>
           <strong>Red Jacks:</strong> Each reduces the attack by -5 cards
         </li>
-        <li><strong>Queens:</strong> Each reverses direction (two Queens = back to original direction)</li>
+        <li>
+          <strong>Queens:</strong> Each reverses direction (two Queens = back to original direction)
+        </li>
         <li>
           <strong>Aces:</strong> Can stack, but you still only nominate ONE suit for all of them
         </li>
@@ -587,7 +592,7 @@ defmodule RachelWeb.TutorialLive do
 
       <p class="chapter-text">
         This is one of Rachel's most important rules: <strong>If you have a valid card to play,
-        you MUST play it.</strong> You cannot draw cards if you have a playable card in your hand.
+          you MUST play it.</strong> You cannot draw cards if you have a playable card in your hand.
       </p>
 
       <h3 class="section-title">Why This Rule Matters</h3>
@@ -792,8 +797,8 @@ defmodule RachelWeb.TutorialLive do
       "card w-20 h-28 bg-white rounded-lg border-2 flex flex-col items-center justify-center shadow-lg",
       card_color_class(@card)
     ]}>
-      <span class="text-3xl font-bold"><%= rank_display(@card) %></span>
-      <span class="text-4xl"><%= suit_symbol(@card) %></span>
+      <span class="text-3xl font-bold">{rank_display(@card)}</span>
+      <span class="text-4xl">{suit_symbol(@card)}</span>
     </div>
     """
   end

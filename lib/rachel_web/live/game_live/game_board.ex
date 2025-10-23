@@ -31,7 +31,7 @@ defmodule RachelWeb.GameLive.GameBoard do
           </div>
         </div>
       </div>
-
+      
     <!-- Play Area -->
       <div class="flex justify-center gap-8 mb-8">
         <!-- Deck -->
@@ -41,7 +41,7 @@ defmodule RachelWeb.GameLive.GameBoard do
             <span class="text-white text-2xl font-bold">{length(@game.deck)}</span>
           </div>
         </div>
-
+        
     <!-- Discard Pile -->
         <div class="discard-area">
           <div class="text-white text-center mb-2">Discard</div>
@@ -57,7 +57,7 @@ defmodule RachelWeb.GameLive.GameBoard do
           <% end %>
         </div>
       </div>
-
+      
     <!-- Game Status Messages -->
       <%= if @game.pending_attack do %>
         <div class="text-center mb-4">

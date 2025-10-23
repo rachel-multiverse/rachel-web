@@ -93,7 +93,8 @@ defmodule Rachel.Accounts.User do
     case ModerationService.check_content(value, field) do
       :ok -> []
       {:reject, reason} -> [{field, "#{reason}"}]
-      {:flag, _reason} -> []  # Allow but will be flagged
+      # Allow but will be flagged
+      {:flag, _reason} -> []
     end
   end
 

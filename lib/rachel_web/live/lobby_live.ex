@@ -53,7 +53,7 @@ defmodule RachelWeb.LobbyLive do
           <h2 class="text-2xl font-bold mb-4">Quick Play</h2>
 
           <div class="mb-4 text-gray-600">
-            Playing as: <span class="font-semibold text-gray-900"><%= @player_name %></span>
+            Playing as: <span class="font-semibold text-gray-900">{@player_name}</span>
           </div>
 
           <form phx-submit="create_game" class="space-y-4">

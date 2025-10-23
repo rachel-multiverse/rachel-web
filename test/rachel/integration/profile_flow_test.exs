@@ -17,11 +17,13 @@ defmodule Rachel.Integration.ProfileFlowTest do
 
       # Fill personal info
       view
-      |> form("#wizard-form", profile: %{
-        display_name: "TestPlayer",
-        tagline: "Ready to win!",
-        bio: "I love card games"
-      })
+      |> form("#wizard-form",
+        profile: %{
+          display_name: "TestPlayer",
+          tagline: "Ready to win!",
+          bio: "I love card games"
+        }
+      )
       |> render_submit()
 
       # Complete wizard
@@ -43,10 +45,12 @@ defmodule Rachel.Integration.ProfileFlowTest do
 
       # Update profile
       view
-      |> form("#profile-form", profile: %{
-        display_name: "UpdatedName",
-        tagline: "New motto"
-      })
+      |> form("#profile-form",
+        profile: %{
+          display_name: "UpdatedName",
+          tagline: "New motto"
+        }
+      )
       |> render_submit()
 
       # Verify update
@@ -60,9 +64,11 @@ defmodule Rachel.Integration.ProfileFlowTest do
 
       html =
         view
-        |> form("#profile-form", profile: %{
-          tagline: "damn this game"
-        })
+        |> form("#profile-form",
+          profile: %{
+            tagline: "damn this game"
+          }
+        )
         |> render_submit()
 
       assert html =~ "contains inappropriate language"

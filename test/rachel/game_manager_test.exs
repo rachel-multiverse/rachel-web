@@ -59,7 +59,8 @@ defmodule Rachel.GameManagerTest do
       {:ok, game_id} = GameManager.create_ai_game(player)
 
       assert {:ok, game} = GameManager.get_game(game_id)
-      assert length(game.players) == 4  # 1 human + 3 AI
+      # 1 human + 3 AI
+      assert length(game.players) == 4
       assert game.status == :waiting
     end
 
@@ -69,7 +70,8 @@ defmodule Rachel.GameManagerTest do
       {:ok, game_id} = GameManager.create_ai_game(player, 2)
 
       assert {:ok, game} = GameManager.get_game(game_id)
-      assert length(game.players) == 3  # 1 human + 2 AI
+      # 1 human + 2 AI
+      assert length(game.players) == 3
     end
 
     test "creates game with custom difficulty" do

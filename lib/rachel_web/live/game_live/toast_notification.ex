@@ -148,7 +148,8 @@ defmodule RachelWeb.GameLive.ToastNotification do
   # JavaScript commands for showing/hiding toasts
   defp show_toast do
     Phoenix.LiveView.JS.add_class("toast-enter",
-      transition: {"ease-out duration-300", "opacity-0 translate-x-full", "opacity-100 translate-x-0"}
+      transition:
+        {"ease-out duration-300", "opacity-0 translate-x-full", "opacity-100 translate-x-0"}
     )
   end
 
@@ -156,7 +157,8 @@ defmodule RachelWeb.GameLive.ToastNotification do
     Phoenix.LiveView.JS.push("lv:clear-flash", value: %{key: kind})
     |> Phoenix.LiveView.JS.hide(
       to: "#toast-#{kind}",
-      transition: {"ease-in duration-200", "opacity-100 translate-x-0", "opacity-0 translate-x-full"}
+      transition:
+        {"ease-in duration-200", "opacity-100 translate-x-0", "opacity-0 translate-x-full"}
     )
   end
 end

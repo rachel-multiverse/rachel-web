@@ -21,37 +21,37 @@ defmodule RachelWeb.GameLive.GameOverModal do
           </div>
         <% end %>
 
-          <div class="mb-6 text-white">
-            <p class="text-lg mb-4">Final Statistics:</p>
-            <div class="bg-black bg-opacity-20 rounded-lg p-4 space-y-2">
-              <div class="flex justify-between">
-                <span>Total Turns:</span>
-                <span class="font-bold">{@game.turn_count}</span>
-              </div>
-              <div class="flex justify-between">
-                <span>Players:</span>
-                <span class="font-bold">{length(@game.players)}</span>
-              </div>
-              <%= if @game.winners && length(@game.winners) > 0 do %>
-                <div class="border-t border-white border-opacity-20 pt-2">
-                  <div class="text-sm">Final Standings:</div>
-                  <%= for {player, index} <- Enum.with_index(@game.players) do %>
-                    <div class="flex justify-between text-sm">
-                      <span class="flex items-center gap-1">
-                        <%= if player.id == List.first(@game.winners) do %>
-                          <span class="text-yellow-300">🏆</span>
-                        <% else %>
-                          <span class="text-gray-300">{index + 1}.</span>
-                        <% end %>
-                        {player.name}
-                      </span>
-                      <span>{length(player.hand)} cards left</span>
-                    </div>
-                  <% end %>
-                </div>
-              <% end %>
+        <div class="mb-6 text-white">
+          <p class="text-lg mb-4">Final Statistics:</p>
+          <div class="bg-black bg-opacity-20 rounded-lg p-4 space-y-2">
+            <div class="flex justify-between">
+              <span>Total Turns:</span>
+              <span class="font-bold">{@game.turn_count}</span>
             </div>
+            <div class="flex justify-between">
+              <span>Players:</span>
+              <span class="font-bold">{length(@game.players)}</span>
+            </div>
+            <%= if @game.winners && length(@game.winners) > 0 do %>
+              <div class="border-t border-white border-opacity-20 pt-2">
+                <div class="text-sm">Final Standings:</div>
+                <%= for {player, index} <- Enum.with_index(@game.players) do %>
+                  <div class="flex justify-between text-sm">
+                    <span class="flex items-center gap-1">
+                      <%= if player.id == List.first(@game.winners) do %>
+                        <span class="text-yellow-300">🏆</span>
+                      <% else %>
+                        <span class="text-gray-300">{index + 1}.</span>
+                      <% end %>
+                      {player.name}
+                    </span>
+                    <span>{length(player.hand)} cards left</span>
+                  </div>
+                <% end %>
+              </div>
+            <% end %>
           </div>
+        </div>
 
         <div class="flex gap-4 justify-center">
           <button

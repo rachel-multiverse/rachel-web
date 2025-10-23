@@ -434,7 +434,10 @@ defmodule Rachel.Game.GameEngineTest do
         players = state.game.players
         winner = Enum.at(players, state.game.current_player_index)
         updated_winner = %{winner | hand: []}
-        updated_players = List.replace_at(players, state.game.current_player_index, updated_winner)
+
+        updated_players =
+          List.replace_at(players, state.game.current_player_index, updated_winner)
+
         new_game = %{state.game | players: updated_players}
         %{state | game: new_game}
       end)
@@ -459,7 +462,10 @@ defmodule Rachel.Game.GameEngineTest do
         players = state.game.players
         winner = Enum.at(players, state.game.current_player_index)
         updated_winner = %{winner | hand: []}
-        updated_players = List.replace_at(players, state.game.current_player_index, updated_winner)
+
+        updated_players =
+          List.replace_at(players, state.game.current_player_index, updated_winner)
+
         new_game = %{state.game | players: updated_players, status: :finished}
         %{state | game: new_game}
       end)
@@ -540,16 +546,18 @@ defmodule Rachel.Game.GameEngineTest do
   describe "restore from database" do
     test "can restore game state from database" do
       # Create a game state to restore
-      game_state = Rachel.Game.GameState.new(["Alice", "Bob"])
-      |> Map.put(:id, "restore_test_#{System.unique_integer()}")
-      |> Rachel.Game.GameState.start_game()
+      game_state =
+        Rachel.Game.GameState.new(["Alice", "Bob"])
+        |> Map.put(:id, "restore_test_#{System.unique_integer()}")
+        |> Rachel.Game.GameState.start_game()
 
       # Start engine with restore
-      {:ok, pid} = GenServer.start_link(
-        Rachel.Game.GameEngine,
-        {:restore, game_state},
-        name: {:via, Registry, {Rachel.GameRegistry, game_state.id}}
-      )
+      {:ok, pid} =
+        GenServer.start_link(
+          Rachel.Game.GameEngine,
+          {:restore, game_state},
+          name: {:via, Registry, {Rachel.GameRegistry, game_state.id}}
+        )
 
       {:ok, restored_game} = GameEngine.get_state(game_state.id)
 
@@ -562,19 +570,21 @@ defmodule Rachel.Game.GameEngineTest do
 
     test "schedules AI after restore if AI's turn" do
       # Create game with AI
-      game_state = Rachel.Game.GameState.new(["Human", {:ai, "Bot", :medium}])
-      |> Map.put(:id, "restore_ai_#{System.unique_integer()}")
-      |> Rachel.Game.GameState.start_game()
+      game_state =
+        Rachel.Game.GameState.new(["Human", {:ai, "Bot", :medium}])
+        |> Map.put(:id, "restore_ai_#{System.unique_integer()}")
+        |> Rachel.Game.GameState.start_game()
 
       # Set AI as current player
       ai_index = Enum.find_index(game_state.players, &(&1.type == :ai))
       game_state = %{game_state | current_player_index: ai_index}
 
-      {:ok, pid} = GenServer.start_link(
-        Rachel.Game.GameEngine,
-        {:restore, game_state},
-        name: {:via, Registry, {Rachel.GameRegistry, game_state.id}}
-      )
+      {:ok, pid} =
+        GenServer.start_link(
+          Rachel.Game.GameEngine,
+          {:restore, game_state},
+          name: {:via, Registry, {Rachel.GameRegistry, game_state.id}}
+        )
 
       # AI should be scheduled
       state = :sys.get_state(pid)
@@ -604,8 +614,9 @@ defmodule Rachel.Game.GameEngineTest do
 
       # Try to play cards of different ranks
       if length(player.hand) >= 2 do
-        different_cards = Enum.take(player.hand, 2)
-        |> Enum.uniq_by(& &1.rank)
+        different_cards =
+          Enum.take(player.hand, 2)
+          |> Enum.uniq_by(& &1.rank)
 
         if length(different_cards) == 2 do
           {:error, :invalid_stack} = GameEngine.play_cards(game_id, player.id, different_cards)
@@ -618,10 +629,12 @@ defmodule Rachel.Game.GameEngineTest do
       black_jack = %Rachel.Game.Card{suit: :spades, rank: 11}
 
       :sys.replace_state(pid, fn state ->
-        new_game = %{state.game |
-          pending_attack: {:black_jacks, 5},
-          discard_pile: [black_jack | state.game.discard_pile]
+        new_game = %{
+          state.game
+          | pending_attack: {:black_jacks, 5},
+            discard_pile: [black_jack | state.game.discard_pile]
         }
+
         %{state | game: new_game}
       end)
 
@@ -629,9 +642,10 @@ defmodule Rachel.Game.GameEngineTest do
       player = Enum.at(game.players, game.current_player_index)
 
       # Try to play non-counter card (not Jack or 2)
-      non_counter = Enum.find(player.hand, fn card ->
-        card.rank != 11 and card.rank != 2
-      end)
+      non_counter =
+        Enum.find(player.hand, fn card ->
+          card.rank != 11 and card.rank != 2
+        end)
 
       if non_counter do
         {:error, :invalid_counter} = GameEngine.play_cards(game_id, player.id, [non_counter])
@@ -649,13 +663,17 @@ defmodule Rachel.Game.GameEngineTest do
         # Give player a Red Jack to counter with (rank 11 for Jack)
         red_jack = %Rachel.Game.Card{suit: :hearts, rank: 11}
         updated_current = %{current | hand: [red_jack | current.hand]}
-        updated_players = List.replace_at(players, state.game.current_player_index, updated_current)
 
-        new_game = %{state.game |
-          pending_attack: {:black_jacks, 5},
-          discard_pile: [black_jack | state.game.discard_pile],
-          players: updated_players
+        updated_players =
+          List.replace_at(players, state.game.current_player_index, updated_current)
+
+        new_game = %{
+          state.game
+          | pending_attack: {:black_jacks, 5},
+            discard_pile: [black_jack | state.game.discard_pile],
+            players: updated_players
         }
+
         %{state | game: new_game}
       end)
 
@@ -987,9 +1005,10 @@ defmodule Rachel.Game.GameEngineTest do
       player_id = player.id
 
       # Find valid card
-      valid_card = Enum.find(player.hand, fn card ->
-        Rachel.Game.Rules.can_play_card?(card, hd(game.discard_pile), nil)
-      end)
+      valid_card =
+        Enum.find(player.hand, fn card ->
+          Rachel.Game.Rules.can_play_card?(card, hd(game.discard_pile), nil)
+        end)
 
       if valid_card do
         {:ok, _} = GameEngine.play_cards(game_id, player_id, [valid_card])

@@ -3,7 +3,7 @@
     <h1 class="text-4xl font-bold mb-8">Privacy Policy</h1>
 
     <p class="text-sm text-gray-600 mb-8">
-      <strong>Last Updated:</strong> <%= Date.utc_today() |> Date.to_string() %>
+      <strong>Last Updated:</strong> {Date.utc_today() |> Date.to_string()}
     </p>
 
     <div class="prose prose-lg max-w-none space-y-6">
@@ -20,15 +20,22 @@
 
         <h3 class="text-xl font-semibold mb-2">2.1 Information You Provide</h3>
         <ul class="list-disc pl-6 space-y-2">
-          <li><strong>Account Information:</strong> Email address, username, display name, and password (hashed)</li>
-          <li><strong>Profile Information:</strong> Optional display name for in-game identification</li>
+          <li>
+            <strong>Account Information:</strong>
+            Email address, username, display name, and password (hashed)
+          </li>
+          <li>
+            <strong>Profile Information:</strong> Optional display name for in-game identification
+          </li>
         </ul>
 
         <h3 class="text-xl font-semibold mb-2 mt-4">2.2 Information We Automatically Collect</h3>
         <ul class="list-disc pl-6 space-y-2">
           <li><strong>Game Statistics:</strong> Games played, games won, total turns</li>
           <li><strong>Session Data:</strong> Login timestamps, session tokens</li>
-          <li><strong>Technical Data:</strong> IP address (for rate limiting and abuse prevention)</li>
+          <li>
+            <strong>Technical Data:</strong> IP address (for rate limiting and abuse prevention)
+          </li>
           <li><strong>Usage Data:</strong> Game actions, moves, and gameplay patterns</li>
         </ul>
       </section>
@@ -37,12 +44,27 @@
         <h2 class="text-2xl font-bold mb-4">3. How We Use Your Information</h2>
         <p>We use your personal data for the following purposes:</p>
         <ul class="list-disc pl-6 space-y-2">
-          <li><strong>Provide the Service:</strong> Enable you to create an account, play games, and track your statistics</li>
+          <li>
+            <strong>Provide the Service:</strong>
+            Enable you to create an account, play games, and track your statistics
+          </li>
           <li><strong>Authentication:</strong> Verify your identity and manage your sessions</li>
-          <li><strong>Game Functionality:</strong> Match you with other players, track game state, display leaderboards</li>
-          <li><strong>Security & Abuse Prevention:</strong> Prevent bot attacks, resource abuse, and cheating</li>
-          <li><strong>Service Improvement:</strong> Analyze usage patterns to improve game balance and features</li>
-          <li><strong>Communication:</strong> Send transactional emails (login links, account notifications)</li>
+          <li>
+            <strong>Game Functionality:</strong>
+            Match you with other players, track game state, display leaderboards
+          </li>
+          <li>
+            <strong>Security & Abuse Prevention:</strong>
+            Prevent bot attacks, resource abuse, and cheating
+          </li>
+          <li>
+            <strong>Service Improvement:</strong>
+            Analyze usage patterns to improve game balance and features
+          </li>
+          <li>
+            <strong>Communication:</strong>
+            Send transactional emails (login links, account notifications)
+          </li>
         </ul>
       </section>
 
@@ -50,20 +72,43 @@
         <h2 class="text-2xl font-bold mb-4">4. Legal Basis for Processing (GDPR)</h2>
         <p>If you are in the European Union, our legal basis for processing your data is:</p>
         <ul class="list-disc pl-6 space-y-2">
-          <li><strong>Contract Performance:</strong> Processing necessary to provide the game service you requested</li>
-          <li><strong>Legitimate Interest:</strong> Fraud prevention, security, and service improvement</li>
-          <li><strong>Consent:</strong> For any optional communications (if we add marketing in the future)</li>
+          <li>
+            <strong>Contract Performance:</strong>
+            Processing necessary to provide the game service you requested
+          </li>
+          <li>
+            <strong>Legitimate Interest:</strong>
+            Fraud prevention, security, and service improvement
+          </li>
+          <li>
+            <strong>Consent:</strong>
+            For any optional communications (if we add marketing in the future)
+          </li>
         </ul>
       </section>
 
       <section>
         <h2 class="text-2xl font-bold mb-4">5. Data Sharing and Disclosure</h2>
-        <p>We do <strong>NOT</strong> sell your personal data. We may share your data only in these limited circumstances:</p>
+        <p>
+          We do <strong>NOT</strong>
+          sell your personal data. We may share your data only in these limited circumstances:
+        </p>
         <ul class="list-disc pl-6 space-y-2">
-          <li><strong>Service Providers:</strong> Hosting (Fly.io), email delivery (if configured), error tracking (Sentry)</li>
-          <li><strong>Legal Requirements:</strong> If required by law or to protect our rights</li>
-          <li><strong>Business Transfer:</strong> In the event of a merger, acquisition, or sale of assets</li>
-          <li><strong>Other Players:</strong> Your display name and game statistics are visible to other players</li>
+          <li>
+            <strong>Service Providers:</strong>
+            Hosting (Fly.io), email delivery (if configured), error tracking (Sentry)
+          </li>
+          <li>
+            <strong>Legal Requirements:</strong> If required by law or to protect our rights
+          </li>
+          <li>
+            <strong>Business Transfer:</strong>
+            In the event of a merger, acquisition, or sale of assets
+          </li>
+          <li>
+            <strong>Other Players:</strong>
+            Your display name and game statistics are visible to other players
+          </li>
         </ul>
       </section>
 
@@ -72,9 +117,14 @@
         <p>We retain your data for the following periods:</p>
         <ul class="list-disc pl-6 space-y-2">
           <li><strong>Account Data:</strong> Until you delete your account</li>
-          <li><strong>Game Records:</strong> Finished games deleted after 1 hour, abandoned games after 2 hours</li>
+          <li>
+            <strong>Game Records:</strong>
+            Finished games deleted after 1 hour, abandoned games after 2 hours
+          </li>
           <li><strong>Session Tokens:</strong> Expire based on your login preferences</li>
-          <li><strong>Backups:</strong> May persist in backups for up to 90 days after deletion</li>
+          <li>
+            <strong>Backups:</strong> May persist in backups for up to 90 days after deletion
+          </li>
         </ul>
       </section>
 
@@ -84,13 +134,21 @@
         <ul class="list-disc pl-6 space-y-2">
           <li><strong>Access:</strong> Request a copy of your personal data</li>
           <li><strong>Rectification:</strong> Correct inaccurate data (via account settings)</li>
-          <li><strong>Deletion:</strong> Delete your account and associated data (via account settings)</li>
-          <li><strong>Data Portability:</strong> Request your data in a machine-readable format</li>
+          <li>
+            <strong>Deletion:</strong>
+            Delete your account and associated data (via account settings)
+          </li>
+          <li>
+            <strong>Data Portability:</strong> Request your data in a machine-readable format
+          </li>
           <li><strong>Object:</strong> Object to processing based on legitimate interests</li>
-          <li><strong>Restrict:</strong> Request restriction of processing in certain circumstances</li>
+          <li>
+            <strong>Restrict:</strong> Request restriction of processing in certain circumstances
+          </li>
         </ul>
         <p class="mt-4">
-          To exercise these rights, please use the account settings page or contact us at <strong>rachel@stevehill.xyz</strong>
+          To exercise these rights, please use the account settings page or contact us at
+          <strong>rachel@stevehill.xyz</strong>
         </p>
       </section>
 
@@ -152,7 +210,7 @@
           If you have questions about this privacy policy or want to exercise your rights, please contact us at:
         </p>
         <p class="mt-2">
-          <strong>Email:</strong> rachel@stevehill.xyz<br>
+          <strong>Email:</strong> rachel@stevehill.xyz<br />
           <strong>Response Time:</strong> We aim to respond within 30 days
         </p>
       </section>

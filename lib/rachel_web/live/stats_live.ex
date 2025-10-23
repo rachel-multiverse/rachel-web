@@ -70,8 +70,8 @@ defmodule RachelWeb.StatsLive do
             </.link>
           </div>
         </div>
-
-        <!-- Main Stats Grid -->
+        
+    <!-- Main Stats Grid -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
           <!-- Games Played -->
           <div class="bg-white rounded-lg shadow-lg p-6">
@@ -97,8 +97,8 @@ defmodule RachelWeb.StatsLive do
               </div>
             </div>
           </div>
-
-          <!-- Games Won -->
+          
+    <!-- Games Won -->
           <div class="bg-white rounded-lg shadow-lg p-6">
             <div class="flex items-center justify-between">
               <div>
@@ -122,8 +122,8 @@ defmodule RachelWeb.StatsLive do
               </div>
             </div>
           </div>
-
-          <!-- Win Rate -->
+          
+    <!-- Win Rate -->
           <div class="bg-white rounded-lg shadow-lg p-6">
             <div class="flex items-center justify-between">
               <div>
@@ -147,8 +147,8 @@ defmodule RachelWeb.StatsLive do
               </div>
             </div>
           </div>
-
-          <!-- Total Turns -->
+          
+    <!-- Total Turns -->
           <div class="bg-white rounded-lg shadow-lg p-6">
             <div class="flex items-center justify-between">
               <div>
@@ -173,8 +173,8 @@ defmodule RachelWeb.StatsLive do
             </div>
           </div>
         </div>
-
-        <!-- Detailed Stats -->
+        
+    <!-- Detailed Stats -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <!-- Performance Overview -->
           <div class="bg-white rounded-lg shadow-lg p-6">
@@ -196,28 +196,28 @@ defmodule RachelWeb.StatsLive do
                   </div>
                 </div>
               </div>
-
-              <!-- Average Turns per Game -->
+              
+    <!-- Average Turns per Game -->
               <div class="flex justify-between items-center py-3 border-b">
                 <span class="text-gray-600">Avg. Turns per Game</span>
                 <span class="text-xl font-bold text-gray-900">{@avg_turns_per_game}</span>
               </div>
-
-              <!-- Games Played -->
+              
+    <!-- Games Played -->
               <div class="flex justify-between items-center py-3 border-b">
                 <span class="text-gray-600">Total Games</span>
                 <span class="text-xl font-bold text-gray-900">{@user.games_played}</span>
               </div>
-
-              <!-- Best Streak (placeholder for future) -->
+              
+    <!-- Best Streak (placeholder for future) -->
               <div class="flex justify-between items-center py-3">
                 <span class="text-gray-600">Best Win Streak</span>
                 <span class="text-xl font-bold text-gray-400">Coming Soon</span>
               </div>
             </div>
           </div>
-
-          <!-- Quick Stats -->
+          
+    <!-- Quick Stats -->
           <div class="bg-white rounded-lg shadow-lg p-6">
             <h2 class="text-xl font-bold text-gray-900 mb-4">Quick Facts</h2>
             <div class="space-y-3">
@@ -247,8 +247,8 @@ defmodule RachelWeb.StatsLive do
             </div>
           </div>
         </div>
-
-        <!-- Call to Action -->
+        
+    <!-- Call to Action -->
         <%= if @user.games_played == 0 do %>
           <div class="mt-6 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-lg shadow-lg p-8 text-center">
             <h3 class="text-2xl font-bold text-white mb-2">Ready to Start Your Journey?</h3>

@@ -86,8 +86,8 @@ defmodule RachelWeb.ProfileLive do
         <!-- Avatar Selection -->
         <section class="bg-white rounded-lg shadow p-6">
           <h2 class="text-xl font-semibold mb-4">Choose Avatar</h2>
-
-          <!-- Category Filter -->
+          
+    <!-- Category Filter -->
           <div class="flex gap-2 mb-4">
             <%= for category <- @categories do %>
               <button
@@ -97,12 +97,12 @@ defmodule RachelWeb.ProfileLive do
                 class={"px-4 py-2 rounded-lg transition-colors " <>
                   if(@selected_category == category, do: "bg-green-600 text-white", else: "bg-gray-200 text-gray-700 hover:bg-gray-300")}
               >
-                <%= String.capitalize(category) %>
+                {String.capitalize(category)}
               </button>
             <% end %>
           </div>
-
-          <!-- Avatar Grid -->
+          
+    <!-- Avatar Grid -->
           <div class="grid grid-cols-6 md:grid-cols-10 gap-3">
             <%= for avatar <- Enum.filter(@avatars, &(&1.category == @selected_category)) do %>
               <button
@@ -113,29 +113,43 @@ defmodule RachelWeb.ProfileLive do
                   if(@form.params["avatar_id"] == avatar.id, do: "border-green-600 bg-green-50", else: "border-gray-300 hover:border-green-400")}
                 title={avatar.name}
               >
-                <%= avatar.character %>
+                {avatar.character}
               </button>
             <% end %>
           </div>
         </section>
-
-        <!-- Personal Info -->
+        
+    <!-- Personal Info -->
         <section class="bg-white rounded-lg shadow p-6">
           <h2 class="text-xl font-semibold mb-4">Personal Information</h2>
 
           <.input field={@form[:display_name]} type="text" label="Display Name" required />
-          <.input field={@form[:tagline]} type="text" label="Tagline" placeholder="Your motto or catchphrase (50 chars max)" />
-          <.input field={@form[:bio]} type="textarea" label="Bio" placeholder="Tell us about yourself (250 chars max)" rows="4" />
+          <.input
+            field={@form[:tagline]}
+            type="text"
+            label="Tagline"
+            placeholder="Your motto or catchphrase (50 chars max)"
+          />
+          <.input
+            field={@form[:bio]}
+            type="textarea"
+            label="Bio"
+            placeholder="Tell us about yourself (250 chars max)"
+            rows="4"
+          />
         </section>
-
-        <!-- Game Preferences -->
+        
+    <!-- Game Preferences -->
         <section class="bg-white rounded-lg shadow p-6">
           <h2 class="text-xl font-semibold mb-4">Game Preferences</h2>
 
           <div class="space-y-4">
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-2">AI Difficulty</label>
-              <select name="profile[preferences][gameplay][ai_difficulty]" class="select select-bordered w-full">
+              <select
+                name="profile[preferences][gameplay][ai_difficulty]"
+                class="select select-bordered w-full"
+              >
                 <option value="easy">Easy</option>
                 <option value="medium" selected>Medium</option>
                 <option value="hard">Hard</option>
@@ -144,7 +158,10 @@ defmodule RachelWeb.ProfileLive do
 
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-2">Animation Speed</label>
-              <select name="profile[preferences][visual][animation_speed]" class="select select-bordered w-full">
+              <select
+                name="profile[preferences][visual][animation_speed]"
+                class="select select-bordered w-full"
+              >
                 <option value="slow">Slow</option>
                 <option value="normal" selected>Normal</option>
                 <option value="fast">Fast</option>
@@ -152,13 +169,18 @@ defmodule RachelWeb.ProfileLive do
             </div>
 
             <div class="flex items-center gap-3">
-              <input type="checkbox" name="profile[preferences][gameplay][show_hints]" checked class="checkbox" />
+              <input
+                type="checkbox"
+                name="profile[preferences][gameplay][show_hints]"
+                checked
+                class="checkbox"
+              />
               <label class="text-sm font-medium text-gray-700">Show gameplay hints</label>
             </div>
           </div>
         </section>
-
-        <!-- Save Button -->
+        
+    <!-- Save Button -->
         <div class="flex justify-end">
           <button type="submit" class="btn btn-primary">Save Changes</button>
         </div>

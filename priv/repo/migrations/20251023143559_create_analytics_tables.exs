@@ -11,8 +11,10 @@ defmodule Rachel.Repo.Migrations.CreateAnalyticsTables do
       add :total_turns, :integer
       add :player_count, :integer, null: false
       add :ai_count, :integer, null: false
-      add :winner_type, :string  # 'user', 'anonymous', 'ai'
-      add :winner_ai_difficulty, :string  # 'easy', 'medium', 'hard' if AI won
+      # 'user', 'anonymous', 'ai'
+      add :winner_type, :string
+      # 'easy', 'medium', 'hard' if AI won
+      add :winner_ai_difficulty, :string
       add :abandoned, :boolean, default: false
       add :deck_count, :integer, default: 1
 
@@ -27,13 +29,17 @@ defmodule Rachel.Repo.Migrations.CreateAnalyticsTables do
     # Card play stats table
     create table(:card_play_stats) do
       add :game_id, :string, null: false
-      add :player_type, :string, null: false  # 'user', 'anonymous', 'ai'
-      add :ai_difficulty, :string  # if AI player
+      # 'user', 'anonymous', 'ai'
+      add :player_type, :string, null: false
+      # if AI player
+      add :ai_difficulty, :string
       add :turn_number, :integer, null: false
-      add :cards_played, :map, null: false  # JSONB array of cards
+      # JSONB array of cards
+      add :cards_played, :map, null: false
       add :was_stacked, :boolean, default: false
       add :stack_size, :integer, default: 1
-      add :nominated_suit, :string  # if Ace was played
+      # if Ace was played
+      add :nominated_suit, :string
       add :resulted_in_win, :boolean, default: false
       add :played_at, :utc_datetime, null: false
 
@@ -50,8 +56,10 @@ defmodule Rachel.Repo.Migrations.CreateAnalyticsTables do
       add :ai_difficulty, :string
       add :turn_number, :integer, null: false
       add :cards_drawn, :integer, null: false
-      add :reason, :string, null: false  # 'cannot_play', 'attack_penalty', 'voluntary'
-      add :attack_type, :string  # '2', '7', 'black_jack' if attack penalty
+      # 'cannot_play', 'attack_penalty', 'voluntary'
+      add :reason, :string, null: false
+      # '2', '7', 'black_jack' if attack penalty
+      add :attack_type, :string
       add :drawn_at, :utc_datetime, null: false
 
       timestamps(updated_at: false)

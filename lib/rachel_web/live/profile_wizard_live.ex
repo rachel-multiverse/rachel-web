@@ -79,7 +79,9 @@ defmodule RachelWeb.ProfileWizardLive do
       |> Enum.into(%{})
 
     profile_data = Map.merge(socket.assigns.profile_data, atomized_params)
-    {:noreply, assign(socket, :profile_data, profile_data) |> assign(:step, socket.assigns.step + 1)}
+
+    {:noreply,
+     assign(socket, :profile_data, profile_data) |> assign(:step, socket.assigns.step + 1)}
   end
 
   @impl true
@@ -111,19 +113,20 @@ defmodule RachelWeb.ProfileWizardLive do
           <p class="text-center text-sm text-gray-600 mb-2">Step {@step} of 3</p>
           <div class="flex gap-2">
             <%= for step <- 1..3 do %>
-              <div class={"flex-1 h-2 rounded-full " <> if(step <= @step, do: "bg-green-600", else: "bg-gray-200")}></div>
+              <div class={"flex-1 h-2 rounded-full " <> if(step <= @step, do: "bg-green-600", else: "bg-gray-200")}>
+              </div>
             <% end %>
           </div>
         </div>
-
-        <!-- Step Content -->
+        
+    <!-- Step Content -->
         <%= case @step do %>
           <% 1 -> %>
-            <%= render_avatar_step(assigns) %>
+            {render_avatar_step(assigns)}
           <% 2 -> %>
-            <%= render_personal_info_step(assigns) %>
+            {render_personal_info_step(assigns)}
           <% 3 -> %>
-            <%= render_preferences_step(assigns) %>
+            {render_preferences_step(assigns)}
         <% end %>
       </div>
     </div>
@@ -135,8 +138,8 @@ defmodule RachelWeb.ProfileWizardLive do
     <div>
       <h1 class="text-3xl font-bold text-center mb-2">Choose Your Avatar</h1>
       <p class="text-center text-gray-600 mb-6">Pick an emoji that represents you</p>
-
-      <!-- Category Filter -->
+      
+    <!-- Category Filter -->
       <div class="flex flex-wrap gap-2 justify-center mb-6">
         <%= for category <- AvatarLibrary.list_categories() do %>
           <button
@@ -146,12 +149,12 @@ defmodule RachelWeb.ProfileWizardLive do
             class={"px-4 py-2 rounded-lg transition-colors text-sm " <>
               if(@selected_category == category, do: "bg-green-600 text-white", else: "bg-gray-200 text-gray-700 hover:bg-gray-300")}
           >
-            <%= String.capitalize(category) %>
+            {String.capitalize(category)}
           </button>
         <% end %>
       </div>
-
-      <!-- Avatar Grid -->
+      
+    <!-- Avatar Grid -->
       <div class="grid grid-cols-5 md:grid-cols-8 gap-3 mb-8">
         <%= for avatar <- Enum.filter(@avatars, &(&1.category == @selected_category)) do %>
           <button
@@ -162,7 +165,7 @@ defmodule RachelWeb.ProfileWizardLive do
               if(@profile_data.avatar_id == avatar.id, do: "border-green-600 bg-green-50 scale-110", else: "border-gray-300 hover:border-green-400")}
             title={avatar.name}
           >
-            <%= avatar.character %>
+            {avatar.character}
           </button>
         <% end %>
       </div>
@@ -244,9 +247,15 @@ defmodule RachelWeb.ProfileWizardLive do
           <div class="flex gap-3">
             <%= for difficulty <- ["easy", "medium", "hard"] do %>
               <label class="flex-1">
-                <input type="radio" name="ai_difficulty" value={difficulty} checked={difficulty == "medium"} class="sr-only peer" />
+                <input
+                  type="radio"
+                  name="ai_difficulty"
+                  value={difficulty}
+                  checked={difficulty == "medium"}
+                  class="sr-only peer"
+                />
                 <div class="p-3 text-center border-2 rounded-lg cursor-pointer peer-checked:border-green-600 peer-checked:bg-green-50">
-                  <%= String.capitalize(difficulty) %>
+                  {String.capitalize(difficulty)}
                 </div>
               </label>
             <% end %>
@@ -258,9 +267,15 @@ defmodule RachelWeb.ProfileWizardLive do
           <div class="flex gap-3">
             <%= for speed <- ["slow", "normal", "fast"] do %>
               <label class="flex-1">
-                <input type="radio" name="animation_speed" value={speed} checked={speed == "normal"} class="sr-only peer" />
+                <input
+                  type="radio"
+                  name="animation_speed"
+                  value={speed}
+                  checked={speed == "normal"}
+                  class="sr-only peer"
+                />
                 <div class="p-3 text-center border-2 rounded-lg cursor-pointer peer-checked:border-green-600 peer-checked:bg-green-50">
-                  <%= String.capitalize(speed) %>
+                  {String.capitalize(speed)}
                 </div>
               </label>
             <% end %>

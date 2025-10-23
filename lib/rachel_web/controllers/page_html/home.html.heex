@@ -14,7 +14,7 @@
 
       <% user = Map.get(@current_scope || %{}, :user) %>
       <p class="text-green-100 mt-4">
-        Welcome back, <%= user.display_name || user.username %>!
+        Welcome back, {user.display_name || user.username}!
       </p>
     <% else %>
       <!-- User not logged in - show login/register options -->

@@ -80,7 +80,7 @@ defmodule Rachel.Game.SessionManagerTest do
       # Manually set last_activity to 6 minutes ago (beyond 5 minute timeout)
       state = :sys.get_state(SessionManager)
       session = Map.get(state.sessions, token)
-      expired_time = System.monotonic_time(:millisecond) - (6 * 60 * 1000)
+      expired_time = System.monotonic_time(:millisecond) - 6 * 60 * 1000
       expired_session = Map.put(session, :last_activity, expired_time)
       new_sessions = Map.put(state.sessions, token, expired_session)
       new_state = %{state | sessions: new_sessions}
@@ -211,7 +211,7 @@ defmodule Rachel.Game.SessionManagerTest do
       # Manually set last_activity to 6 minutes ago
       state = :sys.get_state(SessionManager)
       session = Map.get(state.sessions, token)
-      expired_time = System.monotonic_time(:millisecond) - (6 * 60 * 1000)
+      expired_time = System.monotonic_time(:millisecond) - 6 * 60 * 1000
       expired_session = Map.put(session, :last_activity, expired_time)
       new_sessions = Map.put(state.sessions, token, expired_session)
       new_state = %{state | sessions: new_sessions}
@@ -244,7 +244,7 @@ defmodule Rachel.Game.SessionManagerTest do
       # Expire Alice's session
       state = :sys.get_state(SessionManager)
       session = Map.get(state.sessions, token1)
-      expired_time = System.monotonic_time(:millisecond) - (6 * 60 * 1000)
+      expired_time = System.monotonic_time(:millisecond) - 6 * 60 * 1000
       expired_session = Map.put(session, :last_activity, expired_time)
       new_sessions = Map.put(state.sessions, token1, expired_session)
       new_state = %{state | sessions: new_sessions}

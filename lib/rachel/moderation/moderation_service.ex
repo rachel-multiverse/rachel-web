@@ -132,9 +132,10 @@ defmodule Rachel.Moderation.ModerationService do
 
   defp excessive_special_chars?(text) do
     # Count non-alphanumeric characters (excluding spaces)
-    special_count = text
-    |> String.replace(~r/[a-zA-Z0-9\s]/, "")
-    |> String.length()
+    special_count =
+      text
+      |> String.replace(~r/[a-zA-Z0-9\s]/, "")
+      |> String.length()
 
     special_count > 10
   end

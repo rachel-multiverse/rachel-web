@@ -209,7 +209,8 @@ defmodule RachelWeb.GameLive.GameHelpersTest do
 
     test "prioritizes attack over valid plays", %{game: game} do
       game_with_attack = %{game | pending_attack: {:black_jacks, 10}}
-      player = %{id: "p1", hand: [Card.new(:hearts, 5)]}  # Has valid play normally
+      # Has valid play normally
+      player = %{id: "p1", hand: [Card.new(:hearts, 5)]}
 
       assert GameHelpers.smart_button_text(game_with_attack, player) == "Draw 10 Cards"
     end

@@ -32,7 +32,8 @@ defmodule Rachel.Game.GameSupervisorTest do
       assert {:ok, ^custom_id} = GameSupervisor.start_game(["Player1"], custom_id)
 
       # Try to start another game with same ID
-      assert {:error, {:already_started, _pid}} = GameSupervisor.start_game(["Player2"], custom_id)
+      assert {:error, {:already_started, _pid}} =
+               GameSupervisor.start_game(["Player2"], custom_id)
 
       # Cleanup
       GameSupervisor.stop_game(custom_id)

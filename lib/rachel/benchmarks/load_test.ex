@@ -59,23 +59,27 @@ defmodule Rachel.Benchmarks.LoadTest do
     successes = Enum.count(results, &match?({:ok, _}, &1))
     failures = Enum.count(results, &match?({:error, _}, &1))
 
-    success_times = Enum.flat_map(results, fn
-      {:ok, time} -> [time]
-      _ -> []
-    end)
+    success_times =
+      Enum.flat_map(results, fn
+        {:ok, time} -> [time]
+        _ -> []
+      end)
 
-    avg_time = if length(success_times) > 0, do: Enum.sum(success_times) / length(success_times), else: 0.0
+    avg_time =
+      if length(success_times) > 0, do: Enum.sum(success_times) / length(success_times), else: 0.0
+
     min_time = if length(success_times) > 0, do: Enum.min(success_times), else: 0
     max_time = if length(success_times) > 0, do: Enum.max(success_times), else: 0
 
     # Get p95 time
-    p95_time = if length(success_times) > 0 do
-      sorted = Enum.sort(success_times)
-      p95_index = floor(length(sorted) * 0.95)
-      Enum.at(sorted, p95_index) || 0
-    else
-      0
-    end
+    p95_time =
+      if length(success_times) > 0 do
+        sorted = Enum.sort(success_times)
+        p95_index = floor(length(sorted) * 0.95)
+        Enum.at(sorted, p95_index) || 0
+      else
+        0
+      end
 
     result = %{
       num_games: num_games,
@@ -86,7 +90,7 @@ defmodule Rachel.Benchmarks.LoadTest do
       min_time: min_time,
       max_time: max_time,
       p95_time: p95_time,
-      throughput: (if duration > 0, do: successes / (duration / 1000), else: 0.0)
+      throughput: if(duration > 0, do: successes / (duration / 1000), else: 0.0)
     }
 
     print_result(result)
@@ -233,7 +237,10 @@ defmodule Rachel.Benchmarks.LoadTest do
     case breaking_point do
       nil ->
         max_tested = Enum.max_by(results, & &1.num_games)
-        IO.puts("✅ System handled #{max_tested.num_games} concurrent games with >95% success rate")
+
+        IO.puts(
+          "✅ System handled #{max_tested.num_games} concurrent games with >95% success rate"
+        )
 
       result ->
         IO.puts(

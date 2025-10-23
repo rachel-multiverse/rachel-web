@@ -159,7 +159,8 @@ defmodule Rachel.Analytics do
   def ai_difficulty_effectiveness do
     query =
       from g in GameStat,
-        where: g.winner_type == "ai" and not is_nil(g.winner_ai_difficulty) and g.abandoned == false,
+        where:
+          g.winner_type == "ai" and not is_nil(g.winner_ai_difficulty) and g.abandoned == false,
         group_by: g.winner_ai_difficulty,
         select: %{
           difficulty: g.winner_ai_difficulty,

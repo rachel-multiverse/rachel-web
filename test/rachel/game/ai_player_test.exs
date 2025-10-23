@@ -13,7 +13,8 @@ defmodule Rachel.Game.AIPlayerTest do
         Card.new(:diamonds, 5),
         Card.new(:spades, 7),
         Card.new(:clubs, 2),
-        Card.new(:hearts, 14)  # Ace
+        # Ace
+        Card.new(:hearts, 14)
       ]
     }
 
@@ -69,7 +70,8 @@ defmodule Rachel.Game.AIPlayerTest do
       player = %{
         id: "ai1",
         hand: [
-          Card.new(:hearts, 14),  # Ace
+          # Ace
+          Card.new(:hearts, 14),
           Card.new(:diamonds, 5),
           Card.new(:clubs, 5)
         ]
@@ -105,7 +107,8 @@ defmodule Rachel.Game.AIPlayerTest do
       player = %{
         id: "ai1",
         hand: [
-          Card.new(:clubs, 11),  # Black Jack
+          # Black Jack
+          Card.new(:clubs, 11),
           Card.new(:diamonds, 5),
           Card.new(:hearts, 7)
         ]
@@ -122,7 +125,8 @@ defmodule Rachel.Game.AIPlayerTest do
       player = %{
         id: "ai1",
         hand: [
-          Card.new(:hearts, 11),  # Red Jack
+          # Red Jack
+          Card.new(:hearts, 11),
           Card.new(:diamonds, 5)
         ]
       }

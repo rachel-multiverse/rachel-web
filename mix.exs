@@ -37,13 +37,13 @@ defmodule Rachel.MixProject do
             "../GAME_RULES.md",
             "../PROTOCOL.md"
           ],
-          "Development": [
+          Development: [
             "API.md",
             "CONTRIBUTING.md",
             "docs/GENERATING_DOCS.md",
             "docs/DEPENDENCY_UPDATES.md"
           ],
-          "Operations": [
+          Operations: [
             "DEPLOYMENT.md",
             "benchmarks/README.md",
             "config/uptime-monitoring.md"

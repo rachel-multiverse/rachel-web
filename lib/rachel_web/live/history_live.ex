@@ -54,13 +54,23 @@ defmodule RachelWeb.HistoryLive do
             </div>
           </div>
         </div>
-
-        <!-- Games List -->
+        
+    <!-- Games List -->
         <%= if Enum.empty?(@games) do %>
           <div class="bg-white rounded-lg shadow-lg p-12 text-center">
             <div class="mb-4">
-              <svg class="w-24 h-24 mx-auto text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              <svg
+                class="w-24 h-24 mx-auto text-gray-300"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                />
               </svg>
             </div>
             <h3 class="text-xl font-bold text-gray-900 mb-2">No Game History Yet</h3>
@@ -82,36 +92,42 @@ defmodule RachelWeb.HistoryLive do
                       <!-- Result Badge -->
                       <span class={[
                         "px-3 py-1 rounded-full text-sm font-semibold",
-                        if(@user.username in game.winners, do: "bg-green-100 text-green-800", else: "bg-gray-100 text-gray-800")
+                        if(@user.username in game.winners,
+                          do: "bg-green-100 text-green-800",
+                          else: "bg-gray-100 text-gray-800"
+                        )
                       ]}>
                         <%= if @user.username in game.winners do %>
                           🏆 Victory
                         <% else %>
-                          <%= ordinal(game.user_rank) %> Place
+                          {ordinal(game.user_rank)} Place
                         <% end %>
                       </span>
-
-                      <!-- Player Count -->
+                      
+    <!-- Player Count -->
                       <span class="text-sm text-gray-600">
-                        <%= game.player_count %> Players
+                        {game.player_count} Players
                       </span>
-
-                      <!-- Date -->
+                      
+    <!-- Date -->
                       <span class="text-sm text-gray-500">
-                        <%= relative_time(game.finished_at) %>
+                        {relative_time(game.finished_at)}
                       </span>
                     </div>
-
-                    <!-- Players List -->
+                    
+    <!-- Players List -->
                     <div class="flex items-center gap-2 mb-3">
                       <span class="text-sm font-medium text-gray-700">Players:</span>
                       <div class="flex flex-wrap gap-2">
                         <%= for player <- game.players do %>
                           <span class={[
                             "px-2 py-1 rounded text-xs font-medium",
-                            if(player["name"] == @user.username, do: "bg-blue-100 text-blue-800", else: "bg-gray-100 text-gray-700")
+                            if(player["name"] == @user.username,
+                              do: "bg-blue-100 text-blue-800",
+                              else: "bg-gray-100 text-gray-700"
+                            )
                           ]}>
-                            <%= player["name"] %>
+                            {player["name"]}
                             <%= if player["name"] in game.winners do %>
                               <span class="ml-1">👑</span>
                             <% end %>
@@ -119,40 +135,40 @@ defmodule RachelWeb.HistoryLive do
                         <% end %>
                       </div>
                     </div>
-
-                    <!-- Stats Row -->
+                    
+    <!-- Stats Row -->
                     <div class="flex gap-6 text-sm">
                       <div>
                         <span class="text-gray-600">Your Turns:</span>
                         <span class="font-semibold text-gray-900 ml-1">
-                          <%= game.user_turns %>
+                          {game.user_turns}
                         </span>
                       </div>
                       <div>
                         <span class="text-gray-600">Total Turns:</span>
                         <span class="font-semibold text-gray-900 ml-1">
-                          <%= game.turn_count %>
+                          {game.turn_count}
                         </span>
                       </div>
                       <div>
                         <span class="text-gray-600">Position:</span>
                         <span class="font-semibold text-gray-900 ml-1">
-                          <%= ordinal(game.user_position + 1) %>
+                          {ordinal(game.user_position + 1)}
                         </span>
                       </div>
                     </div>
                   </div>
-
-                  <!-- Game ID (for debugging) -->
+                  
+    <!-- Game ID (for debugging) -->
                   <div class="text-xs text-gray-400 font-mono">
-                    #<%= String.slice(game.id, 0..7) %>
+                    #{String.slice(game.id, 0..7)}
                   </div>
                 </div>
               </div>
             <% end %>
           </div>
-
-          <!-- Load More (if we implement pagination) -->
+          
+    <!-- Load More (if we implement pagination) -->
           <%= if length(@games) >= 50 do %>
             <div class="mt-6 text-center">
               <p class="text-gray-600">

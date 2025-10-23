@@ -452,12 +452,13 @@ defmodule Rachel.AccountsTest do
   describe "update_user_profile/2" do
     setup do
       # Create test avatar
-      avatar = Rachel.Repo.insert!(%Rachel.Game.Avatar{
-        name: "Test Avatar",
-        category: "faces",
-        character: "😀",
-        display_order: 1
-      })
+      avatar =
+        Rachel.Repo.insert!(%Rachel.Game.Avatar{
+          name: "Test Avatar",
+          category: "faces",
+          character: "😀",
+          display_order: 1
+        })
 
       %{user: user_fixture(), avatar: avatar}
     end

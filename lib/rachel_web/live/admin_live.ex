@@ -77,7 +77,7 @@ defmodule RachelWeb.AdminLive do
         >
           Moderation
           <%= if @pending_flags_count > 0 do %>
-            <span class="badge"><%= @pending_flags_count %></span>
+            <span class="badge">{@pending_flags_count}</span>
           <% end %>
         </button>
         <button
@@ -92,13 +92,13 @@ defmodule RachelWeb.AdminLive do
       <div class="tab-content">
         <%= case @active_tab do %>
           <% "overview" -> %>
-            <%= render_overview(assigns) %>
+            {render_overview(assigns)}
           <% "analytics" -> %>
-            <%= render_analytics(assigns) %>
+            {render_analytics(assigns)}
           <% "moderation" -> %>
-            <%= render_moderation(assigns) %>
+            {render_moderation(assigns)}
           <% "users" -> %>
-            <%= render_users(assigns) %>
+            {render_users(assigns)}
         <% end %>
       </div>
     </div>
@@ -112,22 +112,22 @@ defmodule RachelWeb.AdminLive do
 
       <div class="stats-grid">
         <div class="stat-card">
-          <div class="stat-value"><%= @total_users %></div>
+          <div class="stat-value">{@total_users}</div>
           <div class="stat-label">Total Users</div>
         </div>
 
         <div class="stat-card">
-          <div class="stat-value"><%= @active_users_24h %></div>
+          <div class="stat-value">{@active_users_24h}</div>
           <div class="stat-label">Active (24h)</div>
         </div>
 
         <div class="stat-card">
-          <div class="stat-value"><%= @total_games_7d %></div>
+          <div class="stat-value">{@total_games_7d}</div>
           <div class="stat-label">Games (7 days)</div>
         </div>
 
         <div class="stat-card">
-          <div class="stat-value"><%= @pending_flags_count %></div>
+          <div class="stat-value">{@pending_flags_count}</div>
           <div class="stat-label">Pending Flags</div>
         </div>
       </div>
@@ -139,15 +139,15 @@ defmodule RachelWeb.AdminLive do
           <tbody>
             <tr>
               <td>New Users</td>
-              <td class="text-right"><%= @new_users_7d %></td>
+              <td class="text-right">{@new_users_7d}</td>
             </tr>
             <tr>
               <td>Games Played</td>
-              <td class="text-right"><%= @total_games_7d %></td>
+              <td class="text-right">{@total_games_7d}</td>
             </tr>
             <tr>
               <td>Moderation Flags</td>
-              <td class="text-right"><%= @flags_7d %></td>
+              <td class="text-right">{@flags_7d}</td>
             </tr>
           </tbody>
         </table>
@@ -162,7 +162,8 @@ defmodule RachelWeb.AdminLive do
       <h2>Game Analytics</h2>
       <p class="text-muted">Comprehensive game statistics and player behavior</p>
       <p class="info-box">
-        📊 <strong>Note:</strong> For detailed analytics, visit the
+        📊 <strong>Note:</strong>
+        For detailed analytics, visit the
         <a href="/analytics" class="link">dedicated analytics dashboard</a>
       </p>
 
@@ -170,11 +171,11 @@ defmodule RachelWeb.AdminLive do
         <h3>Quick Stats (Last 30 Days)</h3>
         <div class="stats-grid">
           <div class="stat-card">
-            <div class="stat-value"><%= @total_games_30d %></div>
+            <div class="stat-value">{@total_games_30d}</div>
             <div class="stat-label">Total Games</div>
           </div>
           <div class="stat-card">
-            <div class="stat-value"><%= format_percentage(@abandoned_rate) %></div>
+            <div class="stat-value">{format_percentage(@abandoned_rate)}</div>
             <div class="stat-label">Abandoned Rate</div>
           </div>
         </div>
@@ -189,7 +190,7 @@ defmodule RachelWeb.AdminLive do
       <h2>Content Moderation</h2>
 
       <div class="moderation-filters">
-        <button class="filter-button active">Pending (<%= @pending_flags_count %>)</button>
+        <button class="filter-button active">Pending ({@pending_flags_count})</button>
         <button class="filter-button">Approved</button>
         <button class="filter-button">Rejected</button>
       </div>
@@ -205,25 +206,25 @@ defmodule RachelWeb.AdminLive do
             <div class="moderation-card">
               <div class="moderation-header">
                 <div>
-                  <strong><%= flag.user.display_name || flag.user.username %></strong>
-                  <span class="text-muted">@<%= flag.user.username %></span>
+                  <strong>{flag.user.display_name || flag.user.username}</strong>
+                  <span class="text-muted">@{flag.user.username}</span>
                 </div>
-                <span class="badge badge-warning"><%= flag.status %></span>
+                <span class="badge badge-warning">{flag.status}</span>
               </div>
 
               <div class="moderation-content">
-                <div class="field-name">Field: <code><%= flag.field_name %></code></div>
+                <div class="field-name">Field: <code>{flag.field_name}</code></div>
                 <div class="flagged-content">
-                  "<%= flag.flagged_content %>"
+                  "{flag.flagged_content}"
                 </div>
                 <div class="flag-reason">
-                  <strong>Reason:</strong> <%= flag.reason %>
+                  <strong>Reason:</strong> {flag.reason}
                 </div>
               </div>
 
               <div class="moderation-meta">
                 <small class="text-muted">
-                  Flagged <%= relative_time(flag.inserted_at) %>
+                  Flagged {relative_time(flag.inserted_at)}
                 </small>
               </div>
 
@@ -273,11 +274,11 @@ defmodule RachelWeb.AdminLive do
           <tbody>
             <%= for user <- @recent_users do %>
               <tr>
-                <td><%= user.display_name || user.username %></td>
-                <td><%= user.email %></td>
-                <td><%= user.games_played %></td>
-                <td><%= format_win_rate(user.games_played, user.games_won) %></td>
-                <td><%= format_date(user.inserted_at) %></td>
+                <td>{user.display_name || user.username}</td>
+                <td>{user.email}</td>
+                <td>{user.games_played}</td>
+                <td>{format_win_rate(user.games_played, user.games_won)}</td>
+                <td>{format_date(user.inserted_at)}</td>
                 <td>
                   <%= if user.is_admin do %>
                     <span class="badge badge-admin">Admin</span>

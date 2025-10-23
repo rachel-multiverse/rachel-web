@@ -65,9 +65,12 @@ defmodule Rachel.Analytics.TelemetryHandler do
       try do
         winner_info = extract_winner_info(metadata)
 
-        Analytics.record_game_finish(metadata.game_id, Map.merge(winner_info, %{
-          total_turns: metadata[:total_turns] || 0
-        }))
+        Analytics.record_game_finish(
+          metadata.game_id,
+          Map.merge(winner_info, %{
+            total_turns: metadata[:total_turns] || 0
+          })
+        )
       rescue
         error ->
           Logger.warning("Failed to record game_finished analytics: #{inspect(error)}")
@@ -81,14 +84,17 @@ defmodule Rachel.Analytics.TelemetryHandler do
       try do
         player_info = extract_player_info(metadata)
 
-        Analytics.record_card_play(metadata.game_id, Map.merge(player_info, %{
-          turn_number: metadata[:turn_number] || 0,
-          cards_played: format_cards(metadata[:cards] || []),
-          was_stacked: (metadata[:stack_size] || 1) > 1,
-          stack_size: metadata[:stack_size] || 1,
-          nominated_suit: metadata[:nominated_suit],
-          resulted_in_win: metadata[:resulted_in_win] || false
-        }))
+        Analytics.record_card_play(
+          metadata.game_id,
+          Map.merge(player_info, %{
+            turn_number: metadata[:turn_number] || 0,
+            cards_played: format_cards(metadata[:cards] || []),
+            was_stacked: (metadata[:stack_size] || 1) > 1,
+            stack_size: metadata[:stack_size] || 1,
+            nominated_suit: metadata[:nominated_suit],
+            resulted_in_win: metadata[:resulted_in_win] || false
+          })
+        )
       rescue
         error ->
           Logger.warning("Failed to record card_played analytics: #{inspect(error)}")
@@ -102,12 +108,15 @@ defmodule Rachel.Analytics.TelemetryHandler do
       try do
         player_info = extract_player_info(metadata)
 
-        Analytics.record_card_draw(metadata.game_id, Map.merge(player_info, %{
-          turn_number: metadata[:turn_number] || 0,
-          cards_drawn: metadata[:cards_drawn] || 1,
-          reason: determine_draw_reason(metadata),
-          attack_type: metadata[:attack_type]
-        }))
+        Analytics.record_card_draw(
+          metadata.game_id,
+          Map.merge(player_info, %{
+            turn_number: metadata[:turn_number] || 0,
+            cards_drawn: metadata[:cards_drawn] || 1,
+            reason: determine_draw_reason(metadata),
+            attack_type: metadata[:attack_type]
+          })
+        )
       rescue
         error ->
           Logger.warning("Failed to record card_drawn analytics: #{inspect(error)}")

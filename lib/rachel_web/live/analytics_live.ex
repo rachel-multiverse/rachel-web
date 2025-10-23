@@ -99,13 +99,13 @@ defmodule RachelWeb.AnalyticsLive do
       <div class="tab-content">
         <%= case @active_tab do %>
           <% "overview" -> %>
-            <%= render_overview(assigns) %>
+            {render_overview(assigns)}
           <% "cards" -> %>
-            <%= render_cards(assigns) %>
+            {render_cards(assigns)}
           <% "players" -> %>
-            <%= render_players(assigns) %>
+            {render_players(assigns)}
           <% "performance" -> %>
-            <%= render_performance(assigns) %>
+            {render_performance(assigns)}
         <% end %>
       </div>
     </div>
@@ -119,17 +119,17 @@ defmodule RachelWeb.AnalyticsLive do
 
       <div class="stats-grid">
         <div class="stat-card">
-          <div class="stat-value"><%= @total_games_7d %></div>
+          <div class="stat-value">{@total_games_7d}</div>
           <div class="stat-label">Games (Last 7 Days)</div>
         </div>
 
         <div class="stat-card">
-          <div class="stat-value"><%= @total_games_30d %></div>
+          <div class="stat-value">{@total_games_30d}</div>
           <div class="stat-label">Games (Last 30 Days)</div>
         </div>
 
         <div class="stat-card">
-          <div class="stat-value"><%= format_percentage(@abandoned_rate) %></div>
+          <div class="stat-value">{format_percentage(@abandoned_rate)}</div>
           <div class="stat-label">Abandoned Game Rate</div>
         </div>
       </div>
@@ -147,9 +147,9 @@ defmodule RachelWeb.AnalyticsLive do
           <tbody>
             <%= for stat <- @win_rates do %>
               <tr>
-                <td><%= format_player_type(stat.winner_type) %></td>
-                <td><%= stat.wins %></td>
-                <td><%= format_percentage(stat.win_percentage) %></td>
+                <td>{format_player_type(stat.winner_type)}</td>
+                <td>{stat.wins}</td>
+                <td>{format_percentage(stat.win_percentage)}</td>
               </tr>
             <% end %>
           </tbody>
@@ -169,9 +169,9 @@ defmodule RachelWeb.AnalyticsLive do
           <tbody>
             <%= for time_stat <- @peak_times do %>
               <tr>
-                <td><%= format_hour(time_stat.hour_of_day) %></td>
-                <td><%= time_stat.games_started %></td>
-                <td><%= time_stat.unique_days %></td>
+                <td>{format_hour(time_stat.hour_of_day)}</td>
+                <td>{time_stat.games_started}</td>
+                <td>{time_stat.unique_days}</td>
               </tr>
             <% end %>
           </tbody>
@@ -200,10 +200,10 @@ defmodule RachelWeb.AnalyticsLive do
           <tbody>
             <%= for card_stat <- @most_played_cards do %>
               <tr>
-                <td><%= format_cards(card_stat.cards) %></td>
-                <td><%= card_stat.times_played %></td>
-                <td><%= card_stat.led_to_wins || 0 %></td>
-                <td><%= format_percentage(card_stat.win_rate_percentage) %></td>
+                <td>{format_cards(card_stat.cards)}</td>
+                <td>{card_stat.times_played}</td>
+                <td>{card_stat.led_to_wins || 0}</td>
+                <td>{format_percentage(card_stat.win_rate_percentage)}</td>
               </tr>
             <% end %>
           </tbody>
@@ -223,9 +223,9 @@ defmodule RachelWeb.AnalyticsLive do
           <tbody>
             <%= for stack_stat <- @stacking_frequency do %>
               <tr>
-                <td><%= stack_stat.stack_size %> cards</td>
-                <td><%= stack_stat.occurrences %></td>
-                <td><%= format_percentage(stack_stat.percentage) %></td>
+                <td>{stack_stat.stack_size} cards</td>
+                <td>{stack_stat.occurrences}</td>
+                <td>{format_percentage(stack_stat.percentage)}</td>
               </tr>
             <% end %>
           </tbody>
@@ -247,11 +247,11 @@ defmodule RachelWeb.AnalyticsLive do
           <tbody>
             <%= for draw_stat <- @draw_reasons do %>
               <tr>
-                <td><%= format_draw_reason(draw_stat.reason) %></td>
-                <td><%= draw_stat.attack_type || "-" %></td>
-                <td><%= draw_stat.total_cards_drawn %></td>
-                <td><%= draw_stat.occurrences %></td>
-                <td><%= draw_stat.avg_cards_per_draw %></td>
+                <td>{format_draw_reason(draw_stat.reason)}</td>
+                <td>{draw_stat.attack_type || "-"}</td>
+                <td>{draw_stat.total_cards_drawn}</td>
+                <td>{draw_stat.occurrences}</td>
+                <td>{draw_stat.avg_cards_per_draw}</td>
               </tr>
             <% end %>
           </tbody>
@@ -280,10 +280,10 @@ defmodule RachelWeb.AnalyticsLive do
           <tbody>
             <%= for ai_stat <- @ai_effectiveness do %>
               <tr>
-                <td><%= String.capitalize(ai_stat.difficulty) %></td>
-                <td><%= ai_stat.wins %></td>
-                <td><%= ai_stat.avg_turns_to_win %></td>
-                <td><%= ai_stat.avg_duration_seconds %></td>
+                <td>{String.capitalize(ai_stat.difficulty)}</td>
+                <td>{ai_stat.wins}</td>
+                <td>{ai_stat.avg_turns_to_win}</td>
+                <td>{ai_stat.avg_duration_seconds}</td>
               </tr>
             <% end %>
           </tbody>
@@ -313,11 +313,11 @@ defmodule RachelWeb.AnalyticsLive do
           <tbody>
             <%= for metric <- @game_metrics do %>
               <tr>
-                <td><%= metric.player_count %></td>
-                <td><%= metric.games_played %></td>
-                <td><%= metric.avg_duration_seconds %></td>
-                <td><%= metric.avg_turns %></td>
-                <td><%= metric.avg_turns_per_player %></td>
+                <td>{metric.player_count}</td>
+                <td>{metric.games_played}</td>
+                <td>{metric.avg_duration_seconds}</td>
+                <td>{metric.avg_turns}</td>
+                <td>{metric.avg_turns_per_player}</td>
               </tr>
             <% end %>
           </tbody>
@@ -369,6 +369,7 @@ defmodule RachelWeb.AnalyticsLive do
   end
 
   defp format_percentage(nil), do: "0%"
+
   defp format_percentage(value) when is_float(value) or is_integer(value) do
     "#{:erlang.float_to_binary(value * 1.0, decimals: 1)}%"
   end

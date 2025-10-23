@@ -60,7 +60,11 @@ defmodule RachelWeb.GameLive.GameOverModalTest do
         players: [
           %{id: 0, name: "Alice", hand: [%Card{suit: :hearts, rank: 5}]},
           %{id: 1, name: "Bob", hand: []},
-          %{id: 2, name: "Charlie", hand: [%Card{suit: :spades, rank: 7}, %Card{suit: :clubs, rank: 2}]}
+          %{
+            id: 2,
+            name: "Charlie",
+            hand: [%Card{suit: :spades, rank: 7}, %Card{suit: :clubs, rank: 2}]
+          }
         ]
       }
 

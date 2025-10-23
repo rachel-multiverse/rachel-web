@@ -65,7 +65,8 @@ defmodule Rachel.Game.GameErrorTest do
     test "creates cards not in hand error with card details" do
       cards = [
         Card.new(:hearts, 5),
-        Card.new(:spades, 11)  # Jack = 11
+        # Jack = 11
+        Card.new(:spades, 11)
       ]
 
       details = %{cards: cards}
@@ -308,15 +309,20 @@ defmodule Rachel.Game.GameErrorTest do
       details = %{cards: cards}
       error = GameError.new(:cards_not_in_hand, details)
 
-      assert error.message == "You don't have these cards: 2 of Hearts, 5 of Diamonds, 10 of Clubs"
+      assert error.message ==
+               "You don't have these cards: 2 of Hearts, 5 of Diamonds, 10 of Clubs"
     end
 
     test "formats face cards correctly" do
       cards = [
-        Card.new(:hearts, 14),  # Ace = 14
-        Card.new(:diamonds, 13),  # King = 13
-        Card.new(:clubs, 12),  # Queen = 12
-        Card.new(:spades, 11)  # Jack = 11
+        # Ace = 14
+        Card.new(:hearts, 14),
+        # King = 13
+        Card.new(:diamonds, 13),
+        # Queen = 12
+        Card.new(:clubs, 12),
+        # Jack = 11
+        Card.new(:spades, 11)
       ]
 
       details = %{cards: cards}
@@ -348,7 +354,8 @@ defmodule Rachel.Game.GameErrorTest do
     end
 
     test "converts error with formatted cards to string" do
-      cards = [Card.new(:hearts, 14), Card.new(:spades, 13)]  # Ace = 14, King = 13
+      # Ace = 14, King = 13
+      cards = [Card.new(:hearts, 14), Card.new(:spades, 13)]
       error = GameError.new(:cards_not_in_hand, %{cards: cards})
 
       assert GameError.to_string(error) ==

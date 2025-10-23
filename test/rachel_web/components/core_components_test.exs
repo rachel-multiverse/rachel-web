@@ -13,9 +13,10 @@ defmodule RachelWeb.CoreComponentsTest do
         id: "test-flash"
       }
 
-      html = rendered_to_string(~H"""
-      <.flash kind={@kind} flash={@flash} id={@id} />
-      """)
+      html =
+        rendered_to_string(~H"""
+        <.flash kind={@kind} flash={@flash} id={@id} />
+        """)
 
       assert html =~ "Success message"
       assert html =~ "alert-info"
@@ -29,9 +30,10 @@ defmodule RachelWeb.CoreComponentsTest do
         id: "error-flash"
       }
 
-      html = rendered_to_string(~H"""
-      <.flash kind={@kind} flash={@flash} id={@id} />
-      """)
+      html =
+        rendered_to_string(~H"""
+        <.flash kind={@kind} flash={@flash} id={@id} />
+        """)
 
       assert html =~ "Error message"
       assert html =~ "alert-error"
@@ -45,11 +47,12 @@ defmodule RachelWeb.CoreComponentsTest do
         id: "titled-flash"
       }
 
-      html = rendered_to_string(~H"""
-      <.flash kind={@kind} flash={@flash} title={@title} id={@id}>
-        Message content
-      </.flash>
-      """)
+      html =
+        rendered_to_string(~H"""
+        <.flash kind={@kind} flash={@flash} title={@title} id={@id}>
+          Message content
+        </.flash>
+        """)
 
       assert html =~ "Important"
       assert html =~ "Message content"
@@ -61,9 +64,10 @@ defmodule RachelWeb.CoreComponentsTest do
         flash: %{"info" => "Test"}
       }
 
-      html = rendered_to_string(~H"""
-      <.flash kind={@kind} flash={@flash} />
-      """)
+      html =
+        rendered_to_string(~H"""
+        <.flash kind={@kind} flash={@flash} />
+        """)
 
       assert html =~ "flash-info"
     end
@@ -73,9 +77,10 @@ defmodule RachelWeb.CoreComponentsTest do
     test "renders primary button" do
       assigns = %{}
 
-      html = rendered_to_string(~H"""
-      <.button>Click me</.button>
-      """)
+      html =
+        rendered_to_string(~H"""
+        <.button>Click me</.button>
+        """)
 
       assert html =~ "Click me"
       assert html =~ "btn"
@@ -84,9 +89,10 @@ defmodule RachelWeb.CoreComponentsTest do
     test "renders button with phx-disable-with" do
       assigns = %{}
 
-      html = rendered_to_string(~H"""
-      <.button phx-disable-with="Saving...">Save</.button>
-      """)
+      html =
+        rendered_to_string(~H"""
+        <.button phx-disable-with="Saving...">Save</.button>
+        """)
 
       assert html =~ "Save"
       assert html =~ "Saving..."
@@ -98,9 +104,10 @@ defmodule RachelWeb.CoreComponentsTest do
       form = to_form(%{"name" => ""}, as: :user)
       assigns = %{form: form}
 
-      html = rendered_to_string(~H"""
-      <.input field={@form[:name]} type="text" label="Name" />
-      """)
+      html =
+        rendered_to_string(~H"""
+        <.input field={@form[:name]} type="text" label="Name" />
+        """)
 
       assert html =~ "Name"
       assert html =~ ~s(type="text")
@@ -111,9 +118,10 @@ defmodule RachelWeb.CoreComponentsTest do
       form = to_form(%{"agree" => false}, as: :user)
       assigns = %{form: form}
 
-      html = rendered_to_string(~H"""
-      <.input field={@form[:agree]} type="checkbox" label="I agree" />
-      """)
+      html =
+        rendered_to_string(~H"""
+        <.input field={@form[:agree]} type="checkbox" label="I agree" />
+        """)
 
       assert html =~ "I agree"
       assert html =~ ~s(type="checkbox")
@@ -123,9 +131,15 @@ defmodule RachelWeb.CoreComponentsTest do
       form = to_form(%{"role" => ""}, as: :user)
       assigns = %{form: form}
 
-      html = rendered_to_string(~H"""
-      <.input field={@form[:role]} type="select" label="Role" options={[{"Admin", "admin"}, {"User", "user"}]} />
-      """)
+      html =
+        rendered_to_string(~H"""
+        <.input
+          field={@form[:role]}
+          type="select"
+          label="Role"
+          options={[{"Admin", "admin"}, {"User", "user"}]}
+        />
+        """)
 
       assert html =~ "Role"
       assert html =~ "Admin"
@@ -136,9 +150,10 @@ defmodule RachelWeb.CoreComponentsTest do
       form = to_form(%{"bio" => ""}, as: :user)
       assigns = %{form: form}
 
-      html = rendered_to_string(~H"""
-      <.input field={@form[:bio]} type="textarea" label="Bio" />
-      """)
+      html =
+        rendered_to_string(~H"""
+        <.input field={@form[:bio]} type="textarea" label="Bio" />
+        """)
 
       assert html =~ "Bio"
       assert html =~ "<textarea"
@@ -148,9 +163,10 @@ defmodule RachelWeb.CoreComponentsTest do
       form = to_form(%{"email" => ""}, as: :user)
       assigns = %{form: form}
 
-      html = rendered_to_string(~H"""
-      <.input field={@form[:email]} type="email" label="Email" />
-      """)
+      html =
+        rendered_to_string(~H"""
+        <.input field={@form[:email]} type="email" label="Email" />
+        """)
 
       assert html =~ "Email"
       assert html =~ ~s(type="email")
@@ -160,9 +176,10 @@ defmodule RachelWeb.CoreComponentsTest do
       form = to_form(%{"password" => ""}, as: :user)
       assigns = %{form: form}
 
-      html = rendered_to_string(~H"""
-      <.input field={@form[:password]} type="password" label="Password" />
-      """)
+      html =
+        rendered_to_string(~H"""
+        <.input field={@form[:password]} type="password" label="Password" />
+        """)
 
       assert html =~ "Password"
       assert html =~ ~s(type="password")
@@ -172,9 +189,10 @@ defmodule RachelWeb.CoreComponentsTest do
       form = to_form(%{"id" => "123"}, as: :user)
       assigns = %{form: form}
 
-      html = rendered_to_string(~H"""
-      <.input field={@form[:id]} type="hidden" />
-      """)
+      html =
+        rendered_to_string(~H"""
+        <.input field={@form[:id]} type="hidden" />
+        """)
 
       assert html =~ ~s(type="hidden")
       assert html =~ ~s(value="123")
@@ -185,9 +203,10 @@ defmodule RachelWeb.CoreComponentsTest do
       form = %{form | errors: [email: {"can't be blank", [validation: :required]}]}
       assigns = %{form: form}
 
-      html = rendered_to_string(~H"""
-      <.input field={@form[:email]} type="email" label="Email" />
-      """)
+      html =
+        rendered_to_string(~H"""
+        <.input field={@form[:email]} type="email" label="Email" />
+        """)
 
       assert html =~ "can&#39;t be blank"
     end
@@ -197,12 +216,13 @@ defmodule RachelWeb.CoreComponentsTest do
     test "renders header with title" do
       assigns = %{}
 
-      html = rendered_to_string(~H"""
-      <.header>
-        Page Title
-        <:subtitle>Subtitle text</:subtitle>
-      </.header>
-      """)
+      html =
+        rendered_to_string(~H"""
+        <.header>
+          Page Title
+          <:subtitle>Subtitle text</:subtitle>
+        </.header>
+        """)
 
       assert html =~ "Page Title"
       assert html =~ "Subtitle text"
@@ -211,14 +231,15 @@ defmodule RachelWeb.CoreComponentsTest do
     test "renders header with actions" do
       assigns = %{}
 
-      html = rendered_to_string(~H"""
-      <.header>
-        Title
-        <:actions>
-          <button>Action</button>
-        </:actions>
-      </.header>
-      """)
+      html =
+        rendered_to_string(~H"""
+        <.header>
+          Title
+          <:actions>
+            <button>Action</button>
+          </:actions>
+        </.header>
+        """)
 
       assert html =~ "Title"
       assert html =~ "Action"
@@ -234,11 +255,12 @@ defmodule RachelWeb.CoreComponentsTest do
         ]
       }
 
-      html = rendered_to_string(~H"""
-      <.table id="users" rows={@users}>
-        <:col :let={user} label="Name">{user.name}</:col>
-      </.table>
-      """)
+      html =
+        rendered_to_string(~H"""
+        <.table id="users" rows={@users}>
+          <:col :let={user} label="Name">{user.name}</:col>
+        </.table>
+        """)
 
       assert html =~ "Name"
       assert html =~ "Alice"
@@ -250,14 +272,15 @@ defmodule RachelWeb.CoreComponentsTest do
         users: [%{id: 1, name: "Alice"}]
       }
 
-      html = rendered_to_string(~H"""
-      <.table id="users" rows={@users}>
-        <:col :let={user} label="Name">{user.name}</:col>
-        <:action :let={user}>
-          <button>Edit</button>
-        </:action>
-      </.table>
-      """)
+      html =
+        rendered_to_string(~H"""
+        <.table id="users" rows={@users}>
+          <:col :let={user} label="Name">{user.name}</:col>
+          <:action :let={user}>
+            <button>Edit</button>
+          </:action>
+        </.table>
+        """)
 
       assert html =~ "Edit"
     end
@@ -267,12 +290,13 @@ defmodule RachelWeb.CoreComponentsTest do
     test "renders definition list" do
       assigns = %{}
 
-      html = rendered_to_string(~H"""
-      <.list>
-        <:item title="Name">Alice</:item>
-        <:item title="Email">alice@example.com</:item>
-      </.list>
-      """)
+      html =
+        rendered_to_string(~H"""
+        <.list>
+          <:item title="Name">Alice</:item>
+          <:item title="Email">alice@example.com</:item>
+        </.list>
+        """)
 
       assert html =~ "Name"
       assert html =~ "Alice"
@@ -285,9 +309,10 @@ defmodule RachelWeb.CoreComponentsTest do
     test "renders heroicon" do
       assigns = %{}
 
-      html = rendered_to_string(~H"""
-      <.icon name="hero-check" />
-      """)
+      html =
+        rendered_to_string(~H"""
+        <.icon name="hero-check" />
+        """)
 
       assert html =~ "hero-check"
     end
@@ -295,9 +320,10 @@ defmodule RachelWeb.CoreComponentsTest do
     test "renders icon with class" do
       assigns = %{}
 
-      html = rendered_to_string(~H"""
-      <.icon name="hero-x-mark" class="size-4" />
-      """)
+      html =
+        rendered_to_string(~H"""
+        <.icon name="hero-x-mark" class="size-4" />
+        """)
 
       assert html =~ "size-4"
     end
