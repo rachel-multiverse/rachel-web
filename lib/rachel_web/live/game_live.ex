@@ -6,17 +6,20 @@ defmodule RachelWeb.GameLive do
   alias RachelWeb.GameLive.{GameHelpers, ViewHelpers}
 
   @impl true
-  def mount(%{"id" => game_id}, _session, socket) do
+  def mount(%{"id" => game_id} = params, _session, socket) do
     if connected?(socket) do
       GameManager.subscribe_to_game(game_id)
     end
 
     case GameManager.get_game(game_id) do
       {:ok, game} ->
+        mode = determine_mode(params, socket.assigns.current_scope, game)
+
         {:ok,
          socket
          |> assign(:game_id, game_id)
          |> assign(:game, game)
+         |> assign(:mode, mode)
          |> assign(:current_player, current_player(game))
          |> assign(:selected_cards, [])
          |> assign(:nominated_suit, nil)
@@ -28,6 +31,25 @@ defmodule RachelWeb.GameLive do
          |> put_flash(:error, "Game not found")
          |> redirect(to: ~p"/")}
     end
+  end
+
+  defp determine_mode(%{"spectate" => "true"}, _current_scope, _game), do: :spectator
+
+  defp determine_mode(_params, current_scope, game) do
+    if current_scope && current_scope.user && user_in_game?(current_scope.user, game) do
+      :player
+    else
+      :spectator
+    end
+  end
+
+  defp user_in_game?(user, game) do
+    Enum.any?(game.players, fn player ->
+      case player do
+        %{user_id: user_id} when is_integer(user_id) -> user_id == user.id
+        _ -> false
+      end
+    end)
   end
 
   @impl true
@@ -42,20 +64,38 @@ defmodule RachelWeb.GameLive do
       >
         <span class="status-text text-sm font-medium">🟢 Connected</span>
       </div>
-
+      
+    <!-- Spectator Banner -->
+      <%= if @mode == :spectator do %>
+        <div
+          data-role="spectator-banner"
+          class="spectator-banner fixed top-4 left-1/2 transform -translate-x-1/2 z-50 bg-blue-600 text-white rounded-lg px-4 py-2 shadow-lg"
+        >
+          <span class="text-sm font-medium">👁️ Spectating</span>
+        </div>
+      <% end %>
+      
     <!-- Session Persistence -->
       <div id="session-persistence" phx-hook="SessionPersistence" class="hidden"></div>
       <div id="auto-reconnect" phx-hook="AutoReconnect" class="hidden"></div>
       <div id="turn-transition" phx-hook="TurnTransition" class="hidden"></div>
-
-      <!-- Toast Notifications -->
-      <.live_component module={RachelWeb.GameLive.ToastNotification} id="toast-notifications" flash={@flash} />
+      
+    <!-- Toast Notifications -->
+      <.live_component
+        module={RachelWeb.GameLive.ToastNotification}
+        id="toast-notifications"
+        flash={@flash}
+      />
 
       <div class="max-w-7xl mx-auto">
         
     <!-- Game Over Screen -->
         <%= if @game.status == :finished do %>
-          <.live_component module={RachelWeb.GameLive.GameOverModal} id="game-over-modal" game={@game} />
+          <.live_component
+            module={RachelWeb.GameLive.GameOverModal}
+            id="game-over-modal"
+            game={@game}
+          />
         <% end %>
         <!-- Game Header and Play Area -->
         <.live_component
@@ -67,7 +107,7 @@ defmodule RachelWeb.GameLive do
           direction_symbol={direction_symbol(@game.direction)}
           attack_description={attack_description(@game.pending_attack)}
         />
-
+        
     <!-- Other Players (Always show AI players 1, 2, 3) -->
         <.live_component module={RachelWeb.GameLive.OpponentHands} id="opponent-hands" game={@game} />
         
@@ -163,7 +203,10 @@ defmodule RachelWeb.GameLive do
           {:noreply,
            socket
            |> assign(:selected_cards, [])
-           |> push_event("card-played", %{cards: socket.assigns.selected_cards, player: human_player.id})}
+           |> push_event("card-played", %{
+             cards: socket.assigns.selected_cards,
+             player: human_player.id
+           })}
 
         {:error, reason} ->
           {:noreply, put_flash(socket, :error, error_message(reason))}
@@ -189,7 +232,10 @@ defmodule RachelWeb.GameLive do
          socket
          |> assign(:selected_cards, [])
          |> assign(:show_suit_modal, false)
-         |> push_event("card-played", %{cards: socket.assigns.selected_cards, player: human_player.id})}
+         |> push_event("card-played", %{
+           cards: socket.assigns.selected_cards,
+           player: human_player.id
+         })}
 
       {:error, reason} ->
         {:noreply, put_flash(socket, :error, error_message(reason))}

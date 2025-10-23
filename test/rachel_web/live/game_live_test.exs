@@ -359,6 +359,7 @@ defmodule RachelWeb.GameLiveTest do
 
       # Verify we're on player 0's turn or game finished
       {:ok, updated_game} = GameManager.get_game(game_id)
+
       assert updated_game.current_player_index == 0 ||
                updated_game.status == :finished
     end
@@ -465,5 +466,47 @@ defmodule RachelWeb.GameLiveTest do
       Process.sleep(10)
       wait_for_hand_size_increase(game_id, player_index, original_size, attempts - 1)
     end
+  end
+
+  describe "spectator mode" do
+    test "user visiting game with spectate param becomes spectator", %{conn: conn} do
+      game_id = create_test_game()
+      {:ok, view, _html} = live(conn, ~p"/games/#{game_id}?spectate=true")
+
+      assert has_element?(view, "[data-role='spectator-banner']")
+      refute has_element?(view, "[data-role='play-button']")
+    end
+
+    test "user not in game becomes spectator by default", %{conn: conn} do
+      game_id = create_test_game()
+      # conn's user is not a player in this game
+      {:ok, view, _html} = live(conn, ~p"/games/#{game_id}")
+
+      assert has_element?(view, "[data-role='spectator-banner']")
+      refute has_element?(view, "[data-role='play-button']")
+    end
+
+    test "user in game becomes player", %{conn: conn, user: user} do
+      game_id = create_test_game_with_user(user)
+      {:ok, view, _html} = live(conn, ~p"/games/#{game_id}")
+
+      refute has_element?(view, "[data-role='spectator-banner']")
+      # May or may not have play button depending on turn
+    end
+  end
+
+  defp create_test_game do
+    # Create a game with only AI players (no human users)
+    {:ok, game_id} =
+      Rachel.Game.GameSupervisor.start_game([{:ai, "Alice", :easy}, {:ai, "Bob", :easy}])
+
+    game_id
+  end
+
+  defp create_test_game_with_user(user) do
+    player_spec = {:user, user.id, user.username}
+    {:ok, game_id} = GameManager.create_ai_game(player_spec, 2, :easy)
+    GameManager.start_game(game_id)
+    game_id
   end
 end
