@@ -100,10 +100,16 @@ defmodule RachelWeb.Router do
     live "/lobby", LobbyLive
     live "/games/:id", GameLive
     live "/stats", StatsLive
-    live "/analytics", AnalyticsLive
     live "/history", HistoryLive
     live "/settings", ProfileLive, :index
     live "/profile/wizard", ProfileWizardLive, :index
+  end
+
+  # Admin routes - require admin access
+  scope "/", RachelWeb do
+    pipe_through [:browser, :require_authenticated_user, :require_admin_user]
+
+    live "/analytics", AnalyticsLive
   end
 
   # API routes for mobile apps

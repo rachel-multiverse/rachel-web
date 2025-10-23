@@ -35,6 +35,9 @@ defmodule Rachel.Accounts.User do
     field :avatar_id, :integer
     field :profile_completed, :boolean, default: false
 
+    # Admin flag
+    field :is_admin, :boolean, default: false
+
     # Associations
     belongs_to :avatar, Rachel.Game.Avatar, define_field: false
 
