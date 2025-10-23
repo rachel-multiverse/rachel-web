@@ -20,6 +20,15 @@ defmodule Rachel.Accounts.User do
     field :is_online, :boolean, default: false
     field :last_seen_at, :utc_datetime
 
+    # Profile customization fields
+    field :tagline, :string
+    field :bio, :string
+    field :avatar_id, :integer
+    field :profile_completed, :boolean, default: false
+
+    # Associations
+    belongs_to :avatar, Rachel.Game.Avatar, define_field: false
+
     timestamps(type: :utc_datetime)
   end
 
@@ -57,12 +66,22 @@ defmodule Rachel.Accounts.User do
   end
 
   @doc """
-  A user changeset for profile updates.
+  A user changeset for profile updates with content moderation.
   """
   def profile_changeset(user, attrs) do
     user
-    |> cast(attrs, [:display_name, :avatar_url, :preferences])
-    |> validate_length(:display_name, max: 50)
+    |> cast(attrs, [:display_name, :tagline, :bio, :avatar_id, :preferences, :profile_completed])
+    |> validate_length(:display_name, min: 3, max: 50)
+    |> validate_length(:tagline, max: 50)
+    |> validate_length(:bio, max: 250)
+    |> foreign_key_constraint(:avatar_id)
+    |> validate_change(:tagline, &validate_moderated_content/2)
+    |> validate_change(:bio, &validate_moderated_content/2)
+  end
+
+  # Placeholder for moderation - will be implemented in Task 4
+  defp validate_moderated_content(_field, _value) do
+    []
   end
 
   @doc """
