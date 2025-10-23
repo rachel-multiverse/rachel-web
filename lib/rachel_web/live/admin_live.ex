@@ -10,7 +10,7 @@ defmodule RachelWeb.AdminLive do
   """
 
   use RachelWeb, :live_view
-  alias Rachel.{Analytics, Accounts, Moderation.ModerationService}
+  alias Rachel.{Accounts, Analytics, Moderation.ModerationService}
 
   @impl true
   def mount(_params, _session, socket) do

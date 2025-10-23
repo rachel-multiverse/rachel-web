@@ -8,7 +8,7 @@ defmodule Rachel.Analytics do
 
   import Ecto.Query, warn: false
   alias Rachel.Repo
-  alias Rachel.Analytics.{GameStat, CardPlayStat, CardDrawStat}
+  alias Rachel.Analytics.{CardDrawStat, CardPlayStat, GameStat}
 
   ## Game Stats
 

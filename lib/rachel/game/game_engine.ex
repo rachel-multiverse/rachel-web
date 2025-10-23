@@ -235,26 +235,24 @@ defmodule Rachel.Game.GameEngine do
   # Consolidated Safety Functions
 
   defp safe_execute(game, operation) do
-    try do
-      result = operation.(game)
+    result = operation.(game)
 
-      if is_struct(result, GameState) do
-        case validate_state(result) do
-          :ok ->
-            {:ok, result}
+    if is_struct(result, GameState) do
+      case validate_state(result) do
+        :ok ->
+          {:ok, result}
 
-          error ->
-            Logger.error("State validation failed: #{inspect(error)}")
-            {:error, :invalid_state}
-        end
-      else
-        {:ok, result}
+        error ->
+          Logger.error("State validation failed: #{inspect(error)}")
+          {:error, :invalid_state}
       end
-    rescue
-      error ->
-        Logger.error("Operation failed: #{inspect(error)}")
-        {:error, :operation_failed}
+    else
+      {:ok, result}
     end
+  rescue
+    error ->
+      Logger.error("Operation failed: #{inspect(error)}")
+      {:error, :operation_failed}
   end
 
   defp safe_play(game, player_id, cards, nominated_suit) do
@@ -492,7 +490,7 @@ defmodule Rachel.Game.GameEngine do
   defp find_winner(game) do
     # Find player with empty hand (the winner)
     Enum.find(game.players, fn player ->
-      length(player.hand) == 0 && player.status == :playing
+      player.hand == [] && player.status == :playing
     end)
   end
 

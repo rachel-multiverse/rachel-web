@@ -190,8 +190,7 @@ defmodule Rachel.Monitoring.Alerts do
     |> Atom.to_string()
     |> String.replace("_", " ")
     |> String.split()
-    |> Enum.map(&String.capitalize/1)
-    |> Enum.join(" ")
+    |> Enum.map_join(" ", &String.capitalize/1)
   end
 
   @doc """
@@ -234,29 +233,29 @@ defmodule Rachel.Monitoring.Alerts do
     {:ok, :alerted}
   end
 
-  defp log_alert(%{severity: :critical} = alert, metadata) do
+  defp log_alert(%{severity: :critical} = alert, alert_metadata) do
     Logger.error("[ALERT:CRITICAL] #{alert.message}",
       metric: alert.metric,
       value: alert.value,
       threshold: alert.threshold,
-      metadata: metadata
+      alert_data: alert_metadata
     )
   end
 
-  defp log_alert(%{severity: :warning} = alert, metadata) do
+  defp log_alert(%{severity: :warning} = alert, alert_metadata) do
     Logger.warning("[ALERT:WARNING] #{alert.message}",
       metric: alert.metric,
       value: alert.value,
       threshold: alert.threshold,
-      metadata: metadata
+      alert_data: alert_metadata
     )
   end
 
-  defp log_alert(%{severity: :info} = alert, metadata) do
+  defp log_alert(%{severity: :info} = alert, alert_metadata) do
     Logger.info("[ALERT:INFO] #{alert.message}",
       metric: alert.metric,
       value: alert.value,
-      metadata: metadata
+      alert_data: alert_metadata
     )
   end
 

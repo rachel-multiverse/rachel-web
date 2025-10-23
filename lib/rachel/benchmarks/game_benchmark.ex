@@ -11,7 +11,7 @@ defmodule Rachel.Benchmarks.GameBenchmark do
   Run with: `mix run lib/rachel/benchmarks/game_benchmark.ex`
   """
 
-  alias Rachel.Game.{GameState, Deck}
+  alias Rachel.Game.{Deck, GameState}
 
   def run do
     IO.puts("\n=== Rachel Game Performance Benchmarks ===\n")

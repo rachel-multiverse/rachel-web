@@ -140,20 +140,18 @@ defmodule RachelWeb.HealthController do
 
   # Check database connectivity
   defp check_database do
-    try do
-      case Ecto.Adapters.SQL.query(Rachel.Repo, "SELECT 1", []) do
-        {:ok, _} ->
-          :ok
+    case Ecto.Adapters.SQL.query(Rachel.Repo, "SELECT 1", []) do
+      {:ok, _} ->
+        :ok
 
-        {:error, error} ->
-          Logger.error("Database health check failed: #{inspect(error)}")
-          :error
-      end
-    rescue
-      error ->
-        Logger.error("Database health check exception: #{inspect(error)}")
+      {:error, error} ->
+        Logger.error("Database health check failed: #{inspect(error)}")
         :error
     end
+  rescue
+    error ->
+      Logger.error("Database health check exception: #{inspect(error)}")
+      :error
   end
 
   # Check application process status
@@ -171,78 +169,70 @@ defmodule RachelWeb.HealthController do
 
   # Check GameSupervisor is running
   defp check_game_supervisor do
-    try do
-      case GenServer.whereis(Rachel.Game.GameSupervisor) do
-        nil ->
-          Logger.error("GameSupervisor not found")
-          :error
-
-        pid when is_pid(pid) ->
-          :ok
-      end
-    catch
-      _, error ->
-        Logger.error("GameSupervisor check failed: #{inspect(error)}")
+    case GenServer.whereis(Rachel.Game.GameSupervisor) do
+      nil ->
+        Logger.error("GameSupervisor not found")
         :error
+
+      pid when is_pid(pid) ->
+        :ok
     end
+  catch
+    _, error ->
+      Logger.error("GameSupervisor check failed: #{inspect(error)}")
+      :error
   end
 
   # Check PubSub is running
   defp check_pubsub do
-    try do
-      case Process.whereis(Rachel.PubSub) do
-        nil ->
-          Logger.error("PubSub not found")
-          :error
-
-        pid when is_pid(pid) ->
-          :ok
-      end
-    catch
-      _, error ->
-        Logger.error("PubSub check failed: #{inspect(error)}")
+    case Process.whereis(Rachel.PubSub) do
+      nil ->
+        Logger.error("PubSub not found")
         :error
+
+      pid when is_pid(pid) ->
+        :ok
     end
+  catch
+    _, error ->
+      Logger.error("PubSub check failed: #{inspect(error)}")
+      :error
   end
 
   # Check BEAM scheduler responsiveness
   defp check_scheduler do
-    try do
-      # Enable scheduler wall time tracking if not already enabled
-      :erlang.system_flag(:scheduler_wall_time, true)
-      utilization = :erlang.statistics(:scheduler_wall_time_all)
+    # Enable scheduler wall time tracking if not already enabled
+    :erlang.system_flag(:scheduler_wall_time, true)
+    utilization = :erlang.statistics(:scheduler_wall_time_all)
 
-      if is_list(utilization) and length(utilization) > 0 do
-        :ok
-      else
-        Logger.error("Scheduler check failed: no utilization data")
-        :error
-      end
-    catch
-      _, error ->
-        Logger.error("Scheduler check failed: #{inspect(error)}")
-        :error
+    if is_list(utilization) and length(utilization) > 0 do
+      :ok
+    else
+      Logger.error("Scheduler check failed: no utilization data")
+      :error
     end
+  catch
+    _, error ->
+      Logger.error("Scheduler check failed: #{inspect(error)}")
+      :error
   end
 
   # Check memory usage is within limits
   defp check_memory do
-    try do
-      memory = :erlang.memory(:total)
-      # 2GB limit for liveness check
-      max_memory = 2 * 1024 * 1024 * 1024
+    memory = :erlang.memory(:total)
+    # 2GB limit for liveness check
+    max_memory = 2 * 1024 * 1024 * 1024
 
-      if memory < max_memory do
-        :ok
-      else
-        Logger.error("Memory usage (#{div(memory, 1024 * 1024)}MB) exceeds limit")
-        :error
-      end
-    catch
-      _, error ->
-        Logger.error("Memory check failed: #{inspect(error)}")
-        :error
+    if memory < max_memory do
+      :ok
+    else
+      Logger.error("Memory usage (#{div(memory, 1024 * 1024)}MB) exceeds limit")
+      :error
     end
+  catch
+    _, error ->
+      Logger.error("Memory check failed: #{inspect(error)}")
+      :error
   end
 
   # Format check results for JSON response
