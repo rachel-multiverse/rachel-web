@@ -124,8 +124,8 @@ See **UI_UX_IMPROVEMENTS.md** for detailed implementation plan.
 ### Technical Improvements
 - [x] Analytics and admin dashboards ✅
 - [x] Content moderation system ✅
-- [ ] Remove unused aliases and clean up warnings
-- [ ] WebSocket authentication for LiveView
+- [x] Remove unused aliases and clean up warnings ✅
+- [x] WebSocket authentication for LiveView ✅
 - [ ] Comprehensive API documentation (OpenAPI/Swagger)
 - [ ] Performance optimization for large games
 
@@ -133,7 +133,7 @@ See **UI_UX_IMPROVEMENTS.md** for detailed implementation plan.
 
 **Deployment:** ✅ Live at Fly.io with managed Postgres
 **Tests:** ✅ 424 tests passing (100%)
-**Security:** ✅ Rate limiting, CSP, security headers, error tracking
+**Security:** ✅ Rate limiting, CSP, security headers, WebSocket auth, error tracking
 **Infrastructure:** ✅ CI/CD, health checks, Docker, Sentry monitoring
 
 All core game mechanics, security, database persistence, and API integration are complete and tested.
