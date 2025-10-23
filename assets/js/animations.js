@@ -253,6 +253,81 @@ export const AnimationHooks = {
         e.preventDefault();
       });
     }
+  },
+
+  // Hook for toast notifications with auto-dismiss
+  ToastNotifications: {
+    mounted() {
+      this.autoDismissTimers = new Map();
+
+      // Auto-dismiss toasts after 4 seconds
+      this.setupAutoDismiss = () => {
+        const toasts = this.el.querySelectorAll('.toast-notification');
+
+        toasts.forEach((toast) => {
+          const toastId = toast.id;
+
+          // Clear existing timer if any
+          if (this.autoDismissTimers.has(toastId)) {
+            clearTimeout(this.autoDismissTimers.get(toastId));
+          }
+
+          // Set new timer for auto-dismiss
+          const timer = setTimeout(() => {
+            toast.style.transition = 'all 0.3s ease-in';
+            toast.style.transform = 'translateX(100%)';
+            toast.style.opacity = '0';
+
+            // Remove from DOM after animation
+            setTimeout(() => {
+              toast.remove();
+            }, 300);
+
+            this.autoDismissTimers.delete(toastId);
+          }, 4000); // 4 seconds
+
+          this.autoDismissTimers.set(toastId, timer);
+
+          // Cancel auto-dismiss on hover
+          toast.addEventListener('mouseenter', () => {
+            if (this.autoDismissTimers.has(toastId)) {
+              clearTimeout(this.autoDismissTimers.get(toastId));
+            }
+          });
+
+          // Resume auto-dismiss on mouse leave
+          toast.addEventListener('mouseleave', () => {
+            const resumeTimer = setTimeout(() => {
+              toast.style.transition = 'all 0.3s ease-in';
+              toast.style.transform = 'translateX(100%)';
+              toast.style.opacity = '0';
+
+              setTimeout(() => {
+                toast.remove();
+              }, 300);
+
+              this.autoDismissTimers.delete(toastId);
+            }, 2000); // 2 more seconds after hover
+
+            this.autoDismissTimers.set(toastId, resumeTimer);
+          });
+        });
+      };
+
+      // Setup auto-dismiss for initial toasts
+      this.setupAutoDismiss();
+    },
+
+    updated() {
+      // Setup auto-dismiss for any new toasts
+      this.setupAutoDismiss();
+    },
+
+    destroyed() {
+      // Clean up all timers
+      this.autoDismissTimers.forEach(timer => clearTimeout(timer));
+      this.autoDismissTimers.clear();
+    }
   }
 };
 

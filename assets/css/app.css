@@ -143,11 +143,33 @@
   will-change: transform;
 }
 
-/* Hover effect - subtle lift */
+/* Enhanced hover effect - subtle lift with glow */
 .card.cursor-pointer:hover {
-  transform: translateY(-8px);
+  transform: translateY(-8px) scale(1.02);
   box-shadow: 0 10px 20px -5px rgba(0, 0, 0, 0.3),
-              0 6px 6px -3px rgba(0, 0, 0, 0.2);
+              0 6px 6px -3px rgba(0, 0, 0, 0.2),
+              0 0 15px rgba(59, 130, 246, 0.3);
+}
+
+/* Playable card indicator */
+.card.cursor-pointer {
+  position: relative;
+}
+
+.card.cursor-pointer::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: inherit;
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.3), rgba(147, 197, 253, 0.3));
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+  z-index: -1;
+}
+
+.card.cursor-pointer:hover::before {
+  opacity: 1;
 }
 
 /* Selected card - prominent lift with glow */
@@ -246,36 +268,60 @@
   animation: turn-pulse 2s ease-in-out infinite;
 }
 
-/* Attack counter danger pulse */
+/* Enhanced attack counter - more prominent danger indicator */
 @keyframes pulse-danger {
   0%, 100% {
     transform: scale(1);
-    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7),
+                0 4px 12px rgba(239, 68, 68, 0.4);
   }
   50% {
     transform: scale(1.08);
-    box-shadow: 0 0 0 8px rgba(239, 68, 68, 0);
+    box-shadow: 0 0 0 12px rgba(239, 68, 68, 0),
+                0 6px 16px rgba(239, 68, 68, 0.6);
   }
 }
 
 .attack-counter {
   animation: pulse-danger 1.5s ease-in-out infinite;
+  border: 2px solid rgba(239, 68, 68, 0.8);
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
-/* Skip counter warning pulse */
+.attack-counter:hover {
+  animation-play-state: paused;
+  transform: scale(1.05);
+  box-shadow: 0 6px 20px rgba(239, 68, 68, 0.5);
+}
+
+/* Enhanced skip counter - more prominent warning indicator */
 @keyframes pulse-warning {
   0%, 100% {
     transform: scale(1);
-    box-shadow: 0 0 0 0 rgba(251, 191, 36, 0.7);
+    box-shadow: 0 0 0 0 rgba(251, 191, 36, 0.7),
+                0 4px 12px rgba(251, 191, 36, 0.4);
   }
   50% {
     transform: scale(1.08);
-    box-shadow: 0 0 0 8px rgba(251, 191, 36, 0);
+    box-shadow: 0 0 0 12px rgba(251, 191, 36, 0),
+                0 6px 16px rgba(251, 191, 36, 0.6);
   }
 }
 
 .skip-counter {
   animation: pulse-warning 1.5s ease-in-out infinite;
+  border: 2px solid rgba(251, 191, 36, 0.8);
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.skip-counter:hover {
+  animation-play-state: paused;
+  transform: scale(1.05);
+  box-shadow: 0 6px 20px rgba(251, 191, 36, 0.5);
 }
 
 /* Loading button state */
@@ -285,26 +331,103 @@
   pointer-events: none;
 }
 
+/* Enhanced loading states for buttons */
+button[disabled],
+button.phx-click-loading {
+  position: relative;
+  cursor: wait;
+  pointer-events: none;
+}
+
+button.phx-click-loading .button-text {
+  opacity: 0;
+}
+
+button.phx-click-loading .loading-spinner {
+  display: inline-flex !important;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+}
+
+/* Active button press effect */
+button:active:not([disabled]) {
+  transform: scale(0.95);
+}
+
+/* Button transition for smooth state changes */
+button {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
 /* Smooth page transitions */
 .phx-page-loading {
   opacity: 0.5;
   transition: opacity 0.2s ease-out;
 }
 
-/* Toast notification animation */
-@keyframes slide-in-top {
+/* Toast notification styles */
+.toast-notification {
+  min-width: 300px;
+  max-width: 400px;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3),
+              0 8px 10px -6px rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(8px);
+  cursor: pointer;
+}
+
+.toast-success {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.95) 0%, rgba(5, 150, 105, 0.95) 100%);
+  border-left: 4px solid #10b981;
+}
+
+.toast-error {
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.95) 0%, rgba(220, 38, 38, 0.95) 100%);
+  border-left: 4px solid #ef4444;
+}
+
+.toast-warning {
+  background: linear-gradient(135deg, rgba(251, 191, 36, 0.95) 0%, rgba(245, 158, 11, 0.95) 100%);
+  border-left: 4px solid #fbbf24;
+}
+
+/* Toast enter animation */
+@keyframes slide-in-right {
   from {
-    transform: translateY(-100%);
+    transform: translateX(100%);
     opacity: 0;
   }
   to {
-    transform: translateY(0);
+    transform: translateX(0);
     opacity: 1;
   }
 }
 
 .toast-enter {
-  animation: slide-in-top 0.3s ease-out;
+  animation: slide-in-right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Toast hover effect */
+.toast-notification:hover {
+  transform: translateX(-4px);
+  box-shadow: 0 12px 30px -5px rgba(0, 0, 0, 0.4),
+              0 10px 15px -6px rgba(0, 0, 0, 0.3);
+}
+
+/* Mobile toast adjustments */
+@media (max-width: 768px) {
+  .toast-notification {
+    min-width: 280px;
+    max-width: calc(100vw - 2rem);
+  }
+
+  #toast-container {
+    right: 0.75rem;
+    top: 4rem;
+  }
 }
 
 /* Flash effects for counters */
@@ -336,21 +459,46 @@
   animation: flash-yellow 0.3s ease-out;
 }
 
-/* Your turn glow effect */
+/* Enhanced your turn indicator */
+.your-turn {
+  position: relative;
+  animation: turn-pulse 2s ease-in-out infinite;
+}
+
+/* Enhanced turn glow effect */
 @keyframes your-turn-glow {
   0% {
-    box-shadow: 0 0 0 0 rgba(250, 204, 21, 0.7);
+    box-shadow: 0 0 0 0 rgba(250, 204, 21, 0.7),
+                0 0 20px rgba(250, 204, 21, 0.4);
   }
   50% {
-    box-shadow: 0 0 0 20px rgba(250, 204, 21, 0);
+    box-shadow: 0 0 0 20px rgba(250, 204, 21, 0),
+                0 0 30px rgba(250, 204, 21, 0.6);
   }
   100% {
-    box-shadow: 0 0 0 0 rgba(250, 204, 21, 0);
+    box-shadow: 0 0 0 0 rgba(250, 204, 21, 0),
+                0 0 20px rgba(250, 204, 21, 0.4);
   }
 }
 
 .your-turn-glow {
   animation: your-turn-glow 1s ease-out;
+}
+
+/* Opponent current turn highlight */
+.opponent-hand[class*="ring-2"] {
+  animation: opponent-turn-pulse 2s ease-in-out infinite;
+}
+
+@keyframes opponent-turn-pulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(251, 191, 36, 0.4);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow: 0 0 0 4px rgba(251, 191, 36, 0);
+    transform: scale(1.02);
+  }
 }
 
 /* Confetti falling animation */

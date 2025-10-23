@@ -47,16 +47,30 @@ defmodule RachelWeb.GameLive.PlayerHand do
             <%= if length(@selected_cards) > 0 do %>
               <button
                 phx-click="attempt_play_cards"
-                class="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg text-lg"
+                phx-disable-with="Playing..."
+                class="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg text-lg transition-all duration-200 active:scale-95 disabled:opacity-70 disabled:cursor-wait flex items-center justify-center gap-2"
               >
-                Play Selected Cards
+                <span class="button-text">Play Selected Cards</span>
+                <span class="loading-spinner hidden">
+                  <svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                </span>
               </button>
             <% else %>
               <button
                 phx-click="draw_card"
-                class="bg-yellow-600 hover:bg-yellow-700 text-white px-8 py-3 rounded-lg text-lg"
+                phx-disable-with="Drawing..."
+                class="bg-yellow-600 hover:bg-yellow-700 text-white px-8 py-3 rounded-lg text-lg transition-all duration-200 active:scale-95 disabled:opacity-70 disabled:cursor-wait flex items-center justify-center gap-2"
               >
-                {@button_text}
+                <span class="button-text">{@button_text}</span>
+                <span class="loading-spinner hidden">
+                  <svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                </span>
               </button>
             <% end %>
           </div>

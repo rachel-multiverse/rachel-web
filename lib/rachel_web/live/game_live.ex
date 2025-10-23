@@ -48,6 +48,9 @@ defmodule RachelWeb.GameLive do
       <div id="auto-reconnect" phx-hook="AutoReconnect" class="hidden"></div>
       <div id="turn-transition" phx-hook="TurnTransition" class="hidden"></div>
 
+      <!-- Toast Notifications -->
+      <.live_component module={RachelWeb.GameLive.ToastNotification} id="toast-notifications" flash={@flash} />
+
       <div class="max-w-7xl mx-auto">
         
     <!-- Game Over Screen -->
