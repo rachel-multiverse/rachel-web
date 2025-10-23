@@ -99,6 +99,7 @@ defmodule RachelWeb.Router do
     live "/stats", StatsLive
     live "/history", HistoryLive
     live "/settings", ProfileLive, :index
+    live "/profile/wizard", ProfileWizardLive, :index
   end
 
   # API routes for mobile apps
