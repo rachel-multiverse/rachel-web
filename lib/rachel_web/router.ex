@@ -97,20 +97,28 @@ defmodule RachelWeb.Router do
   scope "/", RachelWeb do
     pipe_through [:browser, :require_authenticated_user]
 
-    live "/lobby", LobbyLive
-    live "/games/:id", GameLive
-    live "/stats", StatsLive
-    live "/history", HistoryLive
-    live "/settings", ProfileLive, :index
-    live "/profile/wizard", ProfileWizardLive, :index
+    # WebSocket authentication for all game-related LiveViews
+    live_session :require_authenticated_user,
+      on_mount: {RachelWeb.UserAuth, :require_authenticated_user} do
+      live "/lobby", LobbyLive
+      live "/games/:id", GameLive
+      live "/stats", StatsLive
+      live "/history", HistoryLive
+      live "/settings", ProfileLive, :index
+      live "/profile/wizard", ProfileWizardLive, :index
+    end
   end
 
   # Admin routes - require admin access
   scope "/", RachelWeb do
     pipe_through [:browser, :require_authenticated_user, :require_admin_user]
 
-    live "/admin", AdminLive
-    live "/analytics", AnalyticsLive
+    # WebSocket authentication for admin-only LiveViews
+    live_session :require_admin_user,
+      on_mount: {RachelWeb.UserAuth, :require_admin_user} do
+      live "/admin", AdminLive
+      live "/analytics", AnalyticsLive
+    end
   end
 
   # API routes for mobile apps

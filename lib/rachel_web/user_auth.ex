@@ -10,6 +10,7 @@ defmodule RachelWeb.UserAuth do
   import Plug.Conn
   import Phoenix.Controller
 
+  alias Phoenix.LiveView
   alias Rachel.Accounts
   alias Rachel.Accounts.Scope
 
@@ -242,4 +243,74 @@ defmodule RachelWeb.UserAuth do
   end
 
   defp maybe_store_return_to(conn), do: conn
+
+  ## LiveView Authentication
+
+  @doc """
+  on_mount hook for LiveView routes that require the user to be authenticated.
+
+  This runs when a LiveView WebSocket connection is established, before mount/3.
+  Ensures users can't bypass authentication by connecting directly to WebSocket.
+  """
+  def on_mount(:require_authenticated_user, _params, session, socket) do
+    socket = mount_current_scope(socket, session)
+
+    if socket.assigns.current_scope && socket.assigns.current_scope.user do
+      {:cont, socket}
+    else
+      socket =
+        socket
+        |> LiveView.put_flash(:error, "You must log in to access this page.")
+        |> LiveView.redirect(to: ~p"/users/log-in")
+
+      {:halt, socket}
+    end
+  end
+
+  @doc """
+  on_mount hook for LiveView routes that require the user to be an administrator.
+
+  This runs when a LiveView WebSocket connection is established, before mount/3.
+  """
+  def on_mount(:require_admin_user, _params, session, socket) do
+    socket = mount_current_scope(socket, session)
+
+    if socket.assigns.current_scope && socket.assigns.current_scope.user &&
+         socket.assigns.current_scope.user.is_admin do
+      {:cont, socket}
+    else
+      socket =
+        socket
+        |> LiveView.put_flash(:error, "You must be an administrator to access this page.")
+        |> LiveView.redirect(to: ~p"/")
+
+      {:halt, socket}
+    end
+  end
+
+  @doc """
+  on_mount hook that assigns current_scope but allows nil (no redirect).
+
+  Useful for LiveViews that work for both authenticated and anonymous users.
+  """
+  def on_mount(:mount_current_scope, _params, session, socket) do
+    {:cont, mount_current_scope(socket, session)}
+  end
+
+  defp mount_current_scope(socket, session) do
+    # Get the user from the session token, similar to fetch_current_scope_for_user/2
+    case session do
+      %{"user_token" => token} ->
+        case Accounts.get_user_by_session_token(token) do
+          {user, _token_inserted_at} ->
+            Phoenix.Component.assign(socket, :current_scope, Scope.for_user(user))
+
+          nil ->
+            Phoenix.Component.assign(socket, :current_scope, Scope.for_user(nil))
+        end
+
+      _ ->
+        Phoenix.Component.assign(socket, :current_scope, Scope.for_user(nil))
+    end
+  end
 end
