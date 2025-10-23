@@ -48,7 +48,7 @@ defmodule RachelWeb.GameLive.PlayerHand do
             <% end %>
           </div>
         </div>
-
+        
     <!-- Action Buttons - Only for Players -->
         <%= if @mode == :player do %>
           <!-- Single Action Button (Only on Your Turn) -->

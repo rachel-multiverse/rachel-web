@@ -247,10 +247,15 @@ defmodule RachelWeb.UserAuth do
   ## LiveView Authentication
 
   @doc """
-  on_mount hook for LiveView routes that require the user to be authenticated.
+  on_mount hook for LiveView authentication and authorization.
 
   This runs when a LiveView WebSocket connection is established, before mount/3.
   Ensures users can't bypass authentication by connecting directly to WebSocket.
+
+  Available hooks:
+  - `:require_authenticated_user` - Requires user to be logged in, redirects to login if not
+  - `:require_admin_user` - Requires user to be an admin, redirects to home if not
+  - `:mount_current_scope` - Assigns current_scope but allows nil (no redirect)
   """
   def on_mount(:require_authenticated_user, _params, session, socket) do
     socket = mount_current_scope(socket, session)
@@ -267,11 +272,6 @@ defmodule RachelWeb.UserAuth do
     end
   end
 
-  @doc """
-  on_mount hook for LiveView routes that require the user to be an administrator.
-
-  This runs when a LiveView WebSocket connection is established, before mount/3.
-  """
   def on_mount(:require_admin_user, _params, session, socket) do
     socket = mount_current_scope(socket, session)
 
@@ -288,11 +288,6 @@ defmodule RachelWeb.UserAuth do
     end
   end
 
-  @doc """
-  on_mount hook that assigns current_scope but allows nil (no redirect).
-
-  Useful for LiveViews that work for both authenticated and anonymous users.
-  """
   def on_mount(:mount_current_scope, _params, session, socket) do
     {:cont, mount_current_scope(socket, session)}
   end
