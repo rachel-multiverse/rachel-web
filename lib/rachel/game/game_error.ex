@@ -72,7 +72,7 @@ defmodule Rachel.Game.GameError do
   end
 
   def new(:cards_not_in_hand, %{cards: cards} = details) do
-    card_names = Enum.map(cards, &card_name/1) |> Enum.join(", ")
+    card_names = Enum.map_join(cards, ", ", &card_name/1)
 
     %__MODULE__{
       type: :cards_not_in_hand,
@@ -132,7 +132,7 @@ defmodule Rachel.Game.GameError do
   end
 
   def new(:invalid_counter, %{attack_type: :twos, cards: cards} = details) do
-    card_names = Enum.map(cards, &card_name/1) |> Enum.join(", ")
+    card_names = Enum.map_join(cards, ", ", &card_name/1)
 
     %__MODULE__{
       type: :invalid_counter,
@@ -142,7 +142,7 @@ defmodule Rachel.Game.GameError do
   end
 
   def new(:invalid_counter, %{attack_type: :black_jacks, cards: cards} = details) do
-    card_names = Enum.map(cards, &card_name/1) |> Enum.join(", ")
+    card_names = Enum.map_join(cards, ", ", &card_name/1)
 
     %__MODULE__{
       type: :invalid_counter,
@@ -209,7 +209,7 @@ defmodule Rachel.Game.GameError do
   end
 
   def new(:must_play, %{playable_cards: cards} = details) when length(cards) > 0 do
-    card_names = Enum.map(cards, &card_name/1) |> Enum.join(", ")
+    card_names = Enum.map_join(cards, ", ", &card_name/1)
 
     %__MODULE__{
       type: :must_play,

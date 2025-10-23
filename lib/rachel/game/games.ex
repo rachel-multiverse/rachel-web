@@ -183,15 +183,13 @@ defmodule Rachel.Game.Games do
         |> Enum.with_index()
         |> Enum.map(fn {player, position} ->
           rank =
-            cond do
-              player.name in game_state.winners ->
-                # Winner rank is their position in winners array + 1
-                Enum.find_index(game_state.winners, &(&1 == player.name)) + 1
-
-              true ->
-                # Non-winners ranked by hand size (fewer cards = better rank)
-                # Will be calculated after we know all hand sizes
-                nil
+            if player.name in game_state.winners do
+              # Winner rank is their position in winners array + 1
+              Enum.find_index(game_state.winners, &(&1 == player.name)) + 1
+            else
+              # Non-winners ranked by hand size (fewer cards = better rank)
+              # Will be calculated after we know all hand sizes
+              nil
             end
 
           %{
