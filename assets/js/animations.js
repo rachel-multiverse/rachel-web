@@ -160,6 +160,99 @@ export const AnimationHooks = {
         }, 300);
       });
     }
+  },
+
+  // Hook for enhanced mobile swipe gestures
+  SwipeGestures: {
+    mounted() {
+      // Only activate on touch devices
+      if (!('ontouchstart' in window)) return;
+
+      let startX = 0;
+      let scrollLeft = 0;
+      let isScrolling = false;
+      let velocity = 0;
+      let lastX = 0;
+      let lastTime = 0;
+
+      const container = this.el.querySelector('.flex.flex-wrap') || this.el;
+
+      // Touch start - record initial position
+      container.addEventListener('touchstart', (e) => {
+        isScrolling = true;
+        startX = e.touches[0].pageX - container.offsetLeft;
+        scrollLeft = container.scrollLeft;
+        lastX = startX;
+        lastTime = Date.now();
+        velocity = 0;
+
+        // Disable scroll snap during active scrolling for smoother experience
+        container.style.scrollSnapType = 'none';
+      }, {passive: true});
+
+      // Touch move - scroll with finger
+      container.addEventListener('touchmove', (e) => {
+        if (!isScrolling) return;
+
+        const x = e.touches[0].pageX - container.offsetLeft;
+        const walk = (x - startX) * 1.5; // Multiply by 1.5 for more responsive scrolling
+        const currentTime = Date.now();
+
+        // Calculate velocity for momentum scrolling
+        const timeDelta = currentTime - lastTime;
+        if (timeDelta > 0) {
+          velocity = (x - lastX) / timeDelta;
+        }
+
+        container.scrollLeft = scrollLeft - walk;
+
+        lastX = x;
+        lastTime = currentTime;
+      }, {passive: true});
+
+      // Touch end - apply momentum
+      container.addEventListener('touchend', () => {
+        isScrolling = false;
+
+        // Apply momentum scrolling if velocity is significant
+        if (Math.abs(velocity) > 0.5) {
+          const momentum = velocity * 200; // Adjust multiplier for desired momentum
+
+          // Smooth momentum animation
+          const startScroll = container.scrollLeft;
+          const targetScroll = startScroll - momentum;
+          const duration = 400; // ms
+          const startTime = Date.now();
+
+          const animateMomentum = () => {
+            const elapsed = Date.now() - startTime;
+            const progress = Math.min(elapsed / duration, 1);
+
+            // Easing function for natural deceleration
+            const ease = 1 - Math.pow(1 - progress, 3);
+
+            container.scrollLeft = startScroll + (targetScroll - startScroll) * ease;
+
+            if (progress < 1) {
+              requestAnimationFrame(animateMomentum);
+            } else {
+              // Re-enable scroll snap after momentum completes
+              container.style.scrollSnapType = 'x proximity';
+            }
+          };
+
+          requestAnimationFrame(animateMomentum);
+        } else {
+          // Re-enable scroll snap immediately if no momentum
+          container.style.scrollSnapType = 'x proximity';
+        }
+      }, {passive: true});
+
+      // Prevent default drag behavior on the container
+      container.addEventListener('dragstart', (e) => {
+        e.preventDefault();
+      });
+    }
   }
 };
 

@@ -19,7 +19,7 @@ defmodule RachelWeb.GameLive.PlayerHand do
               <span class="text-yellow-400 text-sm ml-2">← Your Turn</span>
             <% end %>
           </div>
-          <div class="flex flex-wrap justify-center gap-2" id="card-play-area" phx-hook="CardPlayAnimation">
+          <div class="flex flex-wrap justify-center gap-2" id="card-play-area" phx-hook="SwipeGestures">
             <%= for card <- @player.hand do %>
               <% is_playable =
                 @is_your_turn &&
