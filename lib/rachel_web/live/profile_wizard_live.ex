@@ -5,47 +5,54 @@ defmodule RachelWeb.ProfileWizardLive do
 
   @impl true
   def mount(_params, session, socket) do
-    # Get user from session (set by fetch_current_user plug)
-    user =
-      case session["user_token"] do
-        nil ->
-          # In tests, get from assigns
-          case Map.get(socket.assigns, :current_scope) do
-            %{user: user} -> user
-            _ -> Map.get(socket.assigns, :user) || raise "No authenticated user found"
-          end
+    user = get_authenticated_user(session, socket)
 
-        token ->
-          # In production, fetch from database using session token
-          case Rachel.Accounts.get_user_by_session_token(token) do
-            {user, _authenticated_at} -> user
-            user -> user
-          end
-      end
-
-    # Redirect if profile already completed
     if user.profile_completed do
       {:ok, push_navigate(socket, to: ~p"/lobby")}
     else
-      avatars = AvatarLibrary.list_avatars()
-      default_avatar = AvatarLibrary.get_default_avatar()
-      default_avatar_id = if default_avatar, do: default_avatar.id, else: nil
-
-      {:ok,
-       socket
-       |> assign(:page_title, "Complete Your Profile")
-       |> assign(:user, user)
-       |> assign(:avatars, avatars)
-       |> assign(:selected_category, "faces")
-       |> assign(:step, 1)
-       |> assign(:profile_data, %{
-         avatar_id: default_avatar_id,
-         display_name: user.display_name || user.username,
-         tagline: "",
-         bio: "",
-         preferences: %{}
-       })}
+      {:ok, setup_profile_wizard(socket, user)}
     end
+  end
+
+  defp get_authenticated_user(session, socket) do
+    case session["user_token"] do
+      nil -> get_user_from_assigns(socket)
+      token -> get_user_from_token(token)
+    end
+  end
+
+  defp get_user_from_assigns(socket) do
+    case Map.get(socket.assigns, :current_scope) do
+      %{user: user} -> user
+      _ -> Map.get(socket.assigns, :user) || raise "No authenticated user found"
+    end
+  end
+
+  defp get_user_from_token(token) do
+    case Rachel.Accounts.get_user_by_session_token(token) do
+      {user, _authenticated_at} -> user
+      user -> user
+    end
+  end
+
+  defp setup_profile_wizard(socket, user) do
+    avatars = AvatarLibrary.list_avatars()
+    default_avatar = AvatarLibrary.get_default_avatar()
+    default_avatar_id = if default_avatar, do: default_avatar.id, else: nil
+
+    socket
+    |> assign(:page_title, "Complete Your Profile")
+    |> assign(:user, user)
+    |> assign(:avatars, avatars)
+    |> assign(:selected_category, "faces")
+    |> assign(:step, 1)
+    |> assign(:profile_data, %{
+      avatar_id: default_avatar_id,
+      display_name: user.display_name || user.username,
+      tagline: "",
+      bio: "",
+      preferences: %{}
+    })
   end
 
   @impl true

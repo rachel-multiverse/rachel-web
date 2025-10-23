@@ -9,24 +9,7 @@ defmodule RachelWeb.LobbyLive do
       :timer.send_interval(2000, :refresh_games)
     end
 
-    # Get user from session (set by fetch_current_user plug)
-    current_user =
-      case session["user_token"] do
-        nil ->
-          # In tests, get from assigns
-          case Map.get(socket.assigns, :current_scope) do
-            %{user: user} -> user
-            _ -> Map.get(socket.assigns, :user) || raise "No authenticated user found"
-          end
-
-        token ->
-          # In production, fetch from database using session token
-          case Rachel.Accounts.get_user_by_session_token(token) do
-            {user, _authenticated_at} -> user
-            user -> user
-          end
-      end
-
+    current_user = get_authenticated_user(session, socket)
     player_name = current_user.display_name || current_user.username
 
     {:ok,
@@ -35,6 +18,27 @@ defmodule RachelWeb.LobbyLive do
      |> assign(:player_name, player_name)
      |> assign(:current_user, current_user)
      |> assign(:creating_game, false)}
+  end
+
+  defp get_authenticated_user(session, socket) do
+    case session["user_token"] do
+      nil -> get_user_from_assigns(socket)
+      token -> get_user_from_token(token)
+    end
+  end
+
+  defp get_user_from_assigns(socket) do
+    case Map.get(socket.assigns, :current_scope) do
+      %{user: user} -> user
+      _ -> Map.get(socket.assigns, :user) || raise "No authenticated user found"
+    end
+  end
+
+  defp get_user_from_token(token) do
+    case Rachel.Accounts.get_user_by_session_token(token) do
+      {user, _authenticated_at} -> user
+      user -> user
+    end
   end
 
   @impl true

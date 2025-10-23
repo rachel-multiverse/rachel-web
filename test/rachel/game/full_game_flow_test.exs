@@ -245,35 +245,45 @@ defmodule Rachel.Game.FullGameFlowTest do
     top_card = hd(game.discard_pile)
 
     # Find a valid card to play
-    valid_card =
-      Enum.find(player.hand, fn card ->
-        cond do
-          game.pending_attack != nil ->
-            {attack_type, _} = game.pending_attack
-            Rachel.Game.Rules.can_counter_attack?(card, attack_type)
-
-          game.pending_skips > 0 ->
-            Rachel.Game.Rules.can_counter_skip?(card)
-
-          true ->
-            Rachel.Game.Rules.can_play_card?(card, top_card, game.nominated_suit)
-        end
-      end)
+    valid_card = find_valid_card(player.hand, game, top_card)
 
     case valid_card do
-      nil ->
-        # No valid play, must draw
-        case GameEngine.draw_cards(game_id, player.id, :cannot_play) do
-          {:ok, _} -> :ok
-          _ -> :error
-        end
+      nil -> draw_cards_for_player(game_id, player.id)
+      card -> play_card_for_player(game_id, player.id, card)
+    end
+  end
 
-      card ->
-        # Play the valid card
-        case GameEngine.play_cards(game_id, player.id, [card]) do
-          {:ok, _} -> :ok
-          _ -> :error
-        end
+  defp find_valid_card(hand, game, top_card) do
+    Enum.find(hand, fn card ->
+      card_is_valid_play?(card, game, top_card)
+    end)
+  end
+
+  defp card_is_valid_play?(card, game, top_card) do
+    cond do
+      game.pending_attack != nil ->
+        {attack_type, _} = game.pending_attack
+        Rachel.Game.Rules.can_counter_attack?(card, attack_type)
+
+      game.pending_skips > 0 ->
+        Rachel.Game.Rules.can_counter_skip?(card)
+
+      true ->
+        Rachel.Game.Rules.can_play_card?(card, top_card, game.nominated_suit)
+    end
+  end
+
+  defp draw_cards_for_player(game_id, player_id) do
+    case GameEngine.draw_cards(game_id, player_id, :cannot_play) do
+      {:ok, _} -> :ok
+      _ -> :error
+    end
+  end
+
+  defp play_card_for_player(game_id, player_id, card) do
+    case GameEngine.play_cards(game_id, player_id, [card]) do
+      {:ok, _} -> :ok
+      _ -> :error
     end
   end
 
