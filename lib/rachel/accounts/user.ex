@@ -79,9 +79,12 @@ defmodule Rachel.Accounts.User do
     |> validate_change(:bio, &validate_moderated_content/2)
   end
 
-  # Placeholder for moderation - will be implemented in Task 4
-  defp validate_moderated_content(_field, _value) do
-    []
+  defp validate_moderated_content(field, value) do
+    case Rachel.Moderation.ModerationService.check_content(value, field) do
+      :ok -> []
+      {:reject, reason} -> [{field, "#{reason}"}]
+      {:flag, _reason} -> []  # Allow but will be flagged
+    end
   end
 
   @doc """
