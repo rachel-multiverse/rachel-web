@@ -164,6 +164,10 @@ defmodule RachelWeb.GameLive do
   end
 
   @impl true
+  def handle_event("toggle_card", _params, %{assigns: %{mode: :spectator}} = socket) do
+    {:noreply, put_flash(socket, :error, "Spectators cannot select cards")}
+  end
+
   def handle_event("toggle_card", %{"suit" => suit, "rank" => rank}, socket) do
     rank = String.to_integer(rank)
     suit = String.to_existing_atom(suit)
@@ -186,6 +190,10 @@ defmodule RachelWeb.GameLive do
   end
 
   @impl true
+  def handle_event("attempt_play_cards", _params, %{assigns: %{mode: :spectator}} = socket) do
+    {:noreply, put_flash(socket, :error, "Spectators cannot play cards")}
+  end
+
   def handle_event("attempt_play_cards", _params, socket) do
     if needs_suit_nomination?(socket.assigns.selected_cards) do
       # Show modal for suit selection
@@ -216,6 +224,10 @@ defmodule RachelWeb.GameLive do
   end
 
   @impl true
+  def handle_event("play_cards", _params, %{assigns: %{mode: :spectator}} = socket) do
+    {:noreply, put_flash(socket, :error, "Spectators cannot play cards")}
+  end
+
   def handle_event("play_cards", params, socket) do
     nominated_suit = Map.get(params, "suit") |> maybe_to_atom()
 
@@ -249,6 +261,10 @@ defmodule RachelWeb.GameLive do
   end
 
   @impl true
+  def handle_event("draw_card", _params, %{assigns: %{mode: :spectator}} = socket) do
+    {:noreply, put_flash(socket, :error, "Spectators cannot draw cards")}
+  end
+
   def handle_event("draw_card", _params, socket) do
     # Always use the human player (index 0)
     human_player = Enum.at(socket.assigns.game.players, 0)

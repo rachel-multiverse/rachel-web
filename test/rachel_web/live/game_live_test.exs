@@ -506,6 +506,21 @@ defmodule RachelWeb.GameLiveTest do
       refute has_element?(view, "[data-role='play-button']")
       refute has_element?(view, "[data-role='draw-button']")
     end
+
+    test "spectator cannot select cards", %{conn: conn} do
+      game_id = create_test_game()
+      {:ok, view, _html} = live(conn, ~p"/games/#{game_id}?spectate=true")
+
+      # Spectator banner should be present
+      assert has_element?(view, "[data-role='spectator-banner']")
+
+      # Attempt to toggle a card - should not crash but should be blocked
+      # The toggle_card event should return a noreply without changing state
+      result = render_click(view, "toggle_card", %{"index" => "0"})
+
+      # Should still show spectator banner (mode didn't change)
+      assert result =~ "spectator-banner"
+    end
   end
 
   defp create_test_game do
