@@ -59,6 +59,14 @@ defmodule Rachel.Game.GameEngine do
     game = GameState.new(players) |> Map.put(:id, game_id)
     state = %__MODULE__{game: game, ai_turn_ref: nil, error_count: 0}
     persist_game(game)
+
+    # Emit telemetry event for game creation
+    :telemetry.execute(
+      [:rachel, :game, :created],
+      %{count: 1},
+      %{players: length(players), game_id: game_id}
+    )
+
     {:ok, checkpoint(state)}
   end
 
@@ -72,6 +80,14 @@ defmodule Rachel.Game.GameEngine do
         persist_game(new_game)
         new_state = %{state | game: new_game} |> schedule_ai() |> checkpoint()
         broadcast(new_game, :game_started)
+
+        # Emit telemetry event for game start
+        :telemetry.execute(
+          [:rachel, :game, :started],
+          %{count: 1},
+          %{players: length(new_game.players), game_id: new_game.id}
+        )
+
         {:reply, {:ok, new_game}, new_state}
 
       error ->
@@ -374,6 +390,13 @@ defmodule Rachel.Game.GameEngine do
       final_game = %{game | status: :finished}
       broadcast(final_game, :game_over)
 
+      # Emit telemetry event for game finish
+      :telemetry.execute(
+        [:rachel, :game, :finished],
+        %{count: 1},
+        %{players: length(final_game.players), game_id: final_game.id}
+      )
+
       # Record user participation for history
       Task.start(fn -> Rachel.Game.Games.record_user_participation(final_game) end)
 
@@ -388,6 +411,13 @@ defmodule Rachel.Game.GameEngine do
     if GameState.should_end?(game) do
       final_game = %{game | status: :finished}
       broadcast(final_game, :game_over)
+
+      # Emit telemetry event for game finish
+      :telemetry.execute(
+        [:rachel, :game, :finished],
+        %{count: 1},
+        %{players: length(final_game.players), game_id: final_game.id}
+      )
 
       # Record user participation for history
       Task.start(fn -> Rachel.Game.Games.record_user_participation(final_game) end)
@@ -406,10 +436,27 @@ defmodule Rachel.Game.GameEngine do
 
   defp increment_errors(%{error_count: count} = state) when count > 10 do
     Logger.error("Game #{state.game.id} has too many errors")
+
+    # Emit telemetry event for game corruption
+    :telemetry.execute(
+      [:rachel, :game, :error],
+      %{count: 1},
+      %{error_type: :too_many_errors, game_id: state.game.id}
+    )
+
     %{state | game: %{state.game | status: :corrupted}}
   end
 
-  defp increment_errors(state), do: %{state | error_count: state.error_count + 1}
+  defp increment_errors(state) do
+    # Emit telemetry event for game error
+    :telemetry.execute(
+      [:rachel, :game, :error],
+      %{count: 1},
+      %{error_type: :operation_failed, game_id: state.game.id}
+    )
+
+    %{state | error_count: state.error_count + 1}
+  end
 
   defp via(game_id), do: {:via, Registry, {Rachel.GameRegistry, game_id}}
   defp call(game_id, msg), do: GenServer.call(via(game_id), msg)

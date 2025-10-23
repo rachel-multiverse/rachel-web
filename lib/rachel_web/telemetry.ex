@@ -79,15 +79,79 @@ defmodule RachelWeb.Telemetry do
       summary("vm.memory.total", unit: {:byte, :kilobyte}),
       summary("vm.total_run_queue_lengths.total"),
       summary("vm.total_run_queue_lengths.cpu"),
-      summary("vm.total_run_queue_lengths.io")
+      summary("vm.total_run_queue_lengths.io"),
+
+      # Game Metrics
+      counter("rachel.game.created.count",
+        description: "Number of games created"
+      ),
+      counter("rachel.game.started.count",
+        description: "Number of games started"
+      ),
+      counter("rachel.game.finished.count",
+        description: "Number of games finished"
+      ),
+      counter("rachel.game.error.count",
+        tags: [:error_type],
+        description: "Number of game errors by type"
+      ),
+      summary("rachel.game.duration",
+        unit: {:native, :second},
+        description: "Game duration from start to finish"
+      ),
+      distribution("rachel.game.players",
+        buckets: [2, 3, 4, 5, 6, 7, 8],
+        description: "Distribution of player counts"
+      ),
+      last_value("rachel.game.active.count",
+        description: "Current number of active games"
+      ),
+
+      # User Metrics
+      counter("rachel.user.registered.count",
+        description: "Number of users registered"
+      ),
+      counter("rachel.user.login.count",
+        description: "Number of user logins"
+      ),
+      last_value("rachel.user.online.count",
+        description: "Current number of online users"
+      )
     ]
   end
 
   defp periodic_measurements do
     [
-      # A module, function and arguments to be invoked periodically.
-      # This function must call :telemetry.execute/3 and a metric must be added above.
-      # {RachelWeb, :count_users, []}
+      # Measure active games every 10 seconds
+      {__MODULE__, :measure_active_games, []},
+      # Measure online users every 10 seconds
+      {__MODULE__, :measure_online_users, []}
     ]
+  end
+
+  def measure_active_games do
+    # Safely count games, handling case where supervisor isn't running (e.g., in tests)
+    count =
+      try do
+        Rachel.Game.GameSupervisor.list_games() |> length()
+      catch
+        :exit, _ -> 0
+      end
+
+    :telemetry.execute([:rachel, :game, :active], %{count: count}, %{})
+  end
+
+  def measure_online_users do
+    # Count active LiveView processes as a proxy for online users
+    # This counts connected LiveView sockets across all games
+    count =
+      try do
+        Supervisor.count_children(RachelWeb.Endpoint)
+        |> Map.get(:active, 0)
+      catch
+        :exit, _ -> 0
+      end
+
+    :telemetry.execute([:rachel, :user, :online], %{count: count}, %{})
   end
 end
