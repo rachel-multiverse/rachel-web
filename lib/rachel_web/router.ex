@@ -102,6 +102,7 @@ defmodule RachelWeb.Router do
       on_mount: {RachelWeb.UserAuth, :require_authenticated_user} do
       live "/lobby", LobbyLive
       live "/games/:id", GameLive
+      live "/games/:id/spectate", GameLive  # Spectator alias
       live "/stats", StatsLive
       live "/history", HistoryLive
       live "/settings", ProfileLive, :index
