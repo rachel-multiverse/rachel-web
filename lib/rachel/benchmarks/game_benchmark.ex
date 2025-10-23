@@ -11,7 +11,7 @@ defmodule Rachel.Benchmarks.GameBenchmark do
   Run with: `mix run lib/rachel/benchmarks/game_benchmark.ex`
   """
 
-  alias Rachel.Game.{GameState, Deck, Card}
+  alias Rachel.Game.{GameState, Deck}
 
   def run do
     IO.puts("\n=== Rachel Game Performance Benchmarks ===\n")
@@ -37,7 +37,7 @@ defmodule Rachel.Benchmarks.GameBenchmark do
           ])
         end,
         "deck_shuffle" => fn ->
-          Deck.shuffled_deck()
+          Deck.new()
         end,
         "play_single_card" => fn {game, player_id, card} ->
           GameState.play_cards(game, player_id, [card], nil)

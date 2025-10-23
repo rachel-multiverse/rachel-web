@@ -87,6 +87,4 @@ defmodule Rachel.Game.GameSupervisor do
         error
     end
   end
-
-  defp via(game_id), do: {:via, Registry, {Rachel.GameRegistry, game_id}}
 end
