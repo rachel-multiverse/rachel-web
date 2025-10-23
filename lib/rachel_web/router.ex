@@ -74,11 +74,14 @@ defmodule RachelWeb.Router do
 
   defp ensure_api_token(conn, _opts), do: RachelWeb.Plugs.ApiAuth.ensure_api_token(conn, [])
 
-  # Health check endpoint (no authentication required)
+  # Health check endpoints (no authentication required)
   scope "/", RachelWeb do
     pipe_through :health
 
-    get "/health", HealthController, :check
+    get "/health", HealthController, :index
+    get "/health/check", HealthController, :check
+    get "/health/ready", HealthController, :ready
+    get "/health/live", HealthController, :live
   end
 
   scope "/", RachelWeb do
