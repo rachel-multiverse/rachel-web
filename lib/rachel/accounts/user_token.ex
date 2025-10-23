@@ -1,4 +1,10 @@
 defmodule Rachel.Accounts.UserToken do
+  @moduledoc """
+  User authentication tokens for magic link login and session management.
+
+  Tokens are hashed for security and have different expiry times based on context.
+  """
+
   use Ecto.Schema
   import Ecto.Query
   alias Rachel.Accounts.UserToken

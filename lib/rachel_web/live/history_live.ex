@@ -178,8 +178,8 @@ defmodule RachelWeb.HistoryLive do
     cond do
       seconds_ago < 60 -> "Just now"
       seconds_ago < 3600 -> "#{div(seconds_ago, 60)}m ago"
-      seconds_ago < 86400 -> "#{div(seconds_ago, 3600)}h ago"
-      seconds_ago < 604800 -> "#{div(seconds_ago, 86400)}d ago"
+      seconds_ago < 86_400 -> "#{div(seconds_ago, 3600)}h ago"
+      seconds_ago < 604_800 -> "#{div(seconds_ago, 86_400)}d ago"
       true -> Calendar.strftime(datetime, "%b %d, %Y")
     end
   end

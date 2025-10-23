@@ -1,4 +1,10 @@
 defmodule Rachel.Accounts.UserNotifier do
+  @moduledoc """
+  Sends email notifications to users for authentication and account management.
+
+  Handles magic link login emails and confirmation emails.
+  """
+
   import Swoosh.Email
 
   alias Rachel.Mailer

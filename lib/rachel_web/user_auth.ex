@@ -1,4 +1,10 @@
 defmodule RachelWeb.UserAuth do
+  @moduledoc """
+  User authentication plugs and helpers for Phoenix controllers and LiveViews.
+
+  Manages session cookies, authentication verification, and user scope.
+  """
+
   use RachelWeb, :verified_routes
 
   import Plug.Conn

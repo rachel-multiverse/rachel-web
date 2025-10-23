@@ -1,4 +1,11 @@
 defmodule Rachel.Accounts.User do
+  @moduledoc """
+  User account schema and changesets.
+
+  Handles user authentication via passwords or magic links,
+  profile customization, and game preferences.
+  """
+
   use Ecto.Schema
   import Ecto.Changeset
 

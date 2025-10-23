@@ -1,4 +1,10 @@
 defmodule Rachel.Moderation.ModerationFlag do
+  @moduledoc """
+  Schema for flagged user-generated content requiring moderation review.
+
+  Records suspicious content detected by automated filters for human review.
+  """
+
   use Ecto.Schema
   import Ecto.Changeset
 

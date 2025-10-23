@@ -1,4 +1,10 @@
 defmodule Rachel.Game.Avatar do
+  @moduledoc """
+  Schema for user profile avatars.
+
+  Pre-made emoji avatars organized by category for user selection.
+  """
+
   use Ecto.Schema
   import Ecto.Changeset
 

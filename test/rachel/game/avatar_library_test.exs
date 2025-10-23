@@ -39,7 +39,7 @@ defmodule Rachel.Game.AvatarLibraryTest do
     end
 
     test "returns nil for invalid id" do
-      assert nil == AvatarLibrary.get_avatar(99999)
+      assert nil == AvatarLibrary.get_avatar(99_999)
     end
   end
 
