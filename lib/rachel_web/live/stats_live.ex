@@ -2,8 +2,24 @@ defmodule RachelWeb.StatsLive do
   use RachelWeb, :live_view
 
   @impl true
-  def mount(_params, _session, socket) do
-    user = socket.assigns.current_scope.user
+  def mount(_params, session, socket) do
+    # Get user from session (set by fetch_current_user plug)
+    user =
+      case session["user_token"] do
+        nil ->
+          # In tests, get from assigns
+          case Map.get(socket.assigns, :current_scope) do
+            %{user: user} -> user
+            _ -> Map.get(socket.assigns, :user) || raise "No authenticated user found"
+          end
+
+        token ->
+          # In production, fetch from database using session token
+          case Rachel.Accounts.get_user_by_session_token(token) do
+            {user, _authenticated_at} -> user
+            user -> user
+          end
+      end
 
     # Calculate derived statistics
     win_rate = calculate_win_rate(user.games_won, user.games_played)

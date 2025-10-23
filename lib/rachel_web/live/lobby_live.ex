@@ -4,14 +4,29 @@ defmodule RachelWeb.LobbyLive do
   alias Rachel.GameManager
 
   @impl true
-  def mount(_params, _session, socket) do
+  def mount(_params, session, socket) do
     if connected?(socket) do
       :timer.send_interval(2000, :refresh_games)
     end
 
-    # Get current user from socket assigns (set by router)
-    # Authentication is now required, so current_user will always exist
-    current_user = get_current_user(socket)
+    # Get user from session (set by fetch_current_user plug)
+    current_user =
+      case session["user_token"] do
+        nil ->
+          # In tests, get from assigns
+          case Map.get(socket.assigns, :current_scope) do
+            %{user: user} -> user
+            _ -> Map.get(socket.assigns, :user) || raise "No authenticated user found"
+          end
+
+        token ->
+          # In production, fetch from database using session token
+          case Rachel.Accounts.get_user_by_session_token(token) do
+            {user, _authenticated_at} -> user
+            user -> user
+          end
+      end
+
     player_name = current_user.display_name || current_user.username
 
     {:ok,
@@ -192,13 +207,6 @@ defmodule RachelWeb.LobbyLive do
 
   # Authentication is now required, so we always have a user
   defp build_player_tuple(name, %{id: user_id}), do: {:user, user_id, name}
-
-  defp get_current_user(socket) do
-    case socket.assigns do
-      %{current_scope: %{user: user}} -> user
-      _ -> nil
-    end
-  end
 
   defp list_games do
     GameManager.list_games()

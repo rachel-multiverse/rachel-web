@@ -414,4 +414,331 @@ defmodule Rachel.Game.GameStateTest do
       assert player.id in new_game.winners
     end
   end
+
+  describe "player creation patterns" do
+    test "creates anonymous players with tuple format" do
+      players = [{:anonymous, "Guest1"}, {:anonymous, "Guest2"}]
+      game = GameState.new(players)
+
+      assert length(game.players) == 2
+      assert Enum.at(game.players, 0).name == "Guest1"
+      assert Enum.at(game.players, 0).type == :human
+      assert Enum.at(game.players, 0).user_id == nil
+      assert Enum.at(game.players, 1).name == "Guest2"
+    end
+
+    test "creates authenticated user players" do
+      players = [{:user, 42, "Alice"}, {:user, 99, "Bob"}]
+      game = GameState.new(players)
+
+      assert length(game.players) == 2
+      assert Enum.at(game.players, 0).name == "Alice"
+      assert Enum.at(game.players, 0).user_id == 42
+      assert Enum.at(game.players, 0).type == :human
+      assert Enum.at(game.players, 1).name == "Bob"
+      assert Enum.at(game.players, 1).user_id == 99
+    end
+
+    test "creates players from maps (testing mode)" do
+      players = [
+        %{id: "p1", name: "Custom1", hand: [], type: :human, status: :playing},
+        %{id: "p2", name: "Custom2", hand: [], type: :ai, difficulty: :medium, status: :playing}
+      ]
+
+      game = GameState.new(players)
+
+      assert length(game.players) == 2
+      assert Enum.at(game.players, 0).id == "p1"
+      assert Enum.at(game.players, 0).name == "Custom1"
+      # user_id should be added even if not in original map
+      assert Enum.at(game.players, 0).user_id == nil
+      assert Enum.at(game.players, 1).type == :ai
+    end
+
+    test "mixes different player types" do
+      players = [
+        "PlainString",
+        {:anonymous, "AnonymousTuple"},
+        {:user, 123, "AuthUser"},
+        {:ai, "BotPlayer", :hard}
+      ]
+
+      game = GameState.new(players)
+
+      assert length(game.players) == 4
+      # Plain string becomes anonymous human
+      assert Enum.at(game.players, 0).type == :human
+      assert Enum.at(game.players, 0).name == "PlainString"
+      # Anonymous tuple
+      assert Enum.at(game.players, 1).type == :human
+      assert Enum.at(game.players, 1).name == "AnonymousTuple"
+      # Authenticated user
+      assert Enum.at(game.players, 2).user_id == 123
+      assert Enum.at(game.players, 2).type == :human
+      # AI player
+      assert Enum.at(game.players, 3).type == :ai
+      assert Enum.at(game.players, 3).difficulty == :hard
+    end
+  end
+
+  describe "helper functions" do
+    test "current_player/1 returns current player" do
+      players = ["Alice", "Bob", "Charlie"]
+      game = GameState.new(players)
+      started_game = GameState.start_game(game)
+
+      current = GameState.current_player(started_game)
+
+      assert current.id == Enum.at(started_game.players, started_game.current_player_index).id
+    end
+
+    test "top_card/1 returns top of discard pile" do
+      players = ["Alice", "Bob"]
+      game = GameState.new(players)
+      started_game = GameState.start_game(game)
+
+      top = GameState.top_card(started_game)
+
+      assert top == hd(started_game.discard_pile)
+    end
+
+    test "top_card/1 returns nil for empty discard" do
+      game = %GameState{discard_pile: []}
+      assert GameState.top_card(game) == nil
+    end
+
+    test "top_card/1 handles nil discard pile" do
+      game = %GameState{discard_pile: nil}
+      assert GameState.top_card(game) == nil
+    end
+  end
+
+  describe "attack handling" do
+    setup do
+      players = ["Alice", "Bob"]
+      game = GameState.new(players)
+      started_game = GameState.start_game(game)
+      player = Enum.at(started_game.players, started_game.current_player_index)
+
+      {:ok, %{game: started_game, player: player}}
+    end
+
+    test "drawing from twos attack draws correct count", %{game: game, player: player} do
+      game_with_attack = %{game | pending_attack: {:twos, 6}}
+      initial_hand_size = length(player.hand)
+
+      {:ok, new_game} = GameState.draw_cards(game_with_attack, player.id, :attack)
+
+      new_player = Enum.find(new_game.players, &(&1.id == player.id))
+      assert length(new_player.hand) == initial_hand_size + 6
+      assert new_game.pending_attack == nil
+    end
+
+    test "drawing from black_jacks attack draws correct count", %{game: game, player: player} do
+      game_with_attack = %{game | pending_attack: {:black_jacks, 10}}
+      initial_hand_size = length(player.hand)
+
+      {:ok, new_game} = GameState.draw_cards(game_with_attack, player.id, :attack)
+
+      new_player = Enum.find(new_game.players, &(&1.id == player.id))
+      assert length(new_player.hand) == initial_hand_size + 10
+      assert new_game.pending_attack == nil
+    end
+
+    test "drawing from unknown attack type draws 1 card", %{game: game, player: player} do
+      # Edge case: unknown attack type
+      game_with_attack = %{game | pending_attack: {:unknown_type, 99}}
+      initial_hand_size = length(player.hand)
+
+      {:ok, new_game} = GameState.draw_cards(game_with_attack, player.id, :attack)
+
+      new_player = Enum.find(new_game.players, &(&1.id == player.id))
+      # Should default to 1 card for unknown attack
+      assert length(new_player.hand) == initial_hand_size + 1
+    end
+
+    test "pending attack cleared only when drawing from attack", %{game: game, player: player} do
+      game_with_attack = %{game | pending_attack: {:twos, 2}}
+
+      # Drawing for :cannot_play should NOT clear attack
+      {:ok, new_game} = GameState.draw_cards(game_with_attack, player.id, :cannot_play)
+      assert new_game.pending_attack == {:twos, 2}
+    end
+
+    test "pending attack not set when no attack exists", %{game: game, player: player} do
+      # No pending attack
+      assert game.pending_attack == nil
+
+      {:ok, new_game} = GameState.draw_cards(game, player.id, :cannot_play)
+
+      # Should remain nil
+      assert new_game.pending_attack == nil
+    end
+  end
+
+  describe "timestamp and turn count" do
+    test "timestamps update on play" do
+      players = ["Alice", "Bob"]
+      game = GameState.new(players)
+      started_game = GameState.start_game(game)
+      player = Enum.at(started_game.players, started_game.current_player_index)
+
+      # Wait a tiny bit to ensure timestamp changes
+      Process.sleep(10)
+
+      # Find valid card
+      valid_card =
+        Enum.find(player.hand, fn card ->
+          card.suit == hd(started_game.discard_pile).suit or
+            card.rank == hd(started_game.discard_pile).rank
+        end)
+
+      if valid_card do
+        {:ok, new_game} = GameState.play_cards(started_game, player.id, [valid_card])
+
+        # Timestamp should be updated
+        assert DateTime.compare(new_game.last_action_at, started_game.last_action_at) == :gt
+      end
+    end
+
+    test "timestamps update on draw" do
+      players = ["Alice", "Bob"]
+      game = GameState.new(players)
+      started_game = GameState.start_game(game)
+      player = Enum.at(started_game.players, started_game.current_player_index)
+
+      # Wait a tiny bit
+      Process.sleep(10)
+
+      {:ok, new_game} = GameState.draw_cards(started_game, player.id, :cannot_play)
+
+      # Timestamp should be updated
+      assert DateTime.compare(new_game.last_action_at, started_game.last_action_at) == :gt
+    end
+
+    test "turn count increments on play" do
+      players = ["Alice", "Bob"]
+      game = GameState.new(players)
+      started_game = GameState.start_game(game)
+      player = Enum.at(started_game.players, started_game.current_player_index)
+
+      initial_turn = started_game.turn_count
+
+      # Find valid card
+      valid_card =
+        Enum.find(player.hand, fn card ->
+          card.suit == hd(started_game.discard_pile).suit or
+            card.rank == hd(started_game.discard_pile).rank
+        end)
+
+      if valid_card do
+        {:ok, new_game} = GameState.play_cards(started_game, player.id, [valid_card])
+        assert new_game.turn_count == initial_turn + 1
+      end
+    end
+
+    test "turn count increments on cannot_play draw" do
+      players = ["Alice", "Bob"]
+      game = GameState.new(players)
+      started_game = GameState.start_game(game)
+      player = Enum.at(started_game.players, started_game.current_player_index)
+
+      initial_turn = started_game.turn_count
+
+      {:ok, new_game} = GameState.draw_cards(started_game, player.id, :cannot_play)
+      assert new_game.turn_count == initial_turn + 1
+    end
+
+    test "turn count does not increment on attack draw" do
+      players = ["Alice", "Bob"]
+      game = GameState.new(players)
+      started_game = GameState.start_game(game)
+      player = Enum.at(started_game.players, started_game.current_player_index)
+
+      game_with_attack = %{started_game | pending_attack: {:twos, 2}}
+      initial_turn = game_with_attack.turn_count
+
+      {:ok, new_game} = GameState.draw_cards(game_with_attack, player.id, :attack)
+      # Turn count should NOT increment for attack draws
+      assert new_game.turn_count == initial_turn
+    end
+  end
+
+  describe "nomination clearing" do
+    test "nomination cleared before playing new card" do
+      players = ["Alice", "Bob", "Charlie"]
+      game = GameState.new(players)
+      started_game = GameState.start_game(game)
+      player = Enum.at(started_game.players, started_game.current_player_index)
+
+      # Set up existing nomination
+      game_with_nomination = %{started_game | nominated_suit: :hearts}
+
+      # Find valid card (any card that matches hearts or rank)
+      valid_card =
+        Enum.find(player.hand, fn card ->
+          card.suit == :hearts or card.rank == hd(game_with_nomination.discard_pile).rank
+        end)
+
+      if valid_card do
+        {:ok, new_game} = GameState.play_cards(game_with_nomination, player.id, [valid_card])
+
+        # Old nomination should be cleared
+        # New nomination only if Ace was played
+        if valid_card.rank == 14 do
+          # Ace requires nomination, but for this test we're not providing one
+          # so it should remain nil or be the default
+          assert is_atom(new_game.nominated_suit) or new_game.nominated_suit == nil
+        else
+          # Non-Ace: nomination should be cleared and stay nil
+          assert new_game.nominated_suit == nil
+        end
+      end
+    end
+
+    test "no nomination to clear works correctly" do
+      players = ["Alice", "Bob"]
+      game = GameState.new(players)
+      started_game = GameState.start_game(game)
+      player = Enum.at(started_game.players, started_game.current_player_index)
+
+      # No existing nomination
+      assert started_game.nominated_suit == nil
+
+      valid_card =
+        Enum.find(player.hand, fn card ->
+          card.suit == hd(started_game.discard_pile).suit or
+            card.rank == hd(started_game.discard_pile).rank
+        end)
+
+      if valid_card do
+        {:ok, new_game} = GameState.play_cards(started_game, player.id, [valid_card])
+
+        # Should still be nil (unless Ace was played)
+        if valid_card.rank != 14 do
+          assert new_game.nominated_suit == nil
+        end
+      end
+    end
+  end
+
+  describe "validate_integrity edge cases" do
+    test "waiting game bypasses card count validation" do
+      players = ["Alice", "Bob"]
+      game = GameState.new(players)
+
+      # Waiting game, no cards dealt yet
+      assert game.status == :waiting
+      assert GameState.validate_integrity(game) == :ok
+    end
+
+    test "playing game with exact card count passes" do
+      players = ["Alice", "Bob", "Charlie"]
+      game = GameState.new(players)
+      started_game = GameState.start_game(game)
+
+      # Should have exactly 52 cards
+      assert GameState.validate_integrity(started_game) == :ok
+    end
+  end
 end

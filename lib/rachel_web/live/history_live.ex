@@ -3,8 +3,23 @@ defmodule RachelWeb.HistoryLive do
   alias Rachel.Game.Games
 
   @impl true
-  def mount(_params, _session, socket) do
-    user = socket.assigns.current_scope.user
+  def mount(_params, session, socket) do
+    # Get user from session (set by fetch_current_user plug)
+    user =
+      case session["user_token"] do
+        nil ->
+          # In tests, get from assigns
+          Map.get(socket.assigns, :user) || raise "No authenticated user found"
+
+        token ->
+          # In production, fetch from database using session token
+          # get_user_by_session_token returns {user, authenticated_at} tuple
+          case Rachel.Accounts.get_user_by_session_token(token) do
+            {user, _authenticated_at} -> user
+            user -> user
+          end
+      end
+
     games = Games.list_user_games(user.id, limit: 50)
 
     {:ok,

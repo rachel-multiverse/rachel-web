@@ -255,10 +255,15 @@ defmodule Rachel.Game.GameError do
     "#{rank_name(rank)} of #{suit_name(suit)}"
   end
 
+  defp rank_name(14), do: "Ace"
+  defp rank_name(13), do: "King"
+  defp rank_name(12), do: "Queen"
+  defp rank_name(11), do: "Jack"
   defp rank_name("A"), do: "Ace"
   defp rank_name("K"), do: "King"
   defp rank_name("Q"), do: "Queen"
   defp rank_name("J"), do: "Jack"
+  defp rank_name(rank) when is_integer(rank), do: Integer.to_string(rank)
   defp rank_name(rank), do: rank
 
   defp suit_name(:hearts), do: "Hearts"

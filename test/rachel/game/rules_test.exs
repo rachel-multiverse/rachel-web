@@ -355,4 +355,189 @@ defmodule Rachel.Game.RulesTest do
       refute Rules.must_play?(hand, top, nil, nil)
     end
   end
+
+  describe "valid_suit?/1" do
+    test "validates hearts" do
+      assert Rules.valid_suit?(:hearts)
+    end
+
+    test "validates diamonds" do
+      assert Rules.valid_suit?(:diamonds)
+    end
+
+    test "validates clubs" do
+      assert Rules.valid_suit?(:clubs)
+    end
+
+    test "validates spades" do
+      assert Rules.valid_suit?(:spades)
+    end
+
+    test "rejects invalid suit" do
+      refute Rules.valid_suit?(:invalid)
+      refute Rules.valid_suit?(:joker)
+      refute Rules.valid_suit?(nil)
+    end
+  end
+
+  describe "game_over?/1" do
+    test "returns true when hand is empty" do
+      assert Rules.game_over?([])
+    end
+
+    test "returns false when hand has cards" do
+      refute Rules.game_over?([Card.new(:hearts, 5)])
+      refute Rules.game_over?([Card.new(:hearts, 5), Card.new(:spades, 7)])
+    end
+  end
+
+  describe "can_stack_cards?/1" do
+    test "allows stacking same rank cards" do
+      cards = [Card.new(:hearts, 5), Card.new(:spades, 5)]
+      assert Rules.can_stack_cards?(cards)
+    end
+
+    test "prevents stacking different rank cards" do
+      cards = [Card.new(:hearts, 5), Card.new(:spades, 7)]
+      refute Rules.can_stack_cards?(cards)
+    end
+
+    test "single card is stackable" do
+      assert Rules.can_stack_cards?([Card.new(:hearts, 5)])
+    end
+
+    test "empty list is not stackable" do
+      refute Rules.can_stack_cards?([])
+    end
+  end
+
+  describe "attack_type_from_rank/1" do
+    test "returns :twos for rank 2" do
+      assert Rules.attack_type_from_rank(2) == :twos
+    end
+
+    test "returns :sevens for rank 7" do
+      assert Rules.attack_type_from_rank(7) == :sevens
+    end
+
+    test "returns :black_jacks for rank 11" do
+      assert Rules.attack_type_from_rank(11) == :black_jacks
+    end
+
+    test "returns nil for other ranks" do
+      assert Rules.attack_type_from_rank(3) == nil
+      assert Rules.attack_type_from_rank(5) == nil
+      assert Rules.attack_type_from_rank(10) == nil
+      assert Rules.attack_type_from_rank(12) == nil
+      assert Rules.attack_type_from_rank(13) == nil
+      assert Rules.attack_type_from_rank(14) == nil
+    end
+  end
+
+  describe "reduce_attack/2 - additional edge cases" do
+    test "reduces to exactly zero returns nil" do
+      assert Rules.reduce_attack({:black_jacks, 5}, 1) == nil
+    end
+
+    test "multiple Red Jacks reduce proportionally" do
+      assert Rules.reduce_attack({:black_jacks, 15}, 2) == {:black_jacks, 5}
+      assert Rules.reduce_attack({:black_jacks, 20}, 3) == {:black_jacks, 5}
+    end
+
+    test "reducing below zero still returns nil" do
+      assert Rules.reduce_attack({:black_jacks, 5}, 3) == nil
+    end
+
+    test "zero Red Jacks don't change attack" do
+      assert Rules.reduce_attack({:black_jacks, 10}, 0) == {:black_jacks, 10}
+    end
+  end
+
+  describe "has_valid_play?/5 - with pending_skips parameter" do
+    test "when facing skips, only 7s are valid" do
+      hand = [Card.new(:hearts, 5), Card.new(:hearts, 7), Card.new(:spades, 10)]
+      top = Card.new(:hearts, 3)
+
+      # With pending_skips > 0, only can play if has a 7
+      assert Rules.has_valid_play?(hand, top, nil, nil, 2)
+    end
+
+    test "when facing skips without 7s, no valid play" do
+      hand = [Card.new(:hearts, 5), Card.new(:spades, 10)]
+      top = Card.new(:hearts, 3)
+
+      refute Rules.has_valid_play?(hand, top, nil, nil, 1)
+    end
+
+    test "when not facing skips, normal rules apply" do
+      hand = [Card.new(:hearts, 5)]
+      top = Card.new(:hearts, 3)
+
+      assert Rules.has_valid_play?(hand, top, nil, nil, 0)
+    end
+  end
+
+  describe "calculate_effects/1 - edge cases" do
+    test "empty list returns empty map" do
+      assert Rules.calculate_effects([]) == %{}
+    end
+
+    test "single 2 creates 2-card attack" do
+      assert Rules.calculate_effects([Card.new(:hearts, 2)]) == %{attack: {:twos, 2}}
+    end
+
+    test "single 7 creates 1-skip effect" do
+      assert Rules.calculate_effects([Card.new(:hearts, 7)]) == %{skip: 1}
+    end
+
+    test "three Queens reverse direction (odd)" do
+      queens = [Card.new(:hearts, 12), Card.new(:diamonds, 12), Card.new(:clubs, 12)]
+      assert Rules.calculate_effects(queens) == %{reverse: true}
+    end
+
+    test "four Queens don't reverse (even)" do
+      queens = [
+        Card.new(:hearts, 12),
+        Card.new(:diamonds, 12),
+        Card.new(:clubs, 12),
+        Card.new(:spades, 12)
+      ]
+
+      assert Rules.calculate_effects(queens) == %{}
+    end
+
+    test "mixed Black Jacks in stack" do
+      # One Black Jack of Spades
+      jacks = [Card.new(:spades, 11)]
+      assert Rules.calculate_effects(jacks) == %{attack: {:black_jacks, 5}}
+    end
+
+    test "multiple Black Jacks increase attack" do
+      jacks = [Card.new(:spades, 11), Card.new(:clubs, 11)]
+      assert Rules.calculate_effects(jacks) == %{attack: {:black_jacks, 10}}
+    end
+  end
+
+  describe "next_player_index/4 - additional edge cases" do
+    test "large skip counts wrap around multiple times" do
+      # 4 players, skip 10 from index 0 (wraps around 2.5 times)
+      # (0 + 1 + 10) % 4 = 11 % 4 = 3
+      assert Rules.next_player_index(0, 4, :clockwise, 10) == 3
+    end
+
+    test "zero skip count just advances by one" do
+      assert Rules.next_player_index(2, 4, :clockwise, 0) == 3
+    end
+
+    test "counter-clockwise with large skip" do
+      # From index 1, counter-clockwise skip 5
+      # (1 - 6) % 4 = -5 % 4 = 3
+      assert Rules.next_player_index(1, 4, :counter_clockwise, 5) == 3
+    end
+
+    test "works with different player counts" do
+      assert Rules.next_player_index(4, 8, :clockwise, 2) == 7
+      assert Rules.next_player_index(1, 3, :counter_clockwise, 1) == 2
+    end
+  end
 end
