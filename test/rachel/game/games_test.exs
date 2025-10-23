@@ -464,7 +464,7 @@ defmodule Rachel.Game.GamesTest do
 
       # No records created
       user_games = Rachel.Repo.all(Rachel.Game.UserGame)
-      assert length(user_games) == 0
+      assert user_games == []
     end
 
     test "handles duplicate inserts gracefully", %{user1: user1} do
@@ -593,7 +593,7 @@ defmodule Rachel.Game.GamesTest do
 
       # Should not appear in history
       games = Games.list_user_games(user.id)
-      assert length(games) == 0
+      assert games == []
     end
 
     test "includes game metadata correctly", %{user: user} do

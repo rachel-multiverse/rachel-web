@@ -725,7 +725,7 @@ defmodule Rachel.Game.GameEngineTest do
 
       # Waiting games have no cards dealt yet
       assert game.status == :waiting
-      assert Enum.all?(game.players, &(length(&1.hand) == 0))
+      assert Enum.all?(game.players, &(&1.hand == []))
 
       GenServer.stop(pid, :normal)
     end
@@ -762,7 +762,7 @@ defmodule Rachel.Game.GameEngineTest do
 
       # Game state is now invalid, but still retrievable
       {:ok, corrupted_game} = GameEngine.get_state(game_id)
-      assert length(corrupted_game.deck) == 0
+      assert corrupted_game.deck == []
     end
 
     test "handles waiting game validation differently", %{} do
@@ -775,8 +775,8 @@ defmodule Rachel.Game.GameEngineTest do
       assert game.status == :waiting
 
       # Waiting games have no cards, validation should pass
-      assert Enum.all?(game.players, &(length(&1.hand) == 0))
-      assert length(game.deck) == 0
+      assert Enum.all?(game.players, &(&1.hand == []))
+      assert game.deck == []
 
       GenServer.stop(pid, :normal)
     end

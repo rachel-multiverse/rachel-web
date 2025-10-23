@@ -291,7 +291,7 @@ defmodule Rachel.Game.ComplexScenariosTest do
       # Should win and be marked as winner
       player1 = Enum.at(game.players, 0)
       assert player1.status == :won
-      assert length(player1.hand) == 0
+      assert player1.hand == []
       assert "p1" in game.winners
 
       # Direction should still reverse
