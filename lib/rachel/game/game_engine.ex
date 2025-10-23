@@ -503,7 +503,7 @@ defmodule Rachel.Game.GameEngine do
       %{
         game_id: game.id,
         player: player,
-        turn_number: game.turn_number,
+        turn_number: game.turn_count,
         cards: cards,
         stack_size: length(cards),
         nominated_suit: nominated_suit,
