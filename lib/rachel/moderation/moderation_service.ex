@@ -26,7 +26,7 @@ defmodule Rachel.Moderation.ModerationService do
   - {:reject, reason} if content violates rules (immediate rejection)
   - {:flag, reason} if content is suspicious (allow but flag for review)
   """
-  def check_content(text, field_name) when is_binary(text) do
+  def check_content(text, _field_name) when is_binary(text) do
     text = String.downcase(String.trim(text))
 
     cond do

@@ -444,17 +444,6 @@ defmodule RachelWeb.GameLiveTest do
     end
   end
 
-  defp wait_for_turn_change(game_id, initial_turn, attempts \\ 500) do
-    {:ok, game} = GameManager.get_game(game_id)
-
-    if game.current_player_index != initial_turn or attempts == 0 or game.status == :finished do
-      :ok
-    else
-      Process.sleep(10)
-      wait_for_turn_change(game_id, initial_turn, attempts - 1)
-    end
-  end
-
   defp wait_for_game_end(game_id, attempts) do
     {:ok, game} = GameManager.get_game(game_id)
 
@@ -463,18 +452,6 @@ defmodule RachelWeb.GameLiveTest do
     else
       Process.sleep(10)
       wait_for_game_end(game_id, attempts - 1)
-    end
-  end
-
-  defp wait_for_hand_size_change(game_id, player_index, original_size, attempts \\ 500) do
-    {:ok, game} = GameManager.get_game(game_id)
-    player = Enum.at(game.players, player_index)
-
-    if length(player.hand) != original_size or attempts == 0 do
-      :ok
-    else
-      Process.sleep(10)
-      wait_for_hand_size_change(game_id, player_index, original_size, attempts - 1)
     end
   end
 
