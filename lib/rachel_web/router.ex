@@ -100,6 +100,7 @@ defmodule RachelWeb.Router do
     live "/lobby", LobbyLive
     live "/games/:id", GameLive
     live "/stats", StatsLive
+    live "/analytics", AnalyticsLive
     live "/history", HistoryLive
     live "/settings", ProfileLive, :index
     live "/profile/wizard", ProfileWizardLive, :index
