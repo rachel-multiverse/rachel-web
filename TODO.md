@@ -73,6 +73,12 @@ The Rachel card game web implementation is **production-ready and deployed** to 
   - ✅ Content moderation queue with approve/reject workflow
   - ✅ User management interface (view users, toggle admin status)
   - ✅ Sample data seed scripts for testing
+- **🎮 SPECTATOR MODE (2025-10-23):**
+  - ✅ Real-time game watching for authenticated users
+  - ✅ Read-only view with spectator banner
+  - ✅ Same PubSub channel as players (no game engine changes)
+  - ✅ Action buttons and card selection blocked for spectators
+  - ✅ Route aliases: /games/:id?spectate=true and /games/:id/spectate
 
 ## 🎨 UI/UX Polish - COMPLETE ✅
 
@@ -116,7 +122,7 @@ See **UI_UX_IMPROVEMENTS.md** for detailed implementation plan.
   - Settings page for existing users
 
 ### Gameplay Features
-- [ ] Spectator mode
+- [x] Spectator mode ✅
 - [ ] In-game chat
 - [ ] Leaderboards
 - [ ] Tournament/bracket system
