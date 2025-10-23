@@ -9,6 +9,8 @@ defmodule Rachel.Accounts.User do
   use Ecto.Schema
   import Ecto.Changeset
 
+  alias Rachel.Moderation.ModerationService
+
   schema "users" do
     field :email, :string
     field :password, :string, virtual: true, redact: true
@@ -85,7 +87,7 @@ defmodule Rachel.Accounts.User do
   end
 
   defp validate_moderated_content(field, value) do
-    case Rachel.Moderation.ModerationService.check_content(value, field) do
+    case ModerationService.check_content(value, field) do
       :ok -> []
       {:reject, reason} -> [{field, "#{reason}"}]
       {:flag, _reason} -> []  # Allow but will be flagged
