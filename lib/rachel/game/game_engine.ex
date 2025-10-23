@@ -107,6 +107,11 @@ defmodule Rachel.Game.GameEngine do
         persist_game(new_game)
         new_state = %{state | game: new_game, error_count: 0} |> schedule_ai() |> checkpoint()
         broadcast(new_game, {:cards_played, player_id, cards})
+
+        # Emit telemetry for card play analytics
+        player = Enum.find(new_game.players, &(&1.id == player_id))
+        emit_card_play_event(new_game, player, cards, suit)
+
         check_game_end(new_state)
 
       error ->
@@ -117,11 +122,25 @@ defmodule Rachel.Game.GameEngine do
   def handle_call({:draw, player_id, reason}, _from, state) do
     state = cancel_ai(state)
 
+    old_hand_size =
+      state.game.players
+      |> Enum.find(&(&1.id == player_id))
+      |> case do
+        nil -> 0
+        player -> length(player.hand)
+      end
+
     case safe_draw(state.game, player_id, reason) do
       {:ok, new_game} ->
         persist_game(new_game)
         new_state = %{state | game: new_game, error_count: 0} |> schedule_ai() |> checkpoint()
         broadcast(new_game, {:cards_drawn, player_id, reason})
+
+        # Emit telemetry for card draw analytics
+        player = Enum.find(new_game.players, &(&1.id == player_id))
+        cards_drawn = length(player.hand) - old_hand_size
+        emit_card_draw_event(new_game, player, cards_drawn, reason)
+
         {:reply, {:ok, new_game}, new_state}
 
       error ->
@@ -388,13 +407,19 @@ defmodule Rachel.Game.GameEngine do
   defp check_game_end(%{game: game} = state) do
     if GameState.should_end?(game) do
       final_game = %{game | status: :finished}
+      winner = find_winner(final_game)
       broadcast(final_game, :game_over)
 
-      # Emit telemetry event for game finish
+      # Emit telemetry event for game finish with winner info
       :telemetry.execute(
         [:rachel, :game, :finished],
         %{count: 1},
-        %{players: length(final_game.players), game_id: final_game.id}
+        %{
+          players: length(final_game.players),
+          game_id: final_game.id,
+          winner: winner,
+          total_turns: final_game.turn_number
+        }
       )
 
       # Record user participation for history
@@ -410,13 +435,19 @@ defmodule Rachel.Game.GameEngine do
   defp check_game_end_noreply(%{game: game} = state) do
     if GameState.should_end?(game) do
       final_game = %{game | status: :finished}
+      winner = find_winner(final_game)
       broadcast(final_game, :game_over)
 
-      # Emit telemetry event for game finish
+      # Emit telemetry event for game finish with winner info
       :telemetry.execute(
         [:rachel, :game, :finished],
         %{count: 1},
-        %{players: length(final_game.players), game_id: final_game.id}
+        %{
+          players: length(final_game.players),
+          game_id: final_game.id,
+          winner: winner,
+          total_turns: final_game.turn_number
+        }
       )
 
       # Record user participation for history
@@ -456,6 +487,50 @@ defmodule Rachel.Game.GameEngine do
     )
 
     %{state | error_count: state.error_count + 1}
+  end
+
+  defp find_winner(game) do
+    # Find player with empty hand (the winner)
+    Enum.find(game.players, fn player ->
+      length(player.hand) == 0 && player.status == :playing
+    end)
+  end
+
+  defp emit_card_play_event(game, player, cards, nominated_suit) do
+    :telemetry.execute(
+      [:rachel, :game, :card_played],
+      %{count: 1},
+      %{
+        game_id: game.id,
+        player: player,
+        turn_number: game.turn_number,
+        cards: cards,
+        stack_size: length(cards),
+        nominated_suit: nominated_suit,
+        resulted_in_win: GameState.should_end?(game)
+      }
+    )
+  end
+
+  defp emit_card_draw_event(game, player, cards_drawn, reason) do
+    attack_type =
+      case game.pending_attack do
+        {type, _count} -> to_string(type)
+        _ -> nil
+      end
+
+    :telemetry.execute(
+      [:rachel, :game, :card_drawn],
+      %{count: 1},
+      %{
+        game_id: game.id,
+        player: player,
+        turn_number: game.turn_number,
+        cards_drawn: cards_drawn,
+        reason: reason,
+        attack_type: attack_type
+      }
+    )
   end
 
   defp via(game_id), do: {:via, Registry, {Rachel.GameRegistry, game_id}}

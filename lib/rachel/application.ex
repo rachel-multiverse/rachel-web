@@ -37,6 +37,9 @@ defmodule Rachel.Application do
         # Attach telemetry handlers for monitoring and alerting
         Rachel.Monitoring.TelemetryHandler.attach()
 
+        # Attach analytics telemetry handler for game statistics
+        Rachel.Analytics.TelemetryHandler.attach()
+
         # Restore active games from database after supervisor starts
         # Skip in test environment to avoid Ecto.Sandbox issues
         unless Application.get_env(:rachel, :env) == :test do
