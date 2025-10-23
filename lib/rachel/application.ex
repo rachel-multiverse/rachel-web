@@ -34,6 +34,9 @@ defmodule Rachel.Application do
 
     case Supervisor.start_link(children, opts) do
       {:ok, pid} ->
+        # Attach telemetry handlers for monitoring and alerting
+        Rachel.Monitoring.TelemetryHandler.attach()
+
         # Restore active games from database after supervisor starts
         # Skip in test environment to avoid Ecto.Sandbox issues
         unless Application.get_env(:rachel, :env) == :test do
