@@ -451,7 +451,15 @@ defmodule Rachel.AccountsTest do
 
   describe "update_user_profile/2" do
     setup do
-      %{user: user_fixture()}
+      # Create test avatar
+      avatar = Rachel.Repo.insert!(%Rachel.Game.Avatar{
+        name: "Test Avatar",
+        category: "faces",
+        character: "😀",
+        display_order: 1
+      })
+
+      %{user: user_fixture(), avatar: avatar}
     end
 
     test "updates display name successfully", %{user: user} do
@@ -459,11 +467,11 @@ defmodule Rachel.AccountsTest do
       assert updated_user.display_name == "Display Name"
     end
 
-    test "updates avatar_url successfully", %{user: user} do
+    test "updates avatar_id successfully", %{user: user, avatar: avatar} do
       {:ok, updated_user} =
-        Accounts.update_user_profile(user, %{avatar_url: "https://example.com/avatar.jpg"})
+        Accounts.update_user_profile(user, %{avatar_id: avatar.id})
 
-      assert updated_user.avatar_url == "https://example.com/avatar.jpg"
+      assert updated_user.avatar_id == avatar.id
     end
 
     test "updates preferences successfully", %{user: user} do
@@ -472,16 +480,16 @@ defmodule Rachel.AccountsTest do
       assert updated_user.preferences == prefs
     end
 
-    test "updates multiple profile fields at once", %{user: user} do
+    test "updates multiple profile fields at once", %{user: user, avatar: avatar} do
       attrs = %{
         display_name: "Cool User",
-        avatar_url: "https://example.com/cool.jpg",
+        avatar_id: avatar.id,
         preferences: %{"theme" => "retro"}
       }
 
       {:ok, updated_user} = Accounts.update_user_profile(user, attrs)
       assert updated_user.display_name == "Cool User"
-      assert updated_user.avatar_url == "https://example.com/cool.jpg"
+      assert updated_user.avatar_id == avatar.id
       assert updated_user.preferences == %{"theme" => "retro"}
     end
 
