@@ -14,9 +14,33 @@ defmodule Rachel.Leaderboard.IntegrationTest do
         id: Ecto.UUID.generate(),
         status: :finished,
         players: [
-          %{id: "p1", name: "Player1", user_id: user1.id, type: :human, hand: [], status: :won, difficulty: nil},
-          %{id: "p2", name: "Player2", user_id: user2.id, type: :human, hand: [], status: :playing, difficulty: nil},
-          %{id: "ai", name: "AI", user_id: nil, type: :ai, hand: [], status: :playing, difficulty: :medium}
+          %{
+            id: "p1",
+            name: "Player1",
+            user_id: user1.id,
+            type: :human,
+            hand: [],
+            status: :won,
+            difficulty: nil
+          },
+          %{
+            id: "p2",
+            name: "Player2",
+            user_id: user2.id,
+            type: :human,
+            hand: [],
+            status: :playing,
+            difficulty: nil
+          },
+          %{
+            id: "ai",
+            name: "AI",
+            user_id: nil,
+            type: :ai,
+            hand: [],
+            status: :playing,
+            difficulty: :medium
+          }
         ],
         winners: ["p1"],
         turn_count: 20,
@@ -62,9 +86,33 @@ defmodule Rachel.Leaderboard.IntegrationTest do
         id: Ecto.UUID.generate(),
         status: :finished,
         players: [
-          %{id: "p1", name: "Player1", user_id: user.id, type: :human, hand: [], status: :won, difficulty: nil},
-          %{id: "ai1", name: "AI1", user_id: nil, type: :ai, hand: [], status: :playing, difficulty: :medium},
-          %{id: "ai2", name: "AI2", user_id: nil, type: :ai, hand: [], status: :playing, difficulty: :medium}
+          %{
+            id: "p1",
+            name: "Player1",
+            user_id: user.id,
+            type: :human,
+            hand: [],
+            status: :won,
+            difficulty: nil
+          },
+          %{
+            id: "ai1",
+            name: "AI1",
+            user_id: nil,
+            type: :ai,
+            hand: [],
+            status: :playing,
+            difficulty: :medium
+          },
+          %{
+            id: "ai2",
+            name: "AI2",
+            user_id: nil,
+            type: :ai,
+            hand: [],
+            status: :playing,
+            difficulty: :medium
+          }
         ],
         winners: ["p1"],
         turn_count: 15,
@@ -103,6 +151,7 @@ defmodule Rachel.Leaderboard.IntegrationTest do
         password: "password123456"
       })
       |> Rachel.Repo.insert()
+
     user
   end
 end

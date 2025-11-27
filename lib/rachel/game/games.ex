@@ -173,69 +173,75 @@ defmodule Rachel.Game.Games do
   Records user participation in a finished game.
   Creates user_games records for all human players in the game.
   """
-  def record_user_participation(%GameState{} = game_state) do
-    # Only record for finished games
-    if game_state.status == :finished do
-      # Calculate final rankings based on who finished first (winners array order)
-      # and who's still playing (hand size)
-      players_with_stats =
-        game_state.players
-        |> Enum.with_index()
-        |> Enum.map(fn {player, position} ->
-          rank =
-            if player.name in game_state.winners do
-              # Winner rank is their position in winners array + 1
-              Enum.find_index(game_state.winners, &(&1 == player.name)) + 1
-            else
-              # Non-winners ranked by hand size (fewer cards = better rank)
-              # Will be calculated after we know all hand sizes
-              nil
-            end
+  def record_user_participation(%GameState{status: :finished} = game_state) do
+    all_players = calculate_final_rankings(game_state)
 
-          %{
-            user_id: player.user_id,
-            position: position,
-            rank: rank,
-            hand_size: length(player.hand),
-            name: player.name
-          }
-        end)
+    # Insert user_games records for human players only
+    all_players
+    |> Enum.filter(&(&1.user_id != nil))
+    |> Enum.each(&insert_user_game(&1, game_state.id))
 
-      # Calculate ranks for non-winners based on hand size
-      non_winners = Enum.filter(players_with_stats, &is_nil(&1.rank))
-      winner_count = length(game_state.winners)
+    # Trigger Elo rating update for ranked games (2+ humans)
+    trigger_elo_update(game_state, all_players)
 
-      non_winners_ranked =
-        non_winners
-        |> Enum.sort_by(& &1.hand_size)
-        |> Enum.with_index(winner_count + 1)
-        |> Enum.map(fn {player, rank} -> %{player | rank: rank} end)
+    :ok
+  end
 
-      all_players =
-        (Enum.reject(players_with_stats, &is_nil(&1.rank)) ++ non_winners_ranked)
-        |> Enum.sort_by(& &1.position)
+  def record_user_participation(%GameState{}) do
+    {:error, :game_not_finished}
+  end
 
-      # Insert user_games records for human players only
-      all_players
-      |> Enum.filter(&(&1.user_id != nil))
-      |> Enum.each(&insert_user_game(&1, game_state.id))
+  defp calculate_final_rankings(game_state) do
+    players_with_stats =
+      Enum.map(
+        Enum.with_index(game_state.players),
+        &build_player_stats(&1, game_state.winners)
+      )
 
-      # Trigger Elo rating update for ranked games (2+ humans)
-      human_players =
-        game_state.players
-        |> Enum.filter(& &1.user_id != nil && &1.type in [:human, :user])
-        |> Enum.map(fn player ->
-          position = calculate_player_position(player, game_state, all_players)
-          %{user_id: player.user_id, position: position}
-        end)
+    # Calculate ranks for non-winners based on hand size
+    non_winners = Enum.filter(players_with_stats, &is_nil(&1.rank))
+    winner_count = length(game_state.winners)
 
-      if length(human_players) >= 2 do
-        Rachel.Leaderboard.process_game_results(game_state.id, human_players)
-      end
+    non_winners_ranked =
+      non_winners
+      |> Enum.sort_by(& &1.hand_size)
+      |> Enum.with_index(winner_count + 1)
+      |> Enum.map(fn {player, rank} -> %{player | rank: rank} end)
 
-      :ok
-    else
-      {:error, :game_not_finished}
+    (Enum.reject(players_with_stats, &is_nil(&1.rank)) ++ non_winners_ranked)
+    |> Enum.sort_by(& &1.position)
+  end
+
+  defp build_player_stats({player, position}, winners) do
+    rank = calculate_winner_rank(player.name, winners)
+
+    %{
+      user_id: player.user_id,
+      position: position,
+      rank: rank,
+      hand_size: length(player.hand),
+      name: player.name
+    }
+  end
+
+  defp calculate_winner_rank(player_name, winners) do
+    case Enum.find_index(winners, &(&1 == player_name)) do
+      nil -> nil
+      index -> index + 1
+    end
+  end
+
+  defp trigger_elo_update(game_state, all_players) do
+    human_players =
+      game_state.players
+      |> Enum.filter(&(&1.user_id != nil && &1.type in [:human, :user]))
+      |> Enum.map(fn player ->
+        position = calculate_player_position(player, game_state, all_players)
+        %{user_id: player.user_id, position: position}
+      end)
+
+    if length(human_players) >= 2 do
+      Rachel.Leaderboard.process_game_results(game_state.id, human_players)
     end
   end
 
@@ -244,7 +250,8 @@ defmodule Rachel.Game.Games do
   defp calculate_player_position(player, _game_state, all_players) do
     # Find the player in all_players by matching their id
     case Enum.find(all_players, &(&1.name == player.name)) do
-      nil -> 1  # Fallback, shouldn't happen
+      # Fallback, shouldn't happen
+      nil -> 1
       found_player -> found_player.rank
     end
   end

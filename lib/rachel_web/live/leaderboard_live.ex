@@ -64,8 +64,8 @@ defmodule RachelWeb.LeaderboardLive do
           <h1 class="text-3xl font-bold text-gray-900">Leaderboard</h1>
           <p class="text-gray-600 mt-1">Top Rachel players ranked by Elo rating</p>
         </div>
-
-        <!-- Tier Legend -->
+        
+    <!-- Tier Legend -->
         <div class="bg-white rounded-lg shadow-xl p-4 mb-6">
           <h2 class="text-sm font-semibold text-gray-700 mb-2">Tiers</h2>
           <div class="flex flex-wrap gap-3">
@@ -76,8 +76,8 @@ defmodule RachelWeb.LeaderboardLive do
             <.tier_badge tier="bronze" icons={@tier_icons} colors={@tier_colors} label="<900" />
           </div>
         </div>
-
-        <!-- Your Rank Card -->
+        
+    <!-- Your Rank Card -->
         <%= if @current_user.elo_games_played > 0 do %>
           <div class="bg-white rounded-lg shadow-xl p-6 mb-6 border-2 border-yellow-400">
             <h2 class="text-lg font-semibold text-gray-700 mb-3">Your Rank</h2>
@@ -85,8 +85,12 @@ defmodule RachelWeb.LeaderboardLive do
               <div class="flex items-center gap-4">
                 <span class="text-3xl font-bold text-gray-900">#{@user_rank || "—"}</span>
                 <div>
-                  <div class="font-semibold">{@current_user.display_name || @current_user.username}</div>
-                  <div class="text-sm text-gray-600">{@current_user.elo_games_played} ranked games</div>
+                  <div class="font-semibold">
+                    {@current_user.display_name || @current_user.username}
+                  </div>
+                  <div class="text-sm text-gray-600">
+                    {@current_user.elo_games_played} ranked games
+                  </div>
                 </div>
               </div>
               <div class="text-right">
@@ -96,14 +100,16 @@ defmodule RachelWeb.LeaderboardLive do
                 </div>
               </div>
             </div>
-
-            <!-- Recent trend -->
+            
+    <!-- Recent trend -->
             <%= if @recent_history != [] do %>
               <div class="mt-4 pt-4 border-t">
                 <div class="text-sm text-gray-600">Recent:</div>
                 <div class="flex gap-2 mt-1">
                   <%= for entry <- Enum.take(@recent_history, 5) do %>
-                    <span class={if entry.rating_change >= 0, do: "text-green-600", else: "text-red-600"}>
+                    <span class={
+                      if entry.rating_change >= 0, do: "text-green-600", else: "text-red-600"
+                    }>
                       {if entry.rating_change >= 0, do: "+", else: ""}{entry.rating_change}
                     </span>
                   <% end %>
@@ -114,14 +120,19 @@ defmodule RachelWeb.LeaderboardLive do
         <% else %>
           <div class="bg-white rounded-lg shadow-xl p-6 mb-6 border-2 border-gray-300">
             <h2 class="text-lg font-semibold text-gray-700 mb-2">Your Rank</h2>
-            <p class="text-gray-600">Play ranked games against other humans to appear on the leaderboard!</p>
-            <.link href={~p"/lobby"} class="inline-block mt-3 bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
+            <p class="text-gray-600">
+              Play ranked games against other humans to appear on the leaderboard!
+            </p>
+            <.link
+              href={~p"/lobby"}
+              class="inline-block mt-3 bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
+            >
               Find a Game
             </.link>
           </div>
         <% end %>
-
-        <!-- Leaderboard Table -->
+        
+    <!-- Leaderboard Table -->
         <div class="bg-white rounded-lg shadow-xl overflow-hidden">
           <table class="w-full">
             <thead class="bg-gray-50">

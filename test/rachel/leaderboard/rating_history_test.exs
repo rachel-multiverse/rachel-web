@@ -44,6 +44,7 @@ defmodule Rachel.Leaderboard.RatingHistoryTest do
         password: "password123456"
       })
       |> Rachel.Repo.insert()
+
     user
   end
 end

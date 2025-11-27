@@ -126,12 +126,12 @@ defmodule RachelWeb.LobbyLive do
             </div>
           <% end %>
         </div>
-
-        <!-- Leaderboard Widget -->
+        
+    <!-- Leaderboard Widget -->
         <div class="mt-8">
           <.leaderboard_widget current_user={@current_user} />
         </div>
-
+        
     <!-- Instructions -->
         <div class="mt-8 bg-white/10 rounded-lg p-6 text-white">
           <h3 class="text-lg font-semibold mb-2">How to Play</h3>

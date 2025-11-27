@@ -1,4 +1,8 @@
 defmodule RachelWeb.Components.LeaderboardWidget do
+  @moduledoc """
+  Component for displaying a mini leaderboard widget in the lobby.
+  """
+
   use Phoenix.Component
 
   alias Rachel.Leaderboard
@@ -61,8 +65,8 @@ defmodule RachelWeb.Components.LeaderboardWidget do
           <% end %>
         </div>
       <% end %>
-
-      <!-- Current user's rank if not in top 5 -->
+      
+    <!-- Current user's rank if not in top 5 -->
       <%= if @user_rank && @user_rank > 5 do %>
         <div class="mt-3 pt-3 border-t">
           <div class="flex items-center justify-between text-sm">

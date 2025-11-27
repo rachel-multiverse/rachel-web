@@ -157,26 +157,23 @@ defmodule RachelWeb.ReconnectableLive do
       end
 
       # Helper to update player connection status in UI
-      defp update_player_connection_status(socket, player_id, status) do
-        case socket.assigns[:game] do
-          nil ->
-            socket
-
-          game ->
-            # Update the player's connection status in the game state for UI
-            players =
-              Enum.map(game.players, fn player ->
-                if player.id == player_id do
-                  Map.put(player, :connection_status, status)
-                else
-                  player
-                end
-              end)
-
-            updated_game = Map.put(game, :players, players)
-            assign(socket, :game, updated_game)
-        end
+      defp update_player_connection_status(socket, _player_id, _status)
+           when is_nil(socket.assigns[:game]) do
+        socket
       end
+
+      defp update_player_connection_status(socket, player_id, status) do
+        game = socket.assigns[:game]
+        players = Enum.map(game.players, &update_player_status(&1, player_id, status))
+        updated_game = Map.put(game, :players, players)
+        assign(socket, :game, updated_game)
+      end
+
+      defp update_player_status(player, player_id, status) when player.id == player_id do
+        Map.put(player, :connection_status, status)
+      end
+
+      defp update_player_status(player, _player_id, _status), do: player
 
       # Override these as needed
       defoverridable mount_with_reconnection: 3,

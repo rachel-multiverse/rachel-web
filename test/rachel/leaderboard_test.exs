@@ -97,8 +97,8 @@ defmodule Rachel.LeaderboardTest do
 
       # Winner should gain, loser should lose equal amount
       assert length(changes) == 2
-      winner_change = Enum.find(changes, & &1.user_id == 1)
-      loser_change = Enum.find(changes, & &1.user_id == 2)
+      winner_change = Enum.find(changes, &(&1.user_id == 1))
+      loser_change = Enum.find(changes, &(&1.user_id == 2))
 
       assert winner_change.rating_change > 0
       assert loser_change.rating_change < 0
@@ -118,8 +118,8 @@ defmodule Rachel.LeaderboardTest do
       assert length(changes) == 4
 
       # First place beats 3 opponents, should have highest gain
-      first = Enum.find(changes, & &1.user_id == 1)
-      last = Enum.find(changes, & &1.user_id == 4)
+      first = Enum.find(changes, &(&1.user_id == 1))
+      last = Enum.find(changes, &(&1.user_id == 4))
 
       assert first.rating_change > 0
       assert last.rating_change < 0
@@ -133,7 +133,7 @@ defmodule Rachel.LeaderboardTest do
       ]
 
       changes = Leaderboard.calculate_pairwise_changes(players)
-      winner = Enum.find(changes, & &1.user_id == 1)
+      winner = Enum.find(changes, &(&1.user_id == 1))
 
       # High rated player beating low rated = small gain
       assert winner.rating_change > 0
@@ -187,6 +187,7 @@ defmodule Rachel.LeaderboardTest do
 
       # Use nil for game_id since we're not creating an actual game record
       game_id = nil
+
       results = [
         %{user_id: user1.id, position: 1},
         %{user_id: user2.id, position: 2}
@@ -194,7 +195,7 @@ defmodule Rachel.LeaderboardTest do
 
       {:ok, changes} = Leaderboard.process_game_results(game_id, results)
 
-      winner_change = Enum.find(changes, & &1.user_id == user1.id)
+      winner_change = Enum.find(changes, &(&1.user_id == user1.id))
       assert winner_change.new_tier == "gold"
 
       updated_user1 = Rachel.Repo.get!(Rachel.Accounts.User, user1.id)

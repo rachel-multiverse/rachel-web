@@ -320,9 +320,11 @@ defmodule RachelWeb.LobbyLiveTest do
       {:ok, _view, html} = live(conn, ~p"/lobby")
 
       assert html =~ "Top Players"
-      assert html =~ "Player6"  # Highest rated
+      # Highest rated
+      assert html =~ "Player6"
       assert html =~ "Player5"
-      refute html =~ "Player1"  # 6th place, not shown
+      # 6th place, not shown
+      refute html =~ "Player1"
     end
 
     test "shows link to full leaderboard", %{conn: conn} do

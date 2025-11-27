@@ -51,7 +51,11 @@ defmodule RachelWeb.LeaderboardLiveTest do
           |> Rachel.Repo.insert()
 
         u
-        |> Ecto.Changeset.change(%{elo_rating: rating, elo_games_played: 5, elo_tier: Rachel.Leaderboard.calculate_tier(rating)})
+        |> Ecto.Changeset.change(%{
+          elo_rating: rating,
+          elo_games_played: 5,
+          elo_tier: Rachel.Leaderboard.calculate_tier(rating)
+        })
         |> Rachel.Repo.update!()
       end
 

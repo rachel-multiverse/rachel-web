@@ -6,9 +6,9 @@ defmodule Rachel.Leaderboard do
   """
 
   import Ecto.Query
-  alias Rachel.Repo
   alias Rachel.Accounts.User
   alias Rachel.Leaderboard.RatingHistory
+  alias Rachel.Repo
 
   # Elo calculation constants
   @provisional_k 32
@@ -69,31 +69,35 @@ defmodule Rachel.Leaderboard do
   def calculate_pairwise_changes(players) when length(players) < 2, do: []
 
   def calculate_pairwise_changes(players) do
-    players
-    |> Enum.map(fn player ->
-      k = get_k_factor(player.games_played)
-      opponents = Enum.reject(players, & &1.user_id == player.user_id)
+    Enum.map(players, &calculate_player_rating_change(&1, players))
+  end
 
-      total_change =
-        opponents
-        |> Enum.map(fn opponent ->
-          actual_score = if player.position < opponent.position, do: 1.0, else: 0.0
-          calculate_rating_change(player.rating, opponent.rating, actual_score, k)
-        end)
-        |> Enum.sum()
+  defp calculate_player_rating_change(player, all_players) do
+    k = get_k_factor(player.games_played)
+    opponents = Enum.reject(all_players, &(&1.user_id == player.user_id))
+    total_change = calculate_total_change(player, opponents, k)
+    new_rating = max(0, player.rating + total_change)
 
-      new_rating = max(0, player.rating + total_change)
+    %{
+      user_id: player.user_id,
+      rating_before: player.rating,
+      rating_change: total_change,
+      new_rating: new_rating,
+      new_tier: calculate_tier(new_rating),
+      game_position: player.position,
+      opponents_count: length(opponents)
+    }
+  end
 
-      %{
-        user_id: player.user_id,
-        rating_before: player.rating,
-        rating_change: total_change,
-        new_rating: new_rating,
-        new_tier: calculate_tier(new_rating),
-        game_position: player.position,
-        opponents_count: length(opponents)
-      }
-    end)
+  defp calculate_total_change(player, opponents, k) do
+    opponents
+    |> Enum.map(&rating_change_for_opponent(player, &1, k))
+    |> Enum.sum()
+  end
+
+  defp rating_change_for_opponent(player, opponent, k) do
+    actual_score = if player.position < opponent.position, do: 1.0, else: 0.0
+    calculate_rating_change(player.rating, opponent.rating, actual_score, k)
   end
 
   @doc """
@@ -114,12 +118,13 @@ defmodule Rachel.Leaderboard do
       User
       |> where([u], u.id in ^user_ids)
       |> Repo.all()
-      |> Map.new(& {&1.id, &1})
+      |> Map.new(&{&1.id, &1})
 
     # Build player data for calculation
     players =
       Enum.map(results, fn result ->
         user = users[result.user_id]
+
         %{
           user_id: result.user_id,
           rating: user.elo_rating,
@@ -213,7 +218,7 @@ defmodule Rachel.Leaderboard do
 
     RatingHistory
     |> where([h], h.user_id == ^user_id)
-    |> order_by([h], [desc: h.inserted_at, desc: h.id])
+    |> order_by([h], desc: h.inserted_at, desc: h.id)
     |> limit(^limit)
     |> Repo.all()
   end

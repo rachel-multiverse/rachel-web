@@ -259,8 +259,6 @@ defmodule Rachel.Monitoring.Alerts do
     )
   end
 
-  defp notify_channel(:log, _alert, _metadata), do: :ok
-
   defp notify_channel(:sentry, alert, metadata) do
     # Sentry integration for error tracking
     # Only send critical alerts to Sentry to avoid noise
@@ -287,6 +285,9 @@ defmodule Rachel.Monitoring.Alerts do
 
     :ok
   end
+
+  defp notify_channel(:log, _alert, _metadata), do: :ok
+  defp notify_channel(_unknown, _alert, _metadata), do: :ok
 
   defp send_webhook_alert(webhook_url, alert, metadata) do
     payload = build_webhook_payload(alert, metadata)
@@ -318,6 +319,4 @@ defmodule Rachel.Monitoring.Alerts do
         Logger.warning("Failed to send alert webhook: #{inspect(reason)}")
     end
   end
-
-  defp notify_channel(_unknown, _alert, _metadata), do: :ok
 end
