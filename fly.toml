@@ -34,13 +34,12 @@ kill_timeout = 5
   min_machines_running = 1
 
   # Use our new /health endpoint
-  [http_service.checks]
-    [http_service.checks.health]
-      grace_period = "10s"
-      interval = "30s"
-      method = "GET"
-      timeout = "5s"
-      path = "/health"
+  [[http_service.checks]]
+    grace_period = "10s"
+    interval = "30s"
+    method = "GET"
+    timeout = "5s"
+    path = "/health"
 
   # HTTP connection settings
   [http_service.concurrency]
@@ -60,11 +59,10 @@ kill_timeout = 5
     port = 1982
 
   # TCP health check
-  [services.tcp_checks]
-    [services.tcp_checks.rubp]
-      grace_period = "10s"
-      interval = "30s"
-      timeout = "5s"
+  [[services.tcp_checks]]
+    grace_period = "10s"
+    interval = "30s"
+    timeout = "5s"
 
 # Machine configuration
 [[vm]]
