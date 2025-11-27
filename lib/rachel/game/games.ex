@@ -220,6 +220,19 @@ defmodule Rachel.Game.Games do
       |> Enum.filter(&(&1.user_id != nil))
       |> Enum.each(&insert_user_game(&1, game_state.id))
 
+      # Trigger Elo rating update for ranked games (2+ humans)
+      human_players =
+        game_state.players
+        |> Enum.filter(& &1.user_id != nil && &1.type in [:human, :user])
+        |> Enum.map(fn player ->
+          position = calculate_player_position(player, game_state, all_players)
+          %{user_id: player.user_id, position: position}
+        end)
+
+      if length(human_players) >= 2 do
+        Rachel.Leaderboard.process_game_results(game_state.id, human_players)
+      end
+
       :ok
     else
       {:error, :game_not_finished}
@@ -227,6 +240,14 @@ defmodule Rachel.Game.Games do
   end
 
   # Private functions
+
+  defp calculate_player_position(player, _game_state, all_players) do
+    # Find the player in all_players by matching their id
+    case Enum.find(all_players, &(&1.name == player.name)) do
+      nil -> 1  # Fallback, shouldn't happen
+      found_player -> found_player.rank
+    end
+  end
 
   defp insert_user_game(player, game_id) do
     attrs = %{
