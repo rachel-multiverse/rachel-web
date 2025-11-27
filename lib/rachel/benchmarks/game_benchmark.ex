@@ -11,6 +11,9 @@ defmodule Rachel.Benchmarks.GameBenchmark do
   Run with: `mix run lib/rachel/benchmarks/game_benchmark.ex`
   """
 
+  # Suppress undefined module warning - Benchee is only available in :dev
+  @compile {:no_warn_undefined, Benchee}
+
   alias Rachel.Game.{Deck, GameState}
 
   def run do
