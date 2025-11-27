@@ -298,4 +298,66 @@ defmodule RachelWeb.LobbyLiveTest do
       assert has_element?(view, "form[phx-submit='create_game']")
     end
   end
+
+  describe "leaderboard widget" do
+    test "shows top 5 players", %{conn: conn} do
+      # Create some ranked users
+      for i <- 1..6 do
+        {:ok, u} =
+          %Rachel.Accounts.User{}
+          |> Rachel.Accounts.User.registration_changeset(%{
+            email: "player#{i}@test.com",
+            username: "Player#{i}",
+            password: "password123456"
+          })
+          |> Rachel.Repo.insert()
+
+        u
+        |> Ecto.Changeset.change(%{elo_rating: 1000 + i * 50, elo_games_played: 5})
+        |> Rachel.Repo.update!()
+      end
+
+      {:ok, _view, html} = live(conn, ~p"/lobby")
+
+      assert html =~ "Top Players"
+      assert html =~ "Player6"  # Highest rated
+      assert html =~ "Player5"
+      refute html =~ "Player1"  # 6th place, not shown
+    end
+
+    test "shows link to full leaderboard", %{conn: conn} do
+      {:ok, _view, html} = live(conn, ~p"/lobby")
+
+      assert html =~ "View Full Leaderboard"
+      assert html =~ ~s(href="/leaderboard")
+    end
+
+    test "shows current user rank if not in top 5", %{conn: conn, user: user} do
+      # Create 5 higher-rated users
+      for i <- 1..5 do
+        {:ok, u} =
+          %Rachel.Accounts.User{}
+          |> Rachel.Accounts.User.registration_changeset(%{
+            email: "topplayer#{i}@test.com",
+            username: "TopPlayer#{i}",
+            password: "password123456"
+          })
+          |> Rachel.Repo.insert()
+
+        u
+        |> Ecto.Changeset.change(%{elo_rating: 1500 + i * 50, elo_games_played: 10})
+        |> Rachel.Repo.update!()
+      end
+
+      # Give current user a rank outside top 5
+      user
+      |> Ecto.Changeset.change(%{elo_rating: 1200, elo_games_played: 10})
+      |> Rachel.Repo.update!()
+
+      {:ok, _view, html} = live(conn, ~p"/lobby")
+
+      assert html =~ "Your rank:"
+      assert html =~ "#6"
+    end
+  end
 end
