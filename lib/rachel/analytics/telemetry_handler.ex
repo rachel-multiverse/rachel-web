@@ -36,22 +36,24 @@ defmodule Rachel.Analytics.TelemetryHandler do
   Handles telemetry events and records analytics asynchronously.
   """
   def handle_event([:rachel, :game, :created], _measurements, metadata, _config) do
-    # Game created - record in game_stats
-    Task.start(fn ->
-      try do
-        player_count = metadata[:players] || 0
-        ai_count = count_ai_players(metadata)
+    unless analytics_disabled?() do
+      # Game created - record in game_stats
+      Task.start(fn ->
+        try do
+          player_count = metadata[:players] || 0
+          ai_count = count_ai_players(metadata)
 
-        Analytics.record_game_start(metadata.game_id, %{
-          player_count: player_count,
-          ai_count: ai_count,
-          deck_count: metadata[:deck_count] || 1
-        })
-      rescue
-        error ->
-          Logger.warning("Failed to record game_created analytics: #{inspect(error)}")
-      end
-    end)
+          Analytics.record_game_start(metadata.game_id, %{
+            player_count: player_count,
+            ai_count: ai_count,
+            deck_count: metadata[:deck_count] || 1
+          })
+        rescue
+          error ->
+            Logger.warning("Failed to record game_created analytics: #{inspect(error)}")
+        end
+      end)
+    end
   end
 
   def handle_event([:rachel, :game, :started], _measurements, metadata, _config) do
@@ -60,68 +62,74 @@ defmodule Rachel.Analytics.TelemetryHandler do
   end
 
   def handle_event([:rachel, :game, :finished], _measurements, metadata, _config) do
-    # Game finished - update game_stats with winner and completion info
-    Task.start(fn ->
-      try do
-        winner_info = extract_winner_info(metadata)
+    unless analytics_disabled?() do
+      # Game finished - update game_stats with winner and completion info
+      Task.start(fn ->
+        try do
+          winner_info = extract_winner_info(metadata)
 
-        Analytics.record_game_finish(
-          metadata.game_id,
-          Map.merge(winner_info, %{
-            total_turns: metadata[:total_turns] || 0
-          })
-        )
-      rescue
-        error ->
-          Logger.warning("Failed to record game_finished analytics: #{inspect(error)}")
-      end
-    end)
+          Analytics.record_game_finish(
+            metadata.game_id,
+            Map.merge(winner_info, %{
+              total_turns: metadata[:total_turns] || 0
+            })
+          )
+        rescue
+          error ->
+            Logger.warning("Failed to record game_finished analytics: #{inspect(error)}")
+        end
+      end)
+    end
   end
 
   def handle_event([:rachel, :game, :card_played], _measurements, metadata, _config) do
-    # Card played - record in card_play_stats
-    Task.start(fn ->
-      try do
-        player_info = extract_player_info(metadata)
+    unless analytics_disabled?() do
+      # Card played - record in card_play_stats
+      Task.start(fn ->
+        try do
+          player_info = extract_player_info(metadata)
 
-        Analytics.record_card_play(
-          metadata.game_id,
-          Map.merge(player_info, %{
-            turn_number: metadata[:turn_number] || 0,
-            cards_played: format_cards(metadata[:cards] || []),
-            was_stacked: (metadata[:stack_size] || 1) > 1,
-            stack_size: metadata[:stack_size] || 1,
-            nominated_suit: metadata[:nominated_suit],
-            resulted_in_win: metadata[:resulted_in_win] || false
-          })
-        )
-      rescue
-        error ->
-          Logger.warning("Failed to record card_played analytics: #{inspect(error)}")
-      end
-    end)
+          Analytics.record_card_play(
+            metadata.game_id,
+            Map.merge(player_info, %{
+              turn_number: metadata[:turn_number] || 0,
+              cards_played: format_cards(metadata[:cards] || []),
+              was_stacked: (metadata[:stack_size] || 1) > 1,
+              stack_size: metadata[:stack_size] || 1,
+              nominated_suit: metadata[:nominated_suit],
+              resulted_in_win: metadata[:resulted_in_win] || false
+            })
+          )
+        rescue
+          error ->
+            Logger.warning("Failed to record card_played analytics: #{inspect(error)}")
+        end
+      end)
+    end
   end
 
   def handle_event([:rachel, :game, :card_drawn], _measurements, metadata, _config) do
-    # Card drawn - record in card_draw_stats
-    Task.start(fn ->
-      try do
-        player_info = extract_player_info(metadata)
+    unless analytics_disabled?() do
+      # Card drawn - record in card_draw_stats
+      Task.start(fn ->
+        try do
+          player_info = extract_player_info(metadata)
 
-        Analytics.record_card_draw(
-          metadata.game_id,
-          Map.merge(player_info, %{
-            turn_number: metadata[:turn_number] || 0,
-            cards_drawn: metadata[:cards_drawn] || 1,
-            reason: determine_draw_reason(metadata),
-            attack_type: metadata[:attack_type]
-          })
-        )
-      rescue
-        error ->
-          Logger.warning("Failed to record card_drawn analytics: #{inspect(error)}")
-      end
-    end)
+          Analytics.record_card_draw(
+            metadata.game_id,
+            Map.merge(player_info, %{
+              turn_number: metadata[:turn_number] || 0,
+              cards_drawn: metadata[:cards_drawn] || 1,
+              reason: determine_draw_reason(metadata),
+              attack_type: metadata[:attack_type]
+            })
+          )
+        rescue
+          error ->
+            Logger.warning("Failed to record card_drawn analytics: #{inspect(error)}")
+        end
+      end)
+    end
   end
 
   def handle_event([:rachel, :game, :error], _measurements, metadata, _config) do
@@ -129,6 +137,10 @@ defmodule Rachel.Analytics.TelemetryHandler do
   end
 
   # Helper functions
+
+  defp analytics_disabled? do
+    Application.get_env(:rachel, :analytics_enabled, true) == false
+  end
 
   defp count_ai_players(metadata) do
     case metadata[:player_types] do

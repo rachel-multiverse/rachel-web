@@ -47,3 +47,6 @@ config :rachel, :game_cleanup_enabled, false
 
 # Disable rate limiting in tests
 config :rachel, :rate_limit_enabled, false
+
+# Disable analytics recording in tests to avoid database ownership issues with async tasks
+config :rachel, :analytics_enabled, false
