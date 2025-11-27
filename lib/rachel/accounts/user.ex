@@ -38,6 +38,11 @@ defmodule Rachel.Accounts.User do
     # Admin flag
     field :is_admin, :boolean, default: false
 
+    # Elo rating fields
+    field :elo_rating, :integer, default: 1000
+    field :elo_games_played, :integer, default: 0
+    field :elo_tier, :string, default: "bronze"
+
     # Associations
     belongs_to :avatar, Rachel.Game.Avatar, define_field: false
 
@@ -115,6 +120,19 @@ defmodule Rachel.Accounts.User do
   def presence_changeset(user, attrs) do
     user
     |> cast(attrs, [:is_online, :last_seen_at])
+  end
+
+  @valid_tiers ~w(bronze silver gold platinum diamond)
+
+  @doc """
+  A user changeset for updating Elo rating fields.
+  """
+  def elo_changeset(user, attrs) do
+    user
+    |> cast(attrs, [:elo_rating, :elo_games_played, :elo_tier])
+    |> validate_number(:elo_rating, greater_than_or_equal_to: 0)
+    |> validate_number(:elo_games_played, greater_than_or_equal_to: 0)
+    |> validate_inclusion(:elo_tier, @valid_tiers)
   end
 
   @doc """
