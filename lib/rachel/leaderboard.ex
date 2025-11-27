@@ -5,6 +5,11 @@ defmodule Rachel.Leaderboard do
   Handles rating calculations, updates, and leaderboard queries.
   """
 
+  import Ecto.Query
+  alias Rachel.Repo
+  alias Rachel.Accounts.User
+  alias Rachel.Leaderboard.RatingHistory
+
   # Elo calculation constants
   @provisional_k 32
   @established_k 16
@@ -89,5 +94,127 @@ defmodule Rachel.Leaderboard do
         opponents_count: length(opponents)
       }
     end)
+  end
+
+  @doc """
+  Process game results and update all player ratings.
+
+  Takes a game_id and list of %{user_id, position} for human players.
+  Updates ratings in a transaction.
+  """
+  def process_game_results(_game_id, results) when length(results) < 2 do
+    {:error, :not_enough_players}
+  end
+
+  def process_game_results(game_id, results) do
+    # Load current user data
+    user_ids = Enum.map(results, & &1.user_id)
+
+    users =
+      User
+      |> where([u], u.id in ^user_ids)
+      |> Repo.all()
+      |> Map.new(& {&1.id, &1})
+
+    # Build player data for calculation
+    players =
+      Enum.map(results, fn result ->
+        user = users[result.user_id]
+        %{
+          user_id: result.user_id,
+          rating: user.elo_rating,
+          games_played: user.elo_games_played,
+          position: result.position
+        }
+      end)
+
+    # Calculate rating changes
+    changes = calculate_pairwise_changes(players)
+
+    # Apply changes in transaction
+    Repo.transaction(fn ->
+      Enum.map(changes, fn change ->
+        user = users[change.user_id]
+
+        # Update user rating
+        {:ok, _} =
+          user
+          |> User.elo_changeset(%{
+            elo_rating: change.new_rating,
+            elo_games_played: user.elo_games_played + 1,
+            elo_tier: change.new_tier
+          })
+          |> Repo.update()
+
+        # Record history
+        {:ok, _} =
+          %RatingHistory{}
+          |> RatingHistory.changeset(%{
+            user_id: change.user_id,
+            game_id: game_id,
+            rating_before: change.rating_before,
+            rating_after: change.new_rating,
+            rating_change: change.rating_change,
+            game_position: change.game_position,
+            opponents_count: change.opponents_count
+          })
+          |> Repo.insert()
+
+        change
+      end)
+    end)
+  end
+
+  @doc """
+  Get leaderboard - top players by Elo rating.
+  Only includes players with at least 1 ranked game.
+  """
+  def get_leaderboard(opts \\ []) do
+    limit = Keyword.get(opts, :limit, 100)
+
+    User
+    |> where([u], u.elo_games_played > 0)
+    |> order_by([u], desc: u.elo_rating)
+    |> limit(^limit)
+    |> select([u], %{
+      id: u.id,
+      username: u.username,
+      display_name: u.display_name,
+      avatar_id: u.avatar_id,
+      elo_rating: u.elo_rating,
+      elo_games_played: u.elo_games_played,
+      elo_tier: u.elo_tier
+    })
+    |> Repo.all()
+  end
+
+  @doc """
+  Get a user's rank on the leaderboard.
+  Returns nil if user has no ranked games.
+  """
+  def get_user_rank(user_id) do
+    user = Repo.get(User, user_id)
+
+    if user && user.elo_games_played > 0 do
+      User
+      |> where([u], u.elo_games_played > 0)
+      |> where([u], u.elo_rating > ^user.elo_rating)
+      |> select([u], count(u.id))
+      |> Repo.one()
+      |> Kernel.+(1)
+    end
+  end
+
+  @doc """
+  Get rating history for a user.
+  """
+  def get_rating_history(user_id, opts \\ []) do
+    limit = Keyword.get(opts, :limit, 10)
+
+    RatingHistory
+    |> where([h], h.user_id == ^user_id)
+    |> order_by([h], [desc: h.inserted_at, desc: h.id])
+    |> limit(^limit)
+    |> Repo.all()
   end
 end
