@@ -1,5 +1,5 @@
 # Build stage
-FROM elixir:1.18-alpine AS build
+FROM elixir:1.19-alpine AS build
 
 # Install build dependencies
 RUN apk add --no-cache build-base git python3
