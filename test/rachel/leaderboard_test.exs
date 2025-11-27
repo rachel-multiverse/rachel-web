@@ -85,4 +85,59 @@ defmodule Rachel.LeaderboardTest do
       assert Leaderboard.calculate_tier(2000) == "diamond"
     end
   end
+
+  describe "calculate_pairwise_changes/1" do
+    test "calculates changes for 2-player game" do
+      players = [
+        %{user_id: 1, rating: 1000, games_played: 10, position: 1},
+        %{user_id: 2, rating: 1000, games_played: 10, position: 2}
+      ]
+
+      changes = Leaderboard.calculate_pairwise_changes(players)
+
+      # Winner should gain, loser should lose equal amount
+      assert length(changes) == 2
+      winner_change = Enum.find(changes, & &1.user_id == 1)
+      loser_change = Enum.find(changes, & &1.user_id == 2)
+
+      assert winner_change.rating_change > 0
+      assert loser_change.rating_change < 0
+      assert winner_change.rating_change == -loser_change.rating_change
+    end
+
+    test "calculates changes for 4-player game" do
+      players = [
+        %{user_id: 1, rating: 1000, games_played: 10, position: 1},
+        %{user_id: 2, rating: 1000, games_played: 10, position: 2},
+        %{user_id: 3, rating: 1000, games_played: 10, position: 3},
+        %{user_id: 4, rating: 1000, games_played: 10, position: 4}
+      ]
+
+      changes = Leaderboard.calculate_pairwise_changes(players)
+
+      assert length(changes) == 4
+
+      # First place beats 3 opponents, should have highest gain
+      first = Enum.find(changes, & &1.user_id == 1)
+      last = Enum.find(changes, & &1.user_id == 4)
+
+      assert first.rating_change > 0
+      assert last.rating_change < 0
+      assert first.rating_change > abs(last.rating_change) / 3
+    end
+
+    test "higher rated player gains less for expected win" do
+      players = [
+        %{user_id: 1, rating: 1400, games_played: 50, position: 1},
+        %{user_id: 2, rating: 1000, games_played: 10, position: 2}
+      ]
+
+      changes = Leaderboard.calculate_pairwise_changes(players)
+      winner = Enum.find(changes, & &1.user_id == 1)
+
+      # High rated player beating low rated = small gain
+      assert winner.rating_change > 0
+      assert winner.rating_change < 10
+    end
+  end
 end

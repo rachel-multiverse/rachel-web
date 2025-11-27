@@ -51,4 +51,43 @@ defmodule Rachel.Leaderboard do
       if rating >= threshold, do: tier
     end)
   end
+
+  @doc """
+  Calculate rating changes for all players in a multiplayer game.
+
+  Uses pairwise comparison: each player pair is treated as a 1v1 match.
+  Position determines who "beat" whom (lower position = better finish).
+
+  Input: List of %{user_id, rating, games_played, position}
+  Output: List of %{user_id, rating_change, new_rating, new_tier, opponents_count}
+  """
+  def calculate_pairwise_changes(players) when length(players) < 2, do: []
+
+  def calculate_pairwise_changes(players) do
+    players
+    |> Enum.map(fn player ->
+      k = get_k_factor(player.games_played)
+      opponents = Enum.reject(players, & &1.user_id == player.user_id)
+
+      total_change =
+        opponents
+        |> Enum.map(fn opponent ->
+          actual_score = if player.position < opponent.position, do: 1.0, else: 0.0
+          calculate_rating_change(player.rating, opponent.rating, actual_score, k)
+        end)
+        |> Enum.sum()
+
+      new_rating = max(0, player.rating + total_change)
+
+      %{
+        user_id: player.user_id,
+        rating_before: player.rating,
+        rating_change: total_change,
+        new_rating: new_rating,
+        new_tier: calculate_tier(new_rating),
+        game_position: player.position,
+        opponents_count: length(opponents)
+      }
+    end)
+  end
 end
